@@ -1,4 +1,5 @@
-import { CellularAutomaton } from './cellularautomaton.js'
+import { CellularAutomaton } from '../automata-engine/cellularautomaton';
+import { Color } from '../automata-engine/color';
 
 export class BriansBrain extends CellularAutomaton {
 
@@ -10,25 +11,23 @@ export class BriansBrain extends CellularAutomaton {
     applyRule(x, y) {
         let numberOfActiveNeighbors = this.mooreNeighbors(x, y);
         if (!this.isActive(x, y) && !this.isDying(x, y) && numberOfActiveNeighbors == 2) {
-            console.log("cell activated")
             return this.activationColor();
         } else if (this.isActive(x, y)) {
-            console.log("cell dying")
             return this.dyingColor();
         }
-        return this.grid.gridPixels[x][y].originalColor;
+        return this.grid.getPixels()[x][y].getOriginalColor();
     }
 
     activationColor() {
-        return color(255, 255, 255, 255);
+        return new Color(255, 255, 255, 255);
     }
 
     dyingColor() {
-        return color(0, 0, 255, 255);
+        return new Color(0, 0, 255, 255);
     }
 
     isDying(x, y) {
-        return this.dyingColor() == this.grid.gridPixels[x][y].color;
+        return this.dyingColor().equals(this.grid.getPixels()[x][y].getOriginalColor());
     }
 
 }
