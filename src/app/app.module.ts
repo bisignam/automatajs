@@ -3,8 +3,7 @@ import { NgModule } from '@angular/core';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { AutomataCanvasComponent } from './automata-canvas/automata-canvas.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { AutomataCanvasComponent } from './automata-engine/automata-canvas/automata-canvas.component';
 
 @NgModule({
   declarations: [AppComponent, AutomataCanvasComponent],
@@ -12,4 +11,4 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
   providers: [],
   bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule { }
