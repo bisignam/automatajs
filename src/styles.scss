@@ -2,7 +2,6 @@
 
 body {
   font-family: Roboto, Arial, sans-serif;
-  margin: 0;
 }
 .basic-container {
   padding: 30px;
@@ -13,12 +12,8 @@ body {
   margin: 8px;
 }
 
-#appContainer {
-  display: flex;
-}
-
-mat-grid-tile {
-  background: lightblue;
+.flex-fill {
+  flex:1 1 auto;
 }
 
 /* Importing Bootstrap SCSS file. */

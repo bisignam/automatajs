@@ -1,5 +1,15 @@
-<div id="appContainer">
-  <app-automata-canvas></app-automata-canvas>
-  <app-rules-selector></app-rules-selector>
-  <app-automata-control></app-automata-control>
+<div id="mainScreen" class="container-fluid">
+  <div id="p5CanvasRow" class="row flex-fill">
+    <div class="col-sm">
+      <app-automata-canvas></app-automata-canvas>
+    </div>
+  </div>
+  <div id="automataControlsRow" class="row flex-fill">
+    <div class="col-sm">
+      <app-rules-selector></app-rules-selector>
+    </div>
+    <div class="col-sm">
+      <app-automata-control></app-automata-control>
+    </div>
+  </div>
 </div>
