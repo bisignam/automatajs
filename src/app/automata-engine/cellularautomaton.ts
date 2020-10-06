@@ -1,4 +1,3 @@
-import * as p5 from 'p5';
 import { Color } from './color';
 import { Grid } from './grid'
 import { Pixel } from './pixel'
