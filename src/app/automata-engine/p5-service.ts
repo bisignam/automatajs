@@ -14,11 +14,12 @@ export class P5Service {
   private grid: Grid
   private initialConfiguration: Array<Pixel>
   private initialized: boolean = false
+  private canvas: p5
 
   constructor(automataSize: number, backGroundColor: Color, node: HTMLElement) {
     this.automataSize = automataSize
     this.backGroundColor = backGroundColor
-    new p5((p: p5) => {
+    this.canvas = new p5((p: p5) => {
       p.setup = () => {
         let width = node.getBoundingClientRect().width
         let height = node.getBoundingClientRect().height
@@ -39,17 +40,15 @@ export class P5Service {
           backGroundColor,
           p
         )
-        console.log('bau')
       }
       p.windowResized = () => {
         this.currentStep = 1
         this.initialized = false
         let width = node.getBoundingClientRect().width
         let height = node.getBoundingClientRect().height
-        this.grid.setWidth(width)
-        this.grid.setHeight(height)
+        this.grid.resize(width, height, this.backGroundColor)
         p.resizeCanvas(width, height)
-        this.grid.reset(this.backGroundColor)
+        this.grid.redraw(this.backGroundColor)
       }
       p.draw = () => {
         this.draw()
@@ -64,6 +63,7 @@ export class P5Service {
   ): void {
     this.initialConfiguration = initialConfiguration
     this.currentStep = 1 //reset the counter
+    this.initialized = false
     this.cellularAutomaton = cellularAutomaton
     this.maxStep = maxStep
   }
@@ -83,7 +83,7 @@ export class P5Service {
     if (this.currentStep == this.maxStep) {
       return
     }
-    this.grid.reset(this.backGroundColor)
+    this.grid.redraw(this.backGroundColor)
     this.cellularAutomaton.advance()
     this.currentStep++
   }

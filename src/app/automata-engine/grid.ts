@@ -30,7 +30,18 @@ export class Grid {
     }
   }
 
-  reset(col) {
+  resize(width: number, height: number, col: Color): void{
+    this.gridWidth = width;
+    this.gridHeight = height;
+    for (let i = 0; i < this.gridWidth; i += 1) {
+        this.gridPixels[i] = new Array(this.gridHeight)
+        for (let j = 0; j < this.gridHeight; j += 1) {
+          this.gridPixels[i][j] = Pixel.XYColor(i, j, col)
+        }
+      }
+  }
+
+  redraw(col) {
     for (let i = 0; i < this.gridWidth; i += 1) {
       for (let j = 0; j < this.gridHeight; j += 1) {
         this.drawPixel(i, j, col)

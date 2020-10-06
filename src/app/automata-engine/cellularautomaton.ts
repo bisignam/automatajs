@@ -7,6 +7,9 @@ export abstract class CellularAutomaton {
 
   abstract applyRule(x, y)
 
+
+
+
   activationColor(): Color {
     return new Color(255, 255, 255, 255)
   }
@@ -52,7 +55,7 @@ export abstract class CellularAutomaton {
         pixel.getX(),
         (this.grid.getCanvas().abs(pixel.getY()) %
           (this.grid.getHeight() - 1)) -
-          1
+        1
       )
     }
     return pixel
@@ -63,7 +66,7 @@ export abstract class CellularAutomaton {
       return Pixel.XY(
         pixel.getX(),
         this.grid.getHeight() -
-          (this.grid.getCanvas().abs(pixel.getY()) % this.grid.getHeight())
+        (this.grid.getCanvas().abs(pixel.getY()) % this.grid.getHeight())
       )
     }
     return pixel
@@ -73,7 +76,7 @@ export abstract class CellularAutomaton {
     if (pixel.getX() > this.grid.getWidth() - 1) {
       return Pixel.XY(
         (this.grid.getCanvas().abs(pixel.getX()) % (this.grid.getWidth() - 1)) -
-          1,
+        1,
         pixel.getY()
       )
     }
@@ -84,7 +87,7 @@ export abstract class CellularAutomaton {
     if (pixel.getX() < 0) {
       return Pixel.XY(
         this.grid.getWidth() -
-          (this.grid.getCanvas().abs(pixel.getX()) % this.grid.getWidth()),
+        (this.grid.getCanvas().abs(pixel.getX()) % this.grid.getWidth()),
         pixel.getY()
       )
     }
