@@ -10,7 +10,8 @@ import { RulesSelectorComponent } from './automata-gui/automata-rules-selector/r
 import { MatSelectModule } from '@angular/material/select'
 import { MatIconModule } from '@angular/material/icon'
 import { MatGridListModule } from '@angular/material/grid-list'
-import { AutomataControlComponent } from './automata-gui/automata-control/automata-control.component'
+import { AutomataControlComponent } from './automata-gui/automata-control/automata-control.component';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap'
 
 @NgModule({
   declarations: [
@@ -26,6 +27,7 @@ import { AutomataControlComponent } from './automata-gui/automata-control/automa
     MatIconModule,
     MatGridListModule,
     BrowserAnimationsModule,
+    NgbModule,
   ],
   providers: [],
   bootstrap: [AppComponent],
