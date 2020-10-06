@@ -1,21 +1,19 @@
-import { Color } from './color';
+import { Color } from './color'
 import { Grid } from './grid'
 import { Pixel } from './pixel'
 
 export abstract class CellularAutomaton {
+  protected grid: Grid
 
-  protected grid: Grid;
-
-  abstract applyRule(x, y);
+  abstract applyRule(x, y)
 
   activationColor(): Color {
     return new Color(255, 255, 255, 255)
   }
 
   defaultColor(): Color {
-    return new Color(100, 100, 100, 0);
+    return new Color(100, 100, 100, 0)
   }
-
 
   mooreNeighbors(x, y) {
     let activeNeighbors = 0
@@ -50,7 +48,12 @@ export abstract class CellularAutomaton {
 
   private yBeyondHeight(pixel: Pixel) {
     if (pixel.getY() > this.grid.getHeight() - 1) {
-      return Pixel.XY(pixel.getX(), (this.grid.getCanvas().abs(pixel.getY()) % (this.grid.getHeight() - 1)) - 1)
+      return Pixel.XY(
+        pixel.getX(),
+        (this.grid.getCanvas().abs(pixel.getY()) %
+          (this.grid.getHeight() - 1)) -
+          1
+      )
     }
     return pixel
   }
@@ -59,7 +62,8 @@ export abstract class CellularAutomaton {
     if (pixel.getY() < 0) {
       return Pixel.XY(
         pixel.getX(),
-        this.grid.getHeight() - (this.grid.getCanvas().abs(pixel.getY()) % this.grid.getHeight())
+        this.grid.getHeight() -
+          (this.grid.getCanvas().abs(pixel.getY()) % this.grid.getHeight())
       )
     }
     return pixel
@@ -67,7 +71,11 @@ export abstract class CellularAutomaton {
 
   private xBeyondWidth(pixel: Pixel) {
     if (pixel.getX() > this.grid.getWidth() - 1) {
-      return Pixel.XY((this.grid.getCanvas().abs(pixel.getX()) % (this.grid.getWidth() - 1)) - 1, pixel.getY())
+      return Pixel.XY(
+        (this.grid.getCanvas().abs(pixel.getX()) % (this.grid.getWidth() - 1)) -
+          1,
+        pixel.getY()
+      )
     }
     return pixel
   }
@@ -75,7 +83,8 @@ export abstract class CellularAutomaton {
   private xLessThanZero(pixel: Pixel) {
     if (pixel.getX() < 0) {
       return Pixel.XY(
-        this.grid.getWidth() - (this.grid.getCanvas().abs(pixel.getX()) % this.grid.getWidth()),
+        this.grid.getWidth() -
+          (this.grid.getCanvas().abs(pixel.getX()) % this.grid.getWidth()),
         pixel.getY()
       )
     }
@@ -85,11 +94,10 @@ export abstract class CellularAutomaton {
   isActive(x, y) {
     let activationColor = this.activationColor()
     let pixelColor = this.grid.getPixels()[x][y].getColor()
-    return activationColor.equals(pixelColor);
+    return activationColor.equals(pixelColor)
   }
 
   setGrid(grid: Grid): void {
-    this.grid = grid;
+    this.grid = grid
   }
-
 }
