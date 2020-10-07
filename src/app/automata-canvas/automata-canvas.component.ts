@@ -14,6 +14,7 @@ export class AutomataCanvasComponent implements AfterViewInit {
 
   @ViewChild('automataCanvasContainer')
   automataCanvasContainer: ElementRef;
+  
 
   ngAfterViewInit() {
     this.p5Service = new P5Service(
