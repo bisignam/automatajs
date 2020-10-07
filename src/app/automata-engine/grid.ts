@@ -2,6 +2,7 @@ import * as p5 from 'p5'
 import { CellularAutomaton } from './cellularautomaton'
 import { Color } from './color'
 import { Pixel } from './pixel'
+import { Utils } from './utils'
 
 export class Grid {
   private gridHeight: number
@@ -13,13 +14,12 @@ export class Grid {
   constructor(
     width: number,
     height: number,
-    pixelsSize: number,
     col: Color,
     canvas: p5
   ) {
-    this.pixelsSize = pixelsSize
-    this.gridWidth = Math.floor(width / pixelsSize)
-    this.gridHeight = Math.floor(height / pixelsSize)
+    this.pixelsSize = Utils.getBiggestCommonDivisor(Math.floor(width), Math.floor(height))*10
+    this.gridWidth = Math.floor(width /  this.pixelsSize)
+    this.gridHeight = Math.floor(height /  this.pixelsSize)
     this.canvas = canvas
     this.gridPixels = new Array(this.gridWidth)
     for (let i = 0; i < this.gridWidth; i += 1) {
@@ -31,8 +31,9 @@ export class Grid {
   }
 
   resize(width: number, height: number, col: Color): void{
-    this.gridWidth = width;
-    this.gridHeight = height;
+    this.pixelsSize = Utils.getBiggestCommonDivisor(Math.floor(width), Math.floor(height))*10
+    this.gridWidth = Math.floor(width /  this.pixelsSize)
+    this.gridHeight = Math.floor(height /  this.pixelsSize)
     for (let i = 0; i < this.gridWidth; i += 1) {
         this.gridPixels[i] = new Array(this.gridHeight)
         for (let j = 0; j < this.gridHeight; j += 1) {
