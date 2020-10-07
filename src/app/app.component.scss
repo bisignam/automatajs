@@ -1,9 +1,12 @@
 #p5CanvasRow {
-    height: 85%;
-    background-color: green;
+    height: 80%;
 }
 
 #automataControlsRow {
-    height: 15%;
-    background-color: red;
+    height: 20%;
+}
+
+#p5CanvaColumn {
+    max-width: 100%;
+    max-height: 100%;
 }

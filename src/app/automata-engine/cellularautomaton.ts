@@ -3,12 +3,12 @@ import { Grid } from './grid'
 import { Pixel } from './pixel'
 
 export abstract class CellularAutomaton {
-  protected grid: Grid
+  protected grid: Grid;
 
-  abstract applyRule(x, y)
+  abstract applyRule(x: number, y:number);
 
   activationColor(): Color {
-    return new Color(255, 255, 255, 255)
+    return new Color(255, 255, 255, 255);
   }
 
   defaultColor(): Color {

@@ -46,6 +46,8 @@ export class P5Service {
         this.initialized = false
         let width = node.getBoundingClientRect().width
         let height = node.getBoundingClientRect().height
+        this.grid.setWidth(width)
+        this.grid.setHeight(height)
         this.grid.resize(width, height, this.backGroundColor)
         p.resizeCanvas(width, height)
         this.grid.redraw(this.backGroundColor)

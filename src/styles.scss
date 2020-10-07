@@ -3,13 +3,6 @@
 /* Importing Bootstrap SCSS file. */
 @import '~bootstrap/scss/bootstrap';
 
-html {
-  min-height: 100% !important;
-  height: 100%;
-  min-width: 100% !important;
-  width: 100%;
-  position: absolute;
-}
 
 body {
   font-family: Roboto, Arial, sans-serif;
