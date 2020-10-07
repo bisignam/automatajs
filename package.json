@@ -25,7 +25,6 @@
     "@angular/router": "~10.1.4",
     "@ng-bootstrap/ng-bootstrap": "^7.0.0",
     "@types/p5": "^0.9.1",
-    "angular-cli": "^1.0.0-beta.28.3",
     "bigint-polyfill": "^0.1.0",
     "bootstrap": "^4.5.0",
     "eslint-plugin-html": "^6.1.0",

@@ -17,11 +17,11 @@ export class AutomataCanvasComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     this.p5Service = new P5Service(
-      1,
+      20,
       new Color(100, 0, 100, 255),
       this.automataCanvasContainer.nativeElement
     )
-    this.p5Service.startAutomata(new BriansBrain(), this.oscillator(), 1)
+    this.p5Service.startAutomata(new BriansBrain(), this.oscillator(), 100)
   }
 
   oscillator(): Array<Pixel> {
