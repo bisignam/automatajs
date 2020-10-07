@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars-experimental
 import * as p5 from "p5";
 import { CellularAutomaton } from "./cellularautomaton";
 import { Color } from "./color";

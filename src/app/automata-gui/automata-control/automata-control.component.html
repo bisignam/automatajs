@@ -1,6 +1,16 @@
 <div class="container-fluid">
   <div class="row">
-    <div class="col-sm-1">
+    <div class="col-sm">
+      <button
+        mat-fab
+        color="primary"
+        aria-label="Clear values"
+        (click)="clearGrid()"
+      >
+        <mat-icon>clear_presentation</mat-icon>
+      </button>
+    </div>
+    <div class="col-sm">
       <button
         mat-fab
         color="primary"
@@ -10,7 +20,7 @@
         <mat-icon>play_arrow</mat-icon>
       </button>
     </div>
-    <div class="col-sm-1">
+    <div class="col-sm">
       <button
         mat-fab
         color="primary"
