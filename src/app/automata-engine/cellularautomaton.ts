@@ -7,9 +7,6 @@ export abstract class CellularAutomaton {
 
   abstract applyRule(x, y)
 
-
-
-
   activationColor(): Color {
     return new Color(255, 255, 255, 255)
   }

@@ -18,8 +18,8 @@ export class Grid {
     canvas: p5
   ) {
     this.pixelsSize = pixelsSize
-    this.gridWidth = width / pixelsSize
-    this.gridHeight = height / pixelsSize
+    this.gridWidth = Math.floor(width / pixelsSize)
+    this.gridHeight = Math.floor(height / pixelsSize)
     this.canvas = canvas
     this.gridPixels = new Array(this.gridWidth)
     for (let i = 0; i < this.gridWidth; i += 1) {
