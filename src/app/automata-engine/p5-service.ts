@@ -133,6 +133,12 @@ export class P5Service {
     this.initialized = true;
   }
 
+  clearGrid(): void {
+    this.initialized = true;
+    this.grid.reset(this.backGroundColor);
+    this.grid.redraw(this.backGroundColor); //?? Come fa a funzionare qua ? eppure va
+  }
+
   private eventuallyActivateCell(pixel: Pixel): void {
     if (
       pixel.getX() >= 0 &&
