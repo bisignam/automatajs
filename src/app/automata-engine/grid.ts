@@ -14,8 +14,8 @@ export class Grid {
   constructor(width: number, height: number, col: Color, canvas: p5) {
     this.pixelsSize =
       Utils.getBiggestCommonDivisor(Math.floor(width), Math.floor(height)) * 10;
-    this.gridWidth = Math.floor(width / this.pixelsSize);
-    this.gridHeight = Math.floor(height / this.pixelsSize);
+    this.gridWidth = Math.round(width / this.pixelsSize);
+    this.gridHeight = Math.round(height / this.pixelsSize);
     this.canvas = canvas;
     this.gridPixels = new Array(this.gridWidth);
     for (let i = 0; i < this.gridWidth; i += 1) {
@@ -26,11 +26,27 @@ export class Grid {
     }
   }
 
-  resize(width: number, height: number, col: Color): void {
+  /**
+   * Resets and resizes the grid
+   *
+   * @param width the new width of the grid
+   * @param height the new height of the grid
+   * @param col the new pixel colors
+   */
+  resizeAndReset(width: number, height: number, col: Color): void {
     this.pixelsSize =
       Utils.getBiggestCommonDivisor(Math.floor(width), Math.floor(height)) * 10;
     this.gridWidth = Math.floor(width / this.pixelsSize);
     this.gridHeight = Math.floor(height / this.pixelsSize);
+    this.reset(col);
+  }
+
+  /**
+   * Resets each pixel in the grind to its initial state
+   *
+   * @param col the new Color
+   */
+  public reset(col: Color): void {
     for (let i = 0; i < this.gridWidth; i += 1) {
       this.gridPixels[i] = new Array(this.gridHeight);
       for (let j = 0; j < this.gridHeight; j += 1) {
@@ -39,7 +55,12 @@ export class Grid {
     }
   }
 
-  redraw(col): void {
+  /**
+   * Redraws the grid by using the given color
+   *
+   * @param col the new Color
+   */
+  redraw(col: Color): void {
     for (let i = 0; i < this.gridWidth; i += 1) {
       for (let j = 0; j < this.gridHeight; j += 1) {
         this.drawPixel(i, j, col);
@@ -92,7 +113,6 @@ export class Grid {
         this.drawPixel(x, y);
       }
     }
-    return this;
   }
 
   cloneGrid(): Array<Array<Pixel>> {
@@ -137,5 +157,9 @@ export class Grid {
 
   getPixels(): Array<Array<Pixel>> {
     return this.gridPixels;
+  }
+
+  getPixelSize(): number {
+    return this.pixelsSize;
   }
 }
