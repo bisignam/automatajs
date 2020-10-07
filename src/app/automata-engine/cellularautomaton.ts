@@ -1,5 +1,4 @@
 import { Color } from "./color";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Grid } from "./grid";
 import { Pixel } from "./pixel";
 
@@ -36,7 +35,7 @@ export abstract class CellularAutomaton {
       this.xBeyondWidth(this.yBeyondHeight(Pixel.XY(x + 1, y + 1)))
     );
     for (const neighbor of neighbors) {
-      if (this.isActive(neighbor.x, neighbor.y)) {
+      if (this.isActive(neighbor.getX(), neighbor.getY())) {
         activeNeighbors++;
       }
     }
