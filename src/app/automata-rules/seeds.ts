@@ -1,5 +1,5 @@
-import { CellularAutomaton } from '../automata-engine/cellularautomaton'
-import { Color } from '../automata-engine/color'
+import { CellularAutomaton } from "../automata-engine/cellularautomaton";
+import { Color } from "../automata-engine/color";
 
 export class Seeds extends CellularAutomaton {
   /** 
@@ -7,14 +7,14 @@ export class Seeds extends CellularAutomaton {
      had exactly two neighbors that were on; all other cells turn off.
      **/
   public applyRule(x: number, y: number): Color {
-    let numberOfActiveNeighbors = this.mooreNeighbors(x, y)
+    const numberOfActiveNeighbors = this.mooreNeighbors(x, y);
     if (!this.isActive(x, y) && numberOfActiveNeighbors == 2) {
-      return this.activationColor()
+      return this.activationColor();
     }
-    return this.grid.getPixels()[x][y].getOriginalColor()
+    return this.grid.getPixels()[x][y].getOriginalColor();
   }
 
   public activationColor(): Color {
-    return new Color(255, 255, 255, 255)
+    return new Color(255, 255, 255, 255);
   }
 }
