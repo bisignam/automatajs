@@ -4,9 +4,9 @@ import { CellularAutomaton } from './cellularautomaton'
 import { Color } from './color'
 import { Grid } from './grid'
 import { Pixel } from './pixel'
+import { Utils } from './utils'
 
 export class P5Service {
-  private automataSize: number = 10
   private currentStep: number = 1
   private maxStep: number = 1
   private cellularAutomaton: CellularAutomaton
@@ -16,8 +16,7 @@ export class P5Service {
   private initialized: boolean = false
   private canvas: p5
 
-  constructor(automataSize: number, backGroundColor: Color, node: HTMLElement) {
-    this.automataSize = automataSize
+  constructor(backGroundColor: Color, node: HTMLElement) {
     this.backGroundColor = backGroundColor
     this.canvas = new p5((p: p5) => {
       p.setup = () => {
@@ -36,7 +35,6 @@ export class P5Service {
         this.grid = new Grid(
           width,
           height,
-          this.automataSize,
           backGroundColor,
           p
         )
