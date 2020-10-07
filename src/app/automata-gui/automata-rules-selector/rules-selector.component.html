@@ -1,6 +1,8 @@
 <mat-form-field appearance="fill">
   <mat-label>Automata rule</mat-label>
   <mat-select>
-    <mat-option *ngFor="let rule of rules" [value]="rule.value"> {{ rule.viewValue }} </mat-option>
+    <mat-option *ngFor="let rule of rules" [value]="rule.value">
+      {{ rule.viewValue }}
+    </mat-option>
   </mat-select>
 </mat-form-field>

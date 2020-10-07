@@ -1,11 +1,7 @@
-import { Component, OnInit } from '@angular/core'
+import { Component } from "@angular/core";
 
 @Component({
-  selector: 'app-automata-control',
-  templateUrl: './automata-control.component.html',
+  selector: "app-automata-control",
+  templateUrl: "./automata-control.component.html",
 })
-export class AutomataControlComponent implements OnInit {
-  constructor() {}
-
-  ngOnInit(): void {}
-}
+export class AutomataControlComponent {}
