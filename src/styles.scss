@@ -1,8 +1,25 @@
 /* You can add global styles to this file, and also import other style files */
 
+/* Importing Bootstrap SCSS file. */
+@import '~bootstrap/scss/bootstrap';
+
+html {
+  min-height: 100% !important;
+  height: 100%;
+  min-width: 100% !important;
+  width: 100%;
+  position: absolute;
+}
+
 body {
   font-family: Roboto, Arial, sans-serif;
+  min-height: 100% !important;
+  height: 100%;
+  min-width: 100% !important;
+  width: 100%;
+  position: absolute;
 }
+
 .basic-container {
   padding: 30px;
 }
@@ -12,9 +29,5 @@ body {
   margin: 8px;
 }
 
-.flex-fill {
-  flex:1 1 auto;
-}
-
-/* Importing Bootstrap SCSS file. */
-@import '~bootstrap/scss/bootstrap';
+.container-fluid,
+.row-fluid { height: 100%; }
