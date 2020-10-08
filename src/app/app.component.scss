@@ -1,5 +1,9 @@
+// #header {
+//   height: 20%;
+// }
+
 #p5CanvasRow {
-  height: 80%;
+  height: 90%;
 }
 
 #automataControlsRow {
@@ -7,6 +11,11 @@
 }
 
 #p5CanvaColumn {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+#headerColumn {
   max-width: 100%;
   max-height: 100%;
 }

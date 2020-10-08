@@ -19,6 +19,7 @@ export class AutomataControlComponent {
   stopAutomata(): void {
     this.p5Service.stopAutomata();
   }
+
   clearGrid(): void {
     this.p5Service.clearGrid();
   }

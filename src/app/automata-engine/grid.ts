@@ -87,6 +87,7 @@ export class Grid {
         automataColor.alpha
       );
     }
+    this.canvas.stroke(100, 100, 120);
     this.canvas.square(
       this.pixelsSize * x,
       this.pixelsSize * y,

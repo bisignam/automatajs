@@ -1,0 +1,17 @@
+// #headerContainer {
+//   height: 100% !important;
+//   width: 100% !important;
+// }
+
+// .automataIcon {
+//   &mat-icon {
+//     @include md-icon-size(32px);
+//   }
+// }
+
+#headerContainer {
+  height: 100px;
+}
+.automataIcon {
+  transform: scale(7);
+}
