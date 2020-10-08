@@ -18,7 +18,7 @@ export class AutomataCanvasComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     this.p5Service.createCanvas(
-      new Color(100, 0, 100, 255),
+      new Color(0, 0, 0, 255),
       this.automataCanvasContainer.nativeElement
     );
   }

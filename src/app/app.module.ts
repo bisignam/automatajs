@@ -9,9 +9,12 @@ import { AutomataCanvasComponent } from "./automata-canvas/automata-canvas.compo
 import { RulesSelectorComponent } from "./automata-gui/automata-rules-selector/rules-selector.component";
 import { MatSelectModule } from "@angular/material/select";
 import { MatIconModule } from "@angular/material/icon";
+import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatGridListModule } from "@angular/material/grid-list";
 import { AutomataControlComponent } from "./automata-gui/automata-control/automata-control.component";
 import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
+import { HttpClientModule } from "@angular/common/http";
+import { HeaderComponent } from "./header/header.component";
 
 @NgModule({
   declarations: [
@@ -19,6 +22,7 @@ import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
     AutomataCanvasComponent,
     RulesSelectorComponent,
     AutomataControlComponent,
+    HeaderComponent,
   ],
   imports: [
     BrowserModule,
@@ -26,8 +30,10 @@ import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
     MatSelectModule,
     MatIconModule,
     MatGridListModule,
+    MatToolbarModule,
     BrowserAnimationsModule,
     NgbModule,
+    HttpClientModule, //needed for registering custom material icons
   ],
   providers: [],
   bootstrap: [AppComponent],
