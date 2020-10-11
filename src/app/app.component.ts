@@ -19,5 +19,11 @@ export class AppComponent {
         "../assets/automatajs.svg"
       )
     );
+    this.matIconRegistry.addSvgIcon(
+      "github",
+      this.domSanitizer.bypassSecurityTrustResourceUrl(
+        "../assets/github.svg"
+      )
+    );
   }
 }

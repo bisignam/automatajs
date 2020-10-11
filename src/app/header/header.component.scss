@@ -9,9 +9,25 @@
 //   }
 // }
 
-#headerContainer {
-  height: 100px;
-}
+// #headerContainer {
+//   height: 100%;
+//   width: 100%;
+// }
+
+// #headerContainerContainer {
+//   height: 100%;
+//   width: 100%;
+// }
 .automataIcon {
-  transform: scale(7);
+  transform: scale(0.75);
 }
+
+.githubIcon {
+  color: black;
+  transform: scale(0.4);
+}
+
+
+// .githubIcon:hover {
+//   color: black;
+// }
