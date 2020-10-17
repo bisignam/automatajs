@@ -21,6 +21,6 @@ export class GameOfLife extends CellularAutomaton {
   }
 
   public activationColor(): Color {
-    return new Color(255, 255, 255, 255);
+    return new Color(100, 255, 100, 255);
   }
 }

@@ -1,8 +1,5 @@
-<mat-form-field appearance="fill">
-  <mat-label>Automata rule</mat-label>
-  <mat-select (selectionChange)="selectRule($event)">
-    <mat-option *ngFor="let rule of rules" [value]="rule.value">
-      {{ rule.viewValue }}
-    </mat-option>
-  </mat-select>
-</mat-form-field>
+<select class="automata-rules-select" [(ngModel)]="selectedRule">
+  <option *ngFor="let rule of rules" [ngValue]="rule.value">
+    {{ rule.viewValue }}
+  </option>
+</select>

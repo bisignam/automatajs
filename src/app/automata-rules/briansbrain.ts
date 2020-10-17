@@ -22,11 +22,11 @@ export class BriansBrain extends CellularAutomaton {
   }
 
   activationColor(): Color {
-    return new Color(255, 255, 255, 255);
+    return new Color(0, 0, 255, 255);
   }
 
   dyingColor(): Color {
-    return new Color(0, 0, 255, 255);
+    return new Color(0, 60, 160, 100);
   }
 
   isDying(x, y): boolean {

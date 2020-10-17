@@ -3,13 +3,6 @@
 /* Importing Bootstrap SCSS file. */
 @import "~bootstrap/scss/bootstrap";
 
-@mixin md-icon-size($size: 24px) {
-  font-size: $size;
-  height: $size;
-  width: $size;
-  line-height: $size;
-}
-
 body {
   font-family: Roboto, Arial, sans-serif;
   min-height: 100% !important;
