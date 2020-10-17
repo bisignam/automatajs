@@ -5,6 +5,8 @@ import { CellularAutomaton } from "./cellularautomaton";
 import { Color } from "./color";
 import { Grid } from "./grid";
 import { Pixel } from "./pixel";
+import { BehaviorSubject } from 'rxjs';
+import { BriansBrain } from '../automata-rules/briansbrain';
 
 @Injectable({
   providedIn: "root", //means singleton service
@@ -12,10 +14,10 @@ import { Pixel } from "./pixel";
 export class P5Service {
   private currentStep = 1;
   private maxStep = 1;
-  private cellularAutomaton: CellularAutomaton = new GameOfLife();
+  private cellularAutomaton: CellularAutomaton = new BriansBrain();
   private backGroundColor: Color;
   private grid: Grid;
-  private initialized = false;
+  private initialized: boolean = false;
   private node: HTMLElement;
 
   createCanvas(backGroundColor: Color, node: HTMLElement): void {
@@ -33,12 +35,12 @@ export class P5Service {
       p.mouseDragged = (mouseEvent: MouseEvent) => {
         this.drawCell(mouseEvent);
         // prevent default
-        return false;
+        // return false;
       };
       p.mousePressed = (mouseEvent: MouseEvent) => {
         this.drawCell(mouseEvent);
         // prevent default
-        return false;
+        // return false;
       };
     }, node);
     this.node = node;
@@ -165,4 +167,5 @@ export class P5Service {
     this.cellularAutomaton.advance();
     this.currentStep++;
   }
+
 }

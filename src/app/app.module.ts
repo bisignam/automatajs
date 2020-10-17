@@ -8,10 +8,11 @@ import { AppComponent } from "./app.component";
 import { AutomataCanvasComponent } from "./automata-canvas/automata-canvas.component";
 import { RulesSelectorComponent } from "./automata-gui/automata-rules-selector/rules-selector.component";
 import { MatSelectModule } from "@angular/material/select";
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { MatToolbarModule } from "@angular/material/toolbar";
-import { MatGridListModule } from "@angular/material/grid-list";
 import { AutomataControlComponent } from "./automata-gui/automata-control/automata-control.component";
 import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
 import { HttpClientModule } from "@angular/common/http";
@@ -26,11 +27,13 @@ import { HeaderComponent } from "./header/header.component";
     HeaderComponent,
   ],
   imports: [
+    FormsModule,
+    ReactiveFormsModule,
     BrowserModule,
     AppRoutingModule,
     MatSelectModule,
+    MatFormFieldModule,
     MatIconModule,
-    MatGridListModule,
     MatToolbarModule,
     MatButtonModule,
     BrowserAnimationsModule,

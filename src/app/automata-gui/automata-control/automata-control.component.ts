@@ -1,6 +1,5 @@
 import { Component } from "@angular/core";
 import { P5Service } from "src/app/automata-engine/p5-service";
-import { MatButtonModule } from "@angular/material/button";
 
 @Component({
   selector: "app-automata-control",
