@@ -14,7 +14,7 @@ import { BriansBrain } from '../automata-rules/briansbrain';
 export class P5Service {
   private currentStep = 1;
   private maxStep = 1;
-  private cellularAutomaton: CellularAutomaton = new BriansBrain();
+  cellularAutomaton: CellularAutomaton = new BriansBrain();
   private backGroundColor: Color;
   private grid: Grid;
   private initialized: boolean = false;
@@ -82,7 +82,7 @@ export class P5Service {
     this.grid.setHeight(height);
     this.grid.resizeAndReset(width, height, this.backGroundColor);
     p.resizeCanvas(width, height);
-    this.grid.redraw(this.backGroundColor);
+    this.grid.redraw(this.cellularAutomaton);
   }
 
   /**
@@ -111,7 +111,12 @@ export class P5Service {
     this.initialized = true;
     this.cellularAutomaton = cellularAutomaton;
     this.grid.reset(this.backGroundColor);
-    this.grid.redraw(this.backGroundColor);
+    this.grid.redraw(this.cellularAutomaton);
+  }
+
+  reDraw(): void {
+   // this.grid.redraw(this.cellularAutomaton);
+    this.initialized = false;
   }
 
   /**
@@ -138,7 +143,7 @@ export class P5Service {
   clearGrid(): void {
     this.initialized = true;
     this.grid.reset(this.backGroundColor);
-    this.grid.redraw(this.backGroundColor); //?? Come fa a funzionare qua ? eppure va
+    this.grid.redraw(this.cellularAutomaton); //?? Come fa a funzionare qua ? eppure va
   }
 
   private eventuallyActivateCell(pixel: Pixel): void {
@@ -157,13 +162,13 @@ export class P5Service {
       if (this.cellularAutomaton && !this.cellularAutomaton.getGrid()) {
         this.cellularAutomaton.setGrid(this.grid); //we do it here because at this point we are sure the grid is already initialized
       }
-      this.grid.redraw(this.backGroundColor);
+      this.grid.redraw(this.cellularAutomaton);
       this.initialized = true;
     }
     if (this.currentStep == this.maxStep) {
       return;
     }
-    this.grid.redraw(this.backGroundColor);
+    this.grid.redraw(this.cellularAutomaton);
     this.cellularAutomaton.advance();
     this.currentStep++;
   }

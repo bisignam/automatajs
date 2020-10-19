@@ -2,18 +2,17 @@ import { Color } from "./color";
 import { Grid } from "./grid";
 import { Pixel } from "./pixel";
 
+export class AdditionalColorType {
+  name: String;
+  color: Color;
+}
 export abstract class CellularAutomaton {
   protected grid: Grid;
+  activationColor: Color = new Color(255, 255, 255, 255); 
+  additionalColors: Array<AdditionalColorType>;
+  defaultColor: Color = new Color(100, 100, 100, 0);
 
   abstract applyRule(x: number, y: number): Color;
-
-  activationColor(): Color {
-    return new Color(255, 255, 255, 255);
-  }
-
-  defaultColor(): Color {
-    return new Color(100, 100, 100, 0);
-  }
 
   mooreNeighbors(x: number, y: number): number {
     let activeNeighbors = 0;
@@ -92,7 +91,7 @@ export abstract class CellularAutomaton {
   }
 
   isActive(x: number, y: number): boolean {
-    const activationColor = this.activationColor();
+    const activationColor = this.activationColor;
     const pixelColor = this.grid.getPixels()[x][y].getColor();
     return activationColor.equals(pixelColor);
   }

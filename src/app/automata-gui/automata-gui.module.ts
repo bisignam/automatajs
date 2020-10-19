@@ -6,9 +6,12 @@ import { RulesSelectorComponent } from "./automata-rules-selector/rules-selector
 import { AutomataControlComponent } from "./automata-control/automata-control.component";
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { AutomataColorPickerComponent } from './automata-color-picker/automata-color-picker.component';
+import { ColorPickerModule } from 'ngx-color-picker';
+
 
 @NgModule({
-  declarations: [RulesSelectorComponent, AutomataControlComponent],
-  imports: [CommonModule, MatSelectModule, FormsModule, ReactiveFormsModule, MatFormFieldModule, MatIconModule],
+  declarations: [RulesSelectorComponent, AutomataControlComponent, AutomataColorPickerComponent],
+  imports: [CommonModule, MatSelectModule, FormsModule, ReactiveFormsModule, MatFormFieldModule, MatIconModule, ColorPickerModule],
 })
 export class AutomataGuiModule {}

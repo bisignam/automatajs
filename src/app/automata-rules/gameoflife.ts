@@ -2,6 +2,7 @@ import { CellularAutomaton } from "../automata-engine/cellularautomaton";
 import { Color } from "../automata-engine/color";
 
 export class GameOfLife extends CellularAutomaton {
+  activationColor = new Color(100, 255, 100, 255);
   /** 
      Any live cell with fewer than two live neighbours dies, as if by underpopulation.
      Any live cell with two or three live neighbours lives on to the next generation.
@@ -15,12 +16,8 @@ export class GameOfLife extends CellularAutomaton {
     } else if (this.isActive(x, y) && numberOfActiveNeighbors > 3) {
       return this.grid.getPixels()[x][y].getOriginalColor();
     } else if (!this.isActive(x, y) && numberOfActiveNeighbors == 3) {
-      return this.activationColor();
+      return this.activationColor;
     }
     return this.grid.getPixels()[x][y].getColor();
-  }
-
-  public activationColor(): Color {
-    return new Color(100, 255, 100, 255);
   }
 }
