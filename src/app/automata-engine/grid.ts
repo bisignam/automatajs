@@ -57,27 +57,31 @@ export class Grid {
   }
 
   /**
-   * Redraws the grid by using the given color
+   * Redraws the grid
    *
    * @param col the new Color
    */
-  redraw(col: Color): void {
+  redraw(cellularautomaton?: CellularAutomaton): void {
     for (let i = 0; i < this.gridWidth; i += 1) {
       for (let j = 0; j < this.gridHeight; j += 1) {
-        this.drawPixel(i, j, col);
+        this.drawPixel(i, j,cellularautomaton);
       }
     }
   }
 
   activate(cellurarAutomaton: CellularAutomaton, x: number, y: number): void {
-    this.gridPixels[x][y].setColor(cellurarAutomaton.activationColor());
+    this.gridPixels[x][y].setColor(cellurarAutomaton.activationColor);
     this.drawPixel(x, y);
   }
 
-  drawPixel(x: number, y: number, col?: Color): void {
+  drawPixel(x: number, y: number, cellurarAutomaton?: CellularAutomaton): void {
     this.canvas.push();
-    if (col) {
-      this.canvas.fill(col.red, col.green, col.blue, col.alpha);
+    if (cellurarAutomaton) {
+      if(cellurarAutomaton.isActive(x, y)) {
+        this.canvas.fill(cellurarAutomaton.activationColor.red, cellurarAutomaton.activationColor.green, cellurarAutomaton.activationColor.blue, cellurarAutomaton.activationColor.alpha);
+      } else {
+      this.canvas.fill(cellurarAutomaton.defaultColor.red, cellurarAutomaton.defaultColor.green, cellurarAutomaton.defaultColor.blue, cellurarAutomaton.defaultColor.alpha);
+      }
     } else {
       const automataColor = this.gridPixels[Number(x)][Number(y)].getColor();
       this.canvas.fill(

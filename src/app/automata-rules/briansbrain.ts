@@ -1,7 +1,13 @@
-import { CellularAutomaton } from "../automata-engine/cellularautomaton";
+import { CellularAutomaton, AdditionalColorType } from "../automata-engine/cellularautomaton";
 import { Color } from "../automata-engine/color";
 
 export class BriansBrain extends CellularAutomaton {
+
+  activationColor: Color = new Color(0, 0, 255, 255);
+
+  additionalColors: Array<AdditionalColorType> = [
+    {name: 'dyingColor', color: new Color(0, 60, 160, 100)}
+  ]
   /** 
       In each time step, a cell turns on if it was off but had exactly two neighbors that were on, just like the birth rule for Seeds. 
       All cells that were "on" go into the "dying" state, which is not counted as an "on" cell in the neighbor count, 
@@ -14,24 +20,20 @@ export class BriansBrain extends CellularAutomaton {
       !this.isDying(x, y) &&
       numberOfActiveNeighbors == 2
     ) {
-      return this.activationColor();
+      return this.activationColor;
     } else if (this.isActive(x, y)) {
-      return this.dyingColor();
+      return this.getDyingColor();
     }
     return this.grid.getPixels()[x][y].getOriginalColor();
   }
 
-  activationColor(): Color {
-    return new Color(0, 0, 255, 255);
-  }
-
-  dyingColor(): Color {
-    return new Color(0, 60, 160, 100);
-  }
-
   isDying(x, y): boolean {
-    return this.dyingColor().equals(
+    return this.getDyingColor().equals(
       this.grid.getPixels()[x][y].getOriginalColor()
     );
+  }
+
+  getDyingColor(): Color {
+    return this.additionalColors.find(e => e.name === 'dyingColor').color;  
   }
 }

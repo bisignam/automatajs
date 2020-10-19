@@ -26,6 +26,7 @@
     "@ng-bootstrap/ng-bootstrap": "^7.0.0",
     "@types/p5": "^0.9.1",
     "bootstrap": "^4.5.0",
+    "ngx-color-picker": "^10.1.0",
     "p5": "^1.1.9",
     "rxjs": "~6.6.0",
     "tslib": "^2.0.0",

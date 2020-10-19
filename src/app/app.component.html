@@ -5,27 +5,32 @@
     </div>
   </div>
   <div id="p5CanvasRow" class="row row-fluid">
-    <div class="col-md-1"></div>
-    <div id="p5CanvaColumn" class="col-sm-12 col-md-10">
+    <div class="col-sm-1"></div>
+    <div id="p5CanvaColumn" class="col-sm-10">
       <app-automata-canvas></app-automata-canvas>
     </div>
-    <div class="col-md-1"></div>
-  </div>
-  <div id="automataControlsRow" class="row row-fluid">
-    <div class="col-sm-1 col-md-2"></div>
-    <div class="col-sm-10 col-md-8 mt-4">
-      <app-automata-control></app-automata-control>
+    <div class="col-sm-1">
+      <div class="container-fluid">
+        <div class="row row-fluid">
+          <div class="col-sm-12">
+            <app-color-picker
+              color="rgba(255,255,255,255)"
+              (chosenColor)="onBackgroundColorChosen($event)"
+            ></app-color-picker>
+            <app-color-picker
+              color="rgba(0,0,0,255)"
+              (chosenColor)="onActivationColorChosen($event)"
+            ></app-color-picker>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="col-sm-1 col-md-2"></div>
-  </div>
-</div>
-
-<!-- <div id="mainScreen" class="container">
-  <div id="automataControlsRow" class="row">
-    <div class="col-sm-1 col-md-2"></div>
-    <div class="col-sm-10 col-md-8 mt-4">
-      <app-rules-selector></app-rules-selector>
+    <div id="automataControlsRow" class="row row-fluid">
+      <div class="col-sm-1 col-md-2"></div>
+      <div class="col-sm-10 col-md-8 mt-4">
+        <app-automata-control></app-automata-control>
+      </div>
       <div class="col-sm-1 col-md-2"></div>
     </div>
   </div>
-</div> -->
+</div>

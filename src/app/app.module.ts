@@ -17,14 +17,19 @@ import { AutomataControlComponent } from "./automata-gui/automata-control/automa
 import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
 import { HttpClientModule } from "@angular/common/http";
 import { HeaderComponent } from "./header/header.component";
+import { ColorPickerModule } from 'ngx-color-picker';
+import { AutomataColorPickerComponent } from './automata-gui/automata-color-picker/automata-color-picker.component';
+
 
 @NgModule({
   declarations: [
     AppComponent,
+    AutomataColorPickerComponent,
     AutomataCanvasComponent,
     RulesSelectorComponent,
     AutomataControlComponent,
     HeaderComponent,
+    AutomataColorPickerComponent,
   ],
   imports: [
     FormsModule,
@@ -36,6 +41,7 @@ import { HeaderComponent } from "./header/header.component";
     MatIconModule,
     MatToolbarModule,
     MatButtonModule,
+    ColorPickerModule,
     BrowserAnimationsModule,
     NgbModule,
     HttpClientModule, //needed for registering custom material icons
