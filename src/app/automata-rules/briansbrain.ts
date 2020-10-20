@@ -5,8 +5,8 @@ import {
 import { Color } from "../automata-engine/color";
 
 export class BriansBrain extends CellularAutomaton {
-  additionalColors: Array<AdditionalColorType> = [
-    { name: "dyingColor", color: new Color(0, 60, 160, 100) },
+  _additionalColors: Array<AdditionalColorType> = [
+    { name: "Dying", color: new Color(0, 60, 160, 100) },
   ];
 
   /** 
@@ -21,15 +21,15 @@ export class BriansBrain extends CellularAutomaton {
       !this.isDying(x, y) &&
       numberOfActiveNeighbors == 2
     ) {
-      return this.activationColor;
+      return this._activationColor;
     } else if (this.isActive(x, y)) {
-      return this.getAdditionalColor("dyingColor");
+      return this.getAdditionalColor("Dying");
     }
     return this.grid.getPixels()[x][y].getOriginalColor();
   }
 
   isDying(x: number, y: number): boolean {
-    return this.getAdditionalColor("dyingColor").equals(
+    return this.getAdditionalColor("Dying").equals(
       this.grid.getPixels()[x][y].getOriginalColor()
     );
   }

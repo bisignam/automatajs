@@ -15,7 +15,7 @@ export class GameOfLife extends CellularAutomaton {
     } else if (this.isActive(x, y) && numberOfActiveNeighbors > 3) {
       return this.grid.getPixels()[x][y].getOriginalColor();
     } else if (!this.isActive(x, y) && numberOfActiveNeighbors == 3) {
-      return this.activationColor;
+      return this._activationColor;
     }
     return this.grid.getPixels()[x][y].getColor();
   }

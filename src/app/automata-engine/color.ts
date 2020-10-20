@@ -19,4 +19,29 @@ export class Color {
       this.alpha === obj.alpha
     );
   }
+
+  toRgbaString(): string {
+    return (
+      "rgba(" +
+      this.red +
+      "," +
+      this.green +
+      "," +
+      this.blue +
+      "," +
+      this.alpha +
+      ")"
+    );
+  }
+
+  static fromRgbaString(color: string): Color {
+    const rgbaParts = color
+      .replace("rgba(", "")
+      .replace(")", "")
+      .split(",")
+      .map((element) => {
+        return Number.parseFloat(element);
+      });
+    return new Color(rgbaParts[0], rgbaParts[1], rgbaParts[2], rgbaParts[3]);
+  }
 }

@@ -9,9 +9,8 @@ export interface AdditionalColorType {
 
 export abstract class CellularAutomaton {
   protected grid: Grid;
-  backgroundColor: Color = new Color(255, 255, 255, 255);
-  activationColor: Color = new Color(0, 0, 0, 255);
-  additionalColors: Array<AdditionalColorType>;
+  protected _activationColor: Color = new Color(0, 0, 0, 255);
+  protected _additionalColors: Array<AdditionalColorType>;
 
   abstract applyRule(x: number, y: number): Color;
 
@@ -92,7 +91,7 @@ export abstract class CellularAutomaton {
   }
 
   isActive(x: number, y: number): boolean {
-    const activationColor = this.activationColor;
+    const activationColor = this._activationColor;
     const pixelColor = this.grid.getPixels()[x][y].getColor();
     return activationColor.equals(pixelColor);
   }
@@ -105,7 +104,27 @@ export abstract class CellularAutomaton {
     return this.grid;
   }
 
+  private getAdditionalColorType(name: string): AdditionalColorType {
+    return this._additionalColors.find((e) => e.name === name);
+  }
+
   getAdditionalColor(name: string): Color {
-    return this.additionalColors.find((e) => e.name === name).color;
+    return this.getAdditionalColorType(name).color;
+  }
+
+  setAdditionalColor(name: string, color: Color): void {
+    this.getAdditionalColorType(name).color = color;
+  }
+
+  get additionalColors(): Array<AdditionalColorType> {
+    return this._additionalColors;
+  }
+
+  get activationColor(): Color {
+    return this._activationColor;
+  }
+
+  set activationColor(activationColor: Color) {
+    this._activationColor = activationColor;
   }
 }
