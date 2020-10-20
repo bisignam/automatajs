@@ -2,7 +2,6 @@ import { CellularAutomaton } from "../automata-engine/cellularautomaton";
 import { Color } from "../automata-engine/color";
 
 export class GameOfLife extends CellularAutomaton {
-  activationColor = new Color(100, 255, 100, 255);
   /** 
      Any live cell with fewer than two live neighbours dies, as if by underpopulation.
      Any live cell with two or three live neighbours lives on to the next generation.

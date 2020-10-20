@@ -61,10 +61,10 @@ export class Grid {
    *
    * @param col the new Color
    */
-  redraw(cellularautomaton?: CellularAutomaton): void {
+  redraw(cellularAutomaton?: CellularAutomaton): void {
     for (let i = 0; i < this.gridWidth; i += 1) {
       for (let j = 0; j < this.gridHeight; j += 1) {
-        this.drawPixel(i, j,cellularautomaton);
+        this.drawPixel(i, j, cellularAutomaton);
       }
     }
   }
@@ -76,14 +76,24 @@ export class Grid {
 
   drawPixel(x: number, y: number, cellurarAutomaton?: CellularAutomaton): void {
     this.canvas.push();
+    const automataColor = this.gridPixels[Number(x)][Number(y)].getColor();
     if (cellurarAutomaton) {
-      if(cellurarAutomaton.isActive(x, y)) {
-        this.canvas.fill(cellurarAutomaton.activationColor.red, cellurarAutomaton.activationColor.green, cellurarAutomaton.activationColor.blue, cellurarAutomaton.activationColor.alpha);
+      if (cellurarAutomaton.isActive(x, y)) {
+        this.canvas.fill(
+          cellurarAutomaton.activationColor.red,
+          cellurarAutomaton.activationColor.green,
+          cellurarAutomaton.activationColor.blue,
+          cellurarAutomaton.activationColor.alpha
+        );
       } else {
-      this.canvas.fill(cellurarAutomaton.defaultColor.red, cellurarAutomaton.defaultColor.green, cellurarAutomaton.defaultColor.blue, cellurarAutomaton.defaultColor.alpha);
+        this.canvas.fill(
+          cellurarAutomaton.backgroundColor.red,
+          cellurarAutomaton.backgroundColor.green,
+          cellurarAutomaton.backgroundColor.blue,
+          cellurarAutomaton.backgroundColor.alpha
+        );
       }
     } else {
-      const automataColor = this.gridPixels[Number(x)][Number(y)].getColor();
       this.canvas.fill(
         automataColor.red,
         automataColor.green,

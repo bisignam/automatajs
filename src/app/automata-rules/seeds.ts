@@ -2,7 +2,6 @@ import { CellularAutomaton } from "../automata-engine/cellularautomaton";
 import { Color } from "../automata-engine/color";
 
 export class Seeds extends CellularAutomaton {
-  activationColor = new Color(255, 255, 255, 255);
   /** 
      In each time step, a cell turns on or is "born" if it was off or "dead" but 
      had exactly two neighbors that were on; all other cells turn off.
@@ -14,5 +13,4 @@ export class Seeds extends CellularAutomaton {
     }
     return this.grid.getPixels()[x][y].getOriginalColor();
   }
-
 }
