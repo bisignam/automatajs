@@ -11,8 +11,10 @@ export class Grid {
   private pixelsSize: number;
   private gridPixels: Array<Array<Pixel>>;
   private canvas: p5;
+  private _backgroundColor: Color = new Color(0, 0, 0, 255);
+  private _gridColor: Color = new Color(255, 255, 255, 255);
 
-  constructor(width: number, height: number, col: Color, canvas: p5) {
+  constructor(width: number, height: number, canvas: p5) {
     this.pixelsSize =
       Utils.getBiggestCommonDivisor(Math.floor(width), Math.floor(height)) * 10;
     this.gridWidth = Math.round(width / this.pixelsSize);
@@ -22,7 +24,7 @@ export class Grid {
     for (let i = 0; i < this.gridWidth; i += 1) {
       this.gridPixels[i] = new Array(this.gridHeight);
       for (let j = 0; j < this.gridHeight; j += 1) {
-        this.gridPixels[i][j] = Pixel.XYColor(i, j, col);
+        this.gridPixels[i][j] = Pixel.XYColor(i, j, this._backgroundColor);
       }
     }
   }
@@ -34,12 +36,12 @@ export class Grid {
    * @param height the new height of the grid
    * @param col the new pixel colors
    */
-  resizeAndReset(width: number, height: number, col: Color): void {
+  resizeAndReset(width: number, height: number): void {
     this.pixelsSize =
       Utils.getBiggestCommonDivisor(Math.floor(width), Math.floor(height)) * 10;
     this.gridWidth = Math.floor(width / this.pixelsSize);
     this.gridHeight = Math.floor(height / this.pixelsSize);
-    this.reset(col);
+    this.reset();
   }
 
   /**
@@ -47,11 +49,11 @@ export class Grid {
    *
    * @param col the new Color
    */
-  public reset(col: Color): void {
+  public reset(): void {
     for (let i = 0; i < this.gridWidth; i += 1) {
       this.gridPixels[i] = new Array(this.gridHeight);
       for (let j = 0; j < this.gridHeight; j += 1) {
-        this.gridPixels[i][j] = Pixel.XYColor(i, j, col);
+        this.gridPixels[i][j] = Pixel.XYColor(i, j, this._backgroundColor);
       }
     }
   }
@@ -87,10 +89,10 @@ export class Grid {
         );
       } else {
         this.canvas.fill(
-          cellurarAutomaton.backgroundColor.red,
-          cellurarAutomaton.backgroundColor.green,
-          cellurarAutomaton.backgroundColor.blue,
-          cellurarAutomaton.backgroundColor.alpha
+          this._backgroundColor.red,
+          this._backgroundColor.green,
+          this._backgroundColor.blue,
+          this._backgroundColor.alpha
         );
       }
     } else {
@@ -101,7 +103,12 @@ export class Grid {
         automataColor.alpha
       );
     }
-    this.canvas.stroke(100, 100, 120);
+    this.canvas.stroke(
+      this._gridColor.red,
+      this._gridColor.green,
+      this._gridColor.blue,
+      this._gridColor.alpha
+    );
     this.canvas.square(
       this.pixelsSize * x,
       this.pixelsSize * y,
@@ -177,5 +184,21 @@ export class Grid {
 
   getPixelSize(): number {
     return this.pixelsSize;
+  }
+
+  get backgroundColor(): Color {
+    return this._backgroundColor;
+  }
+
+  set backgroundColor(backgroundColor: Color) {
+    this._backgroundColor = backgroundColor;
+  }
+
+  get gridColor(): Color {
+    return this._gridColor;
+  }
+
+  set gridColor(gridColor: Color) {
+    this._gridColor = gridColor;
   }
 }

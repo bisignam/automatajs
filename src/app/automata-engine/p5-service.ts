@@ -1,7 +1,6 @@
 import { Injectable } from "@angular/core";
 import * as p5 from "p5";
 import { CellularAutomaton } from "./cellularautomaton";
-import { Color } from "./color";
 import { Grid } from "./grid";
 import { Pixel } from "./pixel";
 import { BriansBrain } from "../automata-rules/briansbrain";
@@ -12,15 +11,15 @@ import { BriansBrain } from "../automata-rules/briansbrain";
 export class P5Service {
   private currentStep = 1;
   private maxStep = 1;
-  cellularAutomaton: CellularAutomaton = new BriansBrain();
-  private grid: Grid;
+  private _cellularAutomaton: CellularAutomaton = new BriansBrain(); //TODO allow to initialize externally
+  private _grid: Grid;
   private initialized = false;
   private node: HTMLElement;
 
   createCanvas(node: HTMLElement): void {
     new p5((p: p5) => {
       p.setup = () => {
-        this.setup(node, p, this.cellularAutomaton.backgroundColor);
+        this.setup(node, p);
       };
       p.windowResized = () => {
         this.resize(node, p);
@@ -44,20 +43,20 @@ export class P5Service {
    * @param p the p5 canvas
    * @param backGroundColor the background color
    */
-  private setup(node: HTMLElement, p: p5, backGroundColor: Color) {
+  private setup(node: HTMLElement, p: p5) {
     const width = node.getBoundingClientRect().width;
     const height = node.getBoundingClientRect().height;
     p.colorMode(p.RGB);
     p.stroke(1);
     p.strokeWeight(1);
     p.createCanvas(width, height);
+    this._grid = new Grid(width, height, p);
     p.background(
-      backGroundColor.red,
-      backGroundColor.green,
-      backGroundColor.blue,
-      backGroundColor.alpha
+      this._grid.backgroundColor.red,
+      this._grid.backgroundColor.green,
+      this._grid.backgroundColor.blue,
+      this._grid.backgroundColor.alpha
     );
-    this.grid = new Grid(width, height, backGroundColor, p);
   }
 
   /**
@@ -70,15 +69,11 @@ export class P5Service {
     this.initialized = false;
     const width = node.getBoundingClientRect().width;
     const height = node.getBoundingClientRect().height;
-    this.grid.setWidth(width);
-    this.grid.setHeight(height);
-    this.grid.resizeAndReset(
-      width,
-      height,
-      this.cellularAutomaton.backgroundColor
-    );
+    this._grid.setWidth(width);
+    this._grid.setHeight(height);
+    this._grid.resizeAndReset(width, height);
     p.resizeCanvas(width, height);
-    this.grid.redraw(this.cellularAutomaton);
+    this._grid.redraw(this._cellularAutomaton);
   }
 
   /**
@@ -91,10 +86,10 @@ export class P5Service {
     if (this.node.matches(":hover")) {
       this.eventuallyActivateCell(
         new Pixel(
-          Math.round(mouseEvent.offsetX / this.grid.getPixelSize()),
-          Math.round(mouseEvent.offsetY / this.grid.getPixelSize()),
-          this.cellularAutomaton.backgroundColor,
-          this.cellularAutomaton.backgroundColor
+          Math.round(mouseEvent.offsetX / this._grid.getPixelSize()),
+          Math.round(mouseEvent.offsetY / this._grid.getPixelSize()),
+          this._grid.backgroundColor,
+          this._grid.backgroundColor
         )
       );
     }
@@ -105,9 +100,9 @@ export class P5Service {
   */
   setAutomataAndStopCurrent(cellularAutomaton: CellularAutomaton): void {
     this.initialized = true;
-    this.cellularAutomaton = cellularAutomaton;
-    this.grid.reset(this.cellularAutomaton.backgroundColor);
-    this.grid.redraw(this.cellularAutomaton);
+    this._cellularAutomaton = cellularAutomaton;
+    this._grid.reset();
+    this._grid.redraw(this._cellularAutomaton);
   }
 
   reDraw(): void {
@@ -119,7 +114,7 @@ export class P5Service {
    * Starts a new automata animation
    */
   public startAutomata(maxStep: number): void {
-    if (!this.cellularAutomaton) {
+    if (!this._cellularAutomaton) {
       //TODO add logging
       return;
     }
@@ -138,34 +133,42 @@ export class P5Service {
 
   clearGrid(): void {
     this.initialized = true;
-    this.grid.reset(this.cellularAutomaton.backgroundColor);
-    this.grid.redraw(this.cellularAutomaton); //?? Come fa a funzionare qua ? eppure va
+    this._grid.reset();
+    this._grid.redraw(this._cellularAutomaton); //?? Come fa a funzionare qua ? eppure va
   }
 
   private eventuallyActivateCell(pixel: Pixel): void {
     if (
       pixel.getX() >= 0 &&
-      pixel.getX() < this.grid.getWidth() &&
+      pixel.getX() < this._grid.getWidth() &&
       pixel.getY() >= 0 &&
-      pixel.getY() < this.grid.getHeight()
+      pixel.getY() < this._grid.getHeight()
     ) {
-      this.grid.activate(this.cellularAutomaton, pixel.getX(), pixel.getY());
+      this._grid.activate(this._cellularAutomaton, pixel.getX(), pixel.getY());
     }
   }
 
   private draw(): void {
     if (!this.initialized) {
-      if (this.cellularAutomaton && !this.cellularAutomaton.getGrid()) {
-        this.cellularAutomaton.setGrid(this.grid); //we do it here because at this point we are sure the grid is already initialized
+      if (this._cellularAutomaton && !this._cellularAutomaton.getGrid()) {
+        this._cellularAutomaton.setGrid(this._grid); //we do it here because at this point we are sure the grid is already initialized
       }
-      this.grid.redraw(this.cellularAutomaton);
+      this._grid.redraw(this._cellularAutomaton);
       this.initialized = true;
     }
     if (this.currentStep == this.maxStep) {
       return;
     }
-    this.grid.redraw(this.cellularAutomaton);
-    this.cellularAutomaton.advance();
+    this._grid.redraw(this._cellularAutomaton);
+    this._cellularAutomaton.advance();
     this.currentStep++;
+  }
+
+  get grid(): Grid {
+    return this._grid;
+  }
+
+  get cellularAutomaton(): CellularAutomaton {
+    return this._cellularAutomaton;
   }
 }

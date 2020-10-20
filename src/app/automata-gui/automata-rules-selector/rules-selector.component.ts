@@ -13,7 +13,7 @@ interface Rule {
 @Component({
   selector: "app-rules-selector",
   templateUrl: "./rules-selector.component.html",
-  styleUrls: ["./rules-selector.component.scss"]
+  styleUrls: ["./rules-selector.component.scss"],
 })
 export class RulesSelectorComponent {
   rules: Rule[] = [
@@ -22,13 +22,15 @@ export class RulesSelectorComponent {
     { value: new GameOfLife(), viewValue: "Game Of Life" },
   ];
   private p5Service: P5Service;
-  private _selectedRule: CellularAutomaton = this.rules.find(e => e.viewValue === "Brian's Brain").value;
+  private _selectedRule: CellularAutomaton = this.rules.find(
+    (e) => e.viewValue === "Brian's Brain"
+  ).value;
 
   constructor(p5Service: P5Service) {
     this.p5Service = p5Service;
   }
-  
-  get selectedRule(){
+
+  get selectedRule(): CellularAutomaton {
     return this._selectedRule;
   }
 
@@ -36,5 +38,4 @@ export class RulesSelectorComponent {
     this._selectedRule = rule;
     this.p5Service.setAutomataAndStopCurrent(rule);
   }
-
 }
