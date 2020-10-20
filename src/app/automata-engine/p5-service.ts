@@ -1,12 +1,10 @@
 import { Injectable } from "@angular/core";
 import * as p5 from "p5";
-import { GameOfLife } from "../automata-rules/gameoflife";
 import { CellularAutomaton } from "./cellularautomaton";
 import { Color } from "./color";
 import { Grid } from "./grid";
 import { Pixel } from "./pixel";
-import { BehaviorSubject } from 'rxjs';
-import { BriansBrain } from '../automata-rules/briansbrain';
+import { BriansBrain } from "../automata-rules/briansbrain";
 
 @Injectable({
   providedIn: "root", //means singleton service
@@ -15,16 +13,14 @@ export class P5Service {
   private currentStep = 1;
   private maxStep = 1;
   cellularAutomaton: CellularAutomaton = new BriansBrain();
-  private backGroundColor: Color;
   private grid: Grid;
-  private initialized: boolean = false;
+  private initialized = false;
   private node: HTMLElement;
 
-  createCanvas(backGroundColor: Color, node: HTMLElement): void {
-    this.backGroundColor = backGroundColor;
+  createCanvas(node: HTMLElement): void {
     new p5((p: p5) => {
       p.setup = () => {
-        this.setup(node, p, backGroundColor);
+        this.setup(node, p, this.cellularAutomaton.backgroundColor);
       };
       p.windowResized = () => {
         this.resize(node, p);
@@ -34,13 +30,9 @@ export class P5Service {
       };
       p.mouseDragged = (mouseEvent: MouseEvent) => {
         this.drawCell(mouseEvent);
-        // prevent default
-        // return false;
       };
       p.mousePressed = (mouseEvent: MouseEvent) => {
         this.drawCell(mouseEvent);
-        // prevent default
-        // return false;
       };
     }, node);
     this.node = node;
@@ -80,7 +72,11 @@ export class P5Service {
     const height = node.getBoundingClientRect().height;
     this.grid.setWidth(width);
     this.grid.setHeight(height);
-    this.grid.resizeAndReset(width, height, this.backGroundColor);
+    this.grid.resizeAndReset(
+      width,
+      height,
+      this.cellularAutomaton.backgroundColor
+    );
     p.resizeCanvas(width, height);
     this.grid.redraw(this.cellularAutomaton);
   }
@@ -97,8 +93,8 @@ export class P5Service {
         new Pixel(
           Math.round(mouseEvent.offsetX / this.grid.getPixelSize()),
           Math.round(mouseEvent.offsetY / this.grid.getPixelSize()),
-          this.backGroundColor,
-          this.backGroundColor
+          this.cellularAutomaton.backgroundColor,
+          this.cellularAutomaton.backgroundColor
         )
       );
     }
@@ -110,12 +106,12 @@ export class P5Service {
   setAutomataAndStopCurrent(cellularAutomaton: CellularAutomaton): void {
     this.initialized = true;
     this.cellularAutomaton = cellularAutomaton;
-    this.grid.reset(this.backGroundColor);
+    this.grid.reset(this.cellularAutomaton.backgroundColor);
     this.grid.redraw(this.cellularAutomaton);
   }
 
   reDraw(): void {
-   // this.grid.redraw(this.cellularAutomaton);
+    // this.grid.redraw(this.cellularAutomaton);
     this.initialized = false;
   }
 
@@ -142,7 +138,7 @@ export class P5Service {
 
   clearGrid(): void {
     this.initialized = true;
-    this.grid.reset(this.backGroundColor);
+    this.grid.reset(this.cellularAutomaton.backgroundColor);
     this.grid.redraw(this.cellularAutomaton); //?? Come fa a funzionare qua ? eppure va
   }
 
@@ -172,5 +168,4 @@ export class P5Service {
     this.cellularAutomaton.advance();
     this.currentStep++;
   }
-
 }

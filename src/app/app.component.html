@@ -14,11 +14,11 @@
         <div class="row row-fluid">
           <div class="col-sm-12">
             <app-color-picker
-              color="rgba(255,255,255,255)"
+              [color]="backgroundColor"
               (chosenColor)="onBackgroundColorChosen($event)"
             ></app-color-picker>
             <app-color-picker
-              color="rgba(0,0,0,255)"
+              [color]="activationColor"
               (chosenColor)="onActivationColorChosen($event)"
             ></app-color-picker>
           </div>

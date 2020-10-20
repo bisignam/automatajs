@@ -2,15 +2,16 @@ import { Color } from "./color";
 import { Grid } from "./grid";
 import { Pixel } from "./pixel";
 
-export class AdditionalColorType {
-  name: String;
+export interface AdditionalColorType {
+  name: string;
   color: Color;
 }
+
 export abstract class CellularAutomaton {
   protected grid: Grid;
-  activationColor: Color = new Color(255, 255, 255, 255); 
+  backgroundColor: Color = new Color(255, 255, 255, 255);
+  activationColor: Color = new Color(0, 0, 0, 255);
   additionalColors: Array<AdditionalColorType>;
-  defaultColor: Color = new Color(100, 100, 100, 0);
 
   abstract applyRule(x: number, y: number): Color;
 
@@ -102,5 +103,9 @@ export abstract class CellularAutomaton {
 
   getGrid(): Grid {
     return this.grid;
+  }
+
+  getAdditionalColor(name: string): Color {
+    return this.additionalColors.find((e) => e.name === name).color;
   }
 }

@@ -1,6 +1,5 @@
 import { AfterViewInit, Component, ElementRef, ViewChild } from "@angular/core";
 import { P5Service } from "../automata-engine/p5-service";
-import { Color } from "../automata-engine/color";
 
 @Component({
   selector: "app-automata-canvas",
@@ -17,9 +16,6 @@ export class AutomataCanvasComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.p5Service.createCanvas(
-      new Color(0, 0, 0, 255),
-      this.automataCanvasContainer.nativeElement
-    );
+    this.p5Service.createCanvas(this.automataCanvasContainer.nativeElement);
   }
 }
