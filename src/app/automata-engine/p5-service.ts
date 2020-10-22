@@ -46,7 +46,7 @@ export class P5Service {
   private setup(node: HTMLElement, p: p5) {
     const width = node.getBoundingClientRect().width;
     const height = node.getBoundingClientRect().height;
-    p.colorMode(p.RGB);
+    p.colorMode(p.RGB, 255, 255, 255, 1);
     p.stroke(1);
     p.strokeWeight(1);
     p.createCanvas(width, height);
