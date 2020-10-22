@@ -26,8 +26,8 @@ export class Pixel {
     return new Pixel(
       x,
       y,
-      new Color(255, 255, 255, 255),
-      new Color(255, 255, 255, 255)
+      new Color(255, 255, 255, 1),
+      new Color(255, 255, 255, 1)
     );
   }
 

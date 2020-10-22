@@ -11,8 +11,8 @@ export class Grid {
   private pixelsSize: number;
   private gridPixels: Array<Array<Pixel>>;
   private canvas: p5;
-  private _backgroundColor: Color = new Color(0, 0, 0, 255);
-  private _gridColor: Color = new Color(255, 255, 255, 255);
+  private _backgroundColor: Color = new Color(0, 0, 0, 1);
+  private _gridColor: Color = new Color(255, 255, 255, 1);
 
   constructor(width: number, height: number, canvas: p5) {
     this.pixelsSize =
