@@ -9,7 +9,7 @@ export interface AdditionalColorType {
 
 export abstract class CellularAutomaton {
   protected grid: Grid;
-  protected _activationColor: Color = new Color(0, 0, 0, 255);
+  protected _activationColor: Color = new Color(0, 0, 0, 1);
   protected _additionalColors: Array<AdditionalColorType>;
 
   abstract applyRule(x: number, y: number): Color;
@@ -118,6 +118,10 @@ export abstract class CellularAutomaton {
 
   get additionalColors(): Array<AdditionalColorType> {
     return this._additionalColors;
+  }
+
+  set additionalColors(additionalColors: Array<AdditionalColorType>) {
+    this._additionalColors = additionalColors;
   }
 
   get activationColor(): Color {
