@@ -136,9 +136,9 @@ export class P5Service {
   }
 
   clearGrid(): void {
-    this.initialized = true;
+    this.currentStep = this.maxStep - 1;
     this._grid.reset();
-    this._grid.redraw(this._cellularAutomaton); //?? Come fa a funzionare qua ? eppure va
+    this.initialized = true;
   }
 
   private eventuallyActivateCell(pixel: Pixel): void {
