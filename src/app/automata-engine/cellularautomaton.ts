@@ -10,7 +10,9 @@ export interface AdditionalColorType {
 export abstract class CellularAutomaton {
   protected grid: Grid;
   protected _activationColor: Color = new Color(0, 0, 0, 1);
-  protected _additionalColors: Array<AdditionalColorType>;
+  protected _additionalColors: Array<AdditionalColorType> = new Array<
+    AdditionalColorType
+  >();
 
   abstract applyRule(x: number, y: number): Color;
 
@@ -109,7 +111,8 @@ export abstract class CellularAutomaton {
   }
 
   getAdditionalColor(name: string): Color {
-    return this.getAdditionalColorType(name).color;
+    const colorType = this.getAdditionalColorType(name);
+    return colorType ? colorType.color : undefined;
   }
 
   setAdditionalColor(name: string, color: Color): void {
@@ -122,6 +125,18 @@ export abstract class CellularAutomaton {
 
   set additionalColors(additionalColors: Array<AdditionalColorType>) {
     this._additionalColors = additionalColors;
+  }
+
+  copyAdditionalColorsFromAutomata(cellularAutomaton: CellularAutomaton): void {
+    for (const additionalColor of cellularAutomaton.additionalColors) {
+      const thisColor = this.getAdditionalColor(additionalColor.name);
+      if (thisColor) {
+        this.setAdditionalColor(
+          additionalColor.name,
+          cellularAutomaton.getAdditionalColor(additionalColor.name)
+        );
+      }
+    }
   }
 
   get activationColor(): Color {

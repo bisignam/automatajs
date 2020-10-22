@@ -99,7 +99,11 @@ export class P5Service {
     Sets the automata rule and stops the current automata
   */
   setAutomataAndStopCurrent(cellularAutomaton: CellularAutomaton): void {
+    this.currentStep = this.maxStep;
     this.initialized = true;
+    cellularAutomaton.activationColor = this._cellularAutomaton.activationColor;
+    cellularAutomaton.copyAdditionalColorsFromAutomata(this._cellularAutomaton);
+    cellularAutomaton.setGrid(this._grid);
     this._cellularAutomaton = cellularAutomaton;
     this._grid.reset();
     this._grid.redraw(this._cellularAutomaton);

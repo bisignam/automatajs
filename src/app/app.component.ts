@@ -36,25 +36,36 @@ export class AppComponent {
   }
 
   onBackgroundColorChosen(color: Color): void {
-    this.p5Service.grid.backgroundColor = color;
-    this.p5Service.reDraw();
+    if (this.p5Service.grid) {
+      this.p5Service.grid.backgroundColor = color;
+      this.p5Service.reDraw();
+    }
   }
 
   onGridColorChosen(color: Color): void {
-    this.p5Service.grid.gridColor = color;
-    this.p5Service.reDraw();
+    if (this.p5Service.grid) {
+      this.p5Service.grid.gridColor = color;
+      this.p5Service.reDraw();
+    }
   }
 
   onActivationColorChosen(color: Color): void {
-    this.p5Service.cellularAutomaton.activationColor = color;
-    this.p5Service.reDraw();
+    if (this.p5Service.cellularAutomaton) {
+      this.p5Service.cellularAutomaton.activationColor = color;
+      this.p5Service.reDraw();
+    }
   }
 
   onAutomataColorChosen(name: string, color: Color): void {
-    this.p5Service.cellularAutomaton.setAdditionalColor(name, color);
+    if (this.p5Service.cellularAutomaton) {
+      this.p5Service.cellularAutomaton.setAdditionalColor(name, color);
+    }
   }
 
   getAdditionalColorsForAutomata(): Array<AdditionalColorType> {
-    return this.p5Service.cellularAutomaton.additionalColors;
+    if (this.p5Service.cellularAutomaton) {
+      return this.p5Service.cellularAutomaton.additionalColors;
+    }
+    return new Array<AdditionalColorType>();
   }
 }
