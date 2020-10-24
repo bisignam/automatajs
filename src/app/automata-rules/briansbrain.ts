@@ -25,7 +25,7 @@ export class BriansBrain extends CellularAutomaton {
     } else if (this.isActive(x, y)) {
       return this.getAdditionalColor("Dying");
     }
-    return this.grid.getPixels()[x][y].getOriginalColor();
+    return this.grid.backgroundColor;
   }
 
   isDying(x: number, y: number): boolean {
