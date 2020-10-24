@@ -54,8 +54,7 @@ export class P5Service {
     p.background(
       this._grid.backgroundColor.red,
       this._grid.backgroundColor.green,
-      this._grid.backgroundColor.blue,
-      this._grid.backgroundColor.alpha
+      this._grid.backgroundColor.blue
     );
   }
 

@@ -23,16 +23,7 @@ export class Pixel {
   }
 
   static XY(x: number, y: number): Pixel {
-    return new Pixel(
-      x,
-      y,
-      new Color(255, 255, 255, 1),
-      new Color(255, 255, 255, 1)
-    );
-  }
-
-  static XYColor(x: number, y: number, c: Color): Pixel {
-    return new Pixel(x, y, c, new Color(0, 0, 0, 0));
+    return new Pixel(x, y, new Color(255, 255, 255), new Color(255, 255, 255));
   }
 
   setColor(color: Color): void {
