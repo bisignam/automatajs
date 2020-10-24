@@ -11,9 +11,9 @@ export class GameOfLife extends CellularAutomaton {
   public applyRule(x: number, y: number): Color {
     const numberOfActiveNeighbors = this.mooreNeighbors(x, y);
     if (this.isActive(x, y) && numberOfActiveNeighbors < 2) {
-      return this.grid.getPixels()[x][y].getOriginalColor();
+      return this.grid.backgroundColor;
     } else if (this.isActive(x, y) && numberOfActiveNeighbors > 3) {
-      return this.grid.getPixels()[x][y].getOriginalColor();
+      return this.grid.backgroundColor;
     } else if (!this.isActive(x, y) && numberOfActiveNeighbors == 3) {
       return this._activationColor;
     }
