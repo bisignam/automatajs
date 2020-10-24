@@ -12,9 +12,9 @@ import { AdditionalColorType } from "./automata-engine/cellularautomaton";
 })
 export class AppComponent {
   title = "AutomataJS";
-  backgroundColor = new Color(0, 0, 0, 1);
-  gridColor = new Color(255, 255, 255, 1);
-  activationColor = new Color(255, 0, 0, 0.8);
+  backgroundColor = new Color(0, 0, 0);
+  gridColor = new Color(255, 255, 255);
+  activationColor = new Color(255, 0, 0);
 
   constructor(
     private matIconRegistry: MatIconRegistry,

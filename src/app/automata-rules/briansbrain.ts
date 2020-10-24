@@ -6,7 +6,7 @@ import { Color } from "../automata-engine/color";
 
 export class BriansBrain extends CellularAutomaton {
   _additionalColors: Array<AdditionalColorType> = [
-    { name: "Dying", color: new Color(0, 60, 160, 0.5) },
+    { name: "Dying", color: new Color(0, 60, 160) },
   ];
 
   /** 
