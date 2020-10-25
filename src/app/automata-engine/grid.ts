@@ -1,5 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars-experimental
 import * as p5 from "p5";
+import { BehaviorSubject } from "rxjs";
 import { CellularAutomaton } from "./cellularautomaton";
 import { Color } from "./color";
 import { Pixel } from "./pixel";
@@ -8,17 +9,19 @@ import { Utils } from "./utils";
 export class Grid {
   private gridHeight: number;
   private gridWidth: number;
-  private pixelsSize: number;
+  private _pixelSize: number;
+  private pixelSizeSource: BehaviorSubject<number>;
   private gridPixels: Array<Array<Pixel>>;
   private canvas: p5;
   private _backgroundColor: Color = new Color(0, 0, 0);
   private _gridColor: Color = new Color(255, 255, 255);
 
   constructor(width: number, height: number, canvas: p5) {
-    this.pixelsSize =
-      Utils.getBiggestCommonDivisor(Math.floor(width), Math.floor(height)) * 10;
-    this.gridWidth = Math.round(width / this.pixelsSize);
-    this.gridHeight = Math.round(height / this.pixelsSize);
+    this.pixelSizeSource = this._pixelSize.asObservable();
+    Utils.getBiggestCommonDivisor(Math.floor(width), Math.floor(height)) * 10;
+    this._pixelSize = this.pixelSizeSource.asObservable();
+    this.gridWidth = Math.round(width / this._pixelSize);
+    this.gridHeight = Math.round(height / this._pixelSize);
     this.canvas = canvas;
     this.gridPixels = new Array(this.gridWidth);
     for (let i = 0; i < this.gridWidth; i += 1) {
@@ -42,10 +45,8 @@ export class Grid {
    * @param col the new pixel colors
    */
   resizeAndReset(width: number, height: number): void {
-    this.pixelsSize =
-      Utils.getBiggestCommonDivisor(Math.floor(width), Math.floor(height)) * 10;
-    this.gridWidth = Math.floor(width / this.pixelsSize);
-    this.gridHeight = Math.floor(height / this.pixelsSize);
+    this.gridWidth = Math.floor(width / this._pixelSize);
+    this.gridHeight = Math.floor(height / this._pixelSize);
     this.reset();
   }
 
@@ -116,9 +117,9 @@ export class Grid {
       this._gridColor.blue
     );
     this.canvas.square(
-      this.pixelsSize * x,
-      this.pixelsSize * y,
-      this.pixelsSize
+      this._pixelSize * x,
+      this._pixelSize * y,
+      this._pixelSize
     );
     this.canvas.pop();
   }
@@ -188,8 +189,12 @@ export class Grid {
     return this.gridPixels;
   }
 
-  getPixelSize(): number {
-    return this.pixelsSize;
+  get pixelSize(): number {
+    return this._pixelSize;
+  }
+
+  set pixelSize(pixelSize: number) {
+    this._pixelSize = pixelSize;
   }
 
   get backgroundColor(): Color {
