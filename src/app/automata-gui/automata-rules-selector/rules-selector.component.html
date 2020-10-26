@@ -1,5 +1,5 @@
-<select class="automata-rules-select" [(ngModel)]="selectedRule">
-  <option *ngFor="let rule of rules" [ngValue]="rule.value">
+<mat-select id="automataRulesSelect" [(ngModel)]="selectedRule">
+  <mat-option *ngFor="let rule of rules" [value]="rule.value">
     {{ rule.viewValue }}
-  </option>
-</select>
+  </mat-option>
+</mat-select> 

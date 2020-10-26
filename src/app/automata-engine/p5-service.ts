@@ -4,6 +4,9 @@ import { CellularAutomaton } from "./cellularautomaton";
 import { Grid } from "./grid";
 import { Pixel } from "./pixel";
 import { BriansBrain } from "../automata-rules/briansbrain";
+import { BehaviorSubject, Observable } from "rxjs";
+import { DefaultSettings } from "./defaultSettings";
+import { Utils } from "./utils";
 
 @Injectable({
   providedIn: "root", //means singleton service
@@ -15,9 +18,11 @@ export class P5Service {
   private _grid: Grid;
   private initialized = false;
   private node: HTMLElement;
+  private canvas: p5;
+  private _pixelSize = new BehaviorSubject<number>(DefaultSettings.pixelSize);
 
   createCanvas(node: HTMLElement): void {
-    new p5((p: p5) => {
+    this.canvas = new p5((p: p5) => {
       p.setup = () => {
         this.setup(node, p);
       };
@@ -50,7 +55,9 @@ export class P5Service {
     p.stroke(1);
     p.strokeWeight(1);
     p.createCanvas(width, height);
-    this._grid = new Grid(width, height, p);
+    const pixelSize = this.computeInitialPixelSize(width, height);
+    this.updatePixelSize(pixelSize);
+    this._grid = new Grid(width, height, pixelSize);
     p.background(
       this._grid.backgroundColor.red,
       this._grid.backgroundColor.green,
@@ -68,11 +75,10 @@ export class P5Service {
     this.initialized = false;
     const width = node.getBoundingClientRect().width;
     const height = node.getBoundingClientRect().height;
-    this._grid.setWidth(width);
-    this._grid.setHeight(height);
+
     this._grid.resizeAndReset(width, height);
     p.resizeCanvas(width, height);
-    this._grid.redraw(this._cellularAutomaton);
+    this._grid.redraw(this.canvas, this._cellularAutomaton);
   }
 
   /**
@@ -85,8 +91,8 @@ export class P5Service {
     if (this.node.matches(":hover")) {
       this.eventuallyActivateCell(
         new Pixel(
-          Math.round(mouseEvent.offsetX / this._grid.getPixelSize()),
-          Math.round(mouseEvent.offsetY / this._grid.getPixelSize()),
+          Math.round(mouseEvent.offsetX / this._grid.pixelSize),
+          Math.round(mouseEvent.offsetY / this._grid.pixelSize),
           this._grid.backgroundColor,
           this._grid.backgroundColor
         )
@@ -105,11 +111,15 @@ export class P5Service {
     cellularAutomaton.setGrid(this._grid);
     this._cellularAutomaton = cellularAutomaton;
     this._grid.reset();
-    this._grid.redraw(this._cellularAutomaton);
+    this._grid.redraw(this.canvas, this._cellularAutomaton);
   }
 
   reDraw(): void {
-    // this.grid.redraw(this.cellularAutomaton);
+    this.initialized = false;
+  }
+
+  resizePixelsAndRedraw(pixelSize: number): void {
+    this._grid.pixelSize = pixelSize;
     this.initialized = false;
   }
 
@@ -147,7 +157,12 @@ export class P5Service {
       pixel.getY() >= 0 &&
       pixel.getY() < this._grid.getHeight()
     ) {
-      this._grid.activate(this._cellularAutomaton, pixel.getX(), pixel.getY());
+      this._grid.activate(
+        this.canvas,
+        this._cellularAutomaton,
+        pixel.getX(),
+        pixel.getY()
+      );
     }
   }
 
@@ -156,14 +171,14 @@ export class P5Service {
       if (this._cellularAutomaton && !this._cellularAutomaton.getGrid()) {
         this._cellularAutomaton.setGrid(this._grid); //we do it here because at this point we are sure the grid is already initialized
       }
-      this._grid.redraw(this._cellularAutomaton);
+      this._grid.redraw(this.canvas, this._cellularAutomaton);
       this.initialized = true;
     }
     if (this.currentStep == this.maxStep) {
       return;
     }
-    this._grid.redraw(this._cellularAutomaton);
-    this._cellularAutomaton.advance();
+    this._grid.redraw(this.canvas, this._cellularAutomaton);
+    this._cellularAutomaton.advance(this.canvas);
     this.currentStep++;
   }
 
@@ -173,5 +188,19 @@ export class P5Service {
 
   get cellularAutomaton(): CellularAutomaton {
     return this._cellularAutomaton;
+  }
+
+  getPixelSize(): Observable<number> {
+    return this._pixelSize.asObservable();
+  }
+
+  updatePixelSize(pixelSize: number): void {
+    this._pixelSize.next(pixelSize);
+  }
+
+  computeInitialPixelSize(width: number, height: number): number {
+    return (
+      Utils.getBiggestCommonDivisor(Math.floor(width), Math.floor(height)) * 10
+    );
   }
 }

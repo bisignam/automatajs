@@ -8,16 +8,20 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { AutomataColorPickerComponent } from "./automata-color-picker/automata-color-picker.component";
 import { ColorPickerModule } from "ngx-color-picker";
+import { MatSliderModule } from "@angular/material/slider";
+import { AutomataCellSizeSliderComponent } from "./automata-cell-size-slider/automata-cell-size-slider.component";
 
 @NgModule({
   declarations: [
     RulesSelectorComponent,
     AutomataControlComponent,
     AutomataColorPickerComponent,
+    AutomataCellSizeSliderComponent,
   ],
   imports: [
     CommonModule,
     MatSelectModule,
+    MatSliderModule,
     FormsModule,
     ReactiveFormsModule,
     MatFormFieldModule,

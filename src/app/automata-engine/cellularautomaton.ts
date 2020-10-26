@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars-experimental
+import * as p5 from "p5";
 import { Color } from "./color";
 import { Grid } from "./grid";
 import { Pixel } from "./pixel";
@@ -43,17 +45,15 @@ export abstract class CellularAutomaton {
     return activeNeighbors;
   }
 
-  advance(): void {
-    this.grid.applyCellularAutomatonRule(this, 1);
+  advance(canvas: p5): void {
+    this.grid.applyCellularAutomatonRule(this, 1, canvas);
   }
 
   private yBeyondHeight(pixel: Pixel): Pixel {
     if (pixel.getY() > this.grid.getHeight() - 1) {
       return Pixel.XY(
         pixel.getX(),
-        (this.grid.getCanvas().abs(pixel.getY()) %
-          (this.grid.getHeight() - 1)) -
-          1
+        (Math.abs(pixel.getY()) % (this.grid.getHeight() - 1)) - 1
       );
     }
     return pixel;
@@ -63,8 +63,7 @@ export abstract class CellularAutomaton {
     if (pixel.getY() < 0) {
       return Pixel.XY(
         pixel.getX(),
-        this.grid.getHeight() -
-          (this.grid.getCanvas().abs(pixel.getY()) % this.grid.getHeight())
+        this.grid.getHeight() - (Math.abs(pixel.getY()) % this.grid.getHeight())
       );
     }
     return pixel;
@@ -73,8 +72,7 @@ export abstract class CellularAutomaton {
   private xBeyondWidth(pixel: Pixel): Pixel {
     if (pixel.getX() > this.grid.getWidth() - 1) {
       return Pixel.XY(
-        (this.grid.getCanvas().abs(pixel.getX()) % (this.grid.getWidth() - 1)) -
-          1,
+        (Math.abs(pixel.getX()) % (this.grid.getWidth() - 1)) - 1,
         pixel.getY()
       );
     }
@@ -84,8 +82,7 @@ export abstract class CellularAutomaton {
   private xLessThanZero(pixel: Pixel): Pixel {
     if (pixel.getX() < 0) {
       return Pixel.XY(
-        this.grid.getWidth() -
-          (this.grid.getCanvas().abs(pixel.getX()) % this.grid.getWidth()),
+        this.grid.getWidth() - (Math.abs(pixel.getX()) % this.grid.getWidth()),
         pixel.getY()
       );
     }

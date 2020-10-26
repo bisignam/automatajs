@@ -1,28 +1,24 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars-experimental
 import * as p5 from "p5";
-import { BehaviorSubject } from "rxjs";
 import { CellularAutomaton } from "./cellularautomaton";
 import { Color } from "./color";
 import { Pixel } from "./pixel";
-import { Utils } from "./utils";
 
 export class Grid {
   private gridHeight: number;
   private gridWidth: number;
+  private nodeWidth: number;
+  private nodeHeight: number;
   private _pixelSize: number;
-  private pixelSizeSource: BehaviorSubject<number>;
   private gridPixels: Array<Array<Pixel>>;
-  private canvas: p5;
   private _backgroundColor: Color = new Color(0, 0, 0);
   private _gridColor: Color = new Color(255, 255, 255);
 
-  constructor(width: number, height: number, canvas: p5) {
-    this.pixelSizeSource = this._pixelSize.asObservable();
-    Utils.getBiggestCommonDivisor(Math.floor(width), Math.floor(height)) * 10;
-    this._pixelSize = this.pixelSizeSource.asObservable();
-    this.gridWidth = Math.round(width / this._pixelSize);
-    this.gridHeight = Math.round(height / this._pixelSize);
-    this.canvas = canvas;
+  constructor(width: number, height: number, pixelSize: number) {
+    this._pixelSize = pixelSize;
+    this.nodeWidth = width;
+    this.nodeHeight = height;
+    this.recomputeSize();
     this.gridPixels = new Array(this.gridWidth);
     for (let i = 0; i < this.gridWidth; i += 1) {
       this.gridPixels[i] = new Array(this.gridHeight);
@@ -74,59 +70,63 @@ export class Grid {
    *
    * @param col the new Color
    */
-  redraw(cellularAutomaton?: CellularAutomaton): void {
+  redraw(canvas: p5, cellularAutomaton?: CellularAutomaton): void {
     for (let i = 0; i < this.gridWidth; i += 1) {
       for (let j = 0; j < this.gridHeight; j += 1) {
-        this.drawPixel(i, j, cellularAutomaton);
+        this.drawPixel(i, j, canvas, cellularAutomaton);
       }
     }
   }
 
-  activate(cellurarAutomaton: CellularAutomaton, x: number, y: number): void {
+  activate(
+    canvas: p5,
+    cellurarAutomaton: CellularAutomaton,
+    x: number,
+    y: number
+  ): void {
     this.gridPixels[x][y].setColor(cellurarAutomaton.activationColor);
-    this.drawPixel(x, y);
+    this.drawPixel(x, y, canvas);
   }
 
-  drawPixel(x: number, y: number, cellurarAutomaton?: CellularAutomaton): void {
-    this.canvas.push();
+  drawPixel(
+    x: number,
+    y: number,
+    canvas: p5,
+    cellurarAutomaton?: CellularAutomaton
+  ): void {
+    canvas.push();
     const automataColor = this.gridPixels[Number(x)][Number(y)].getColor();
     if (cellurarAutomaton) {
       if (cellurarAutomaton.isActive(x, y)) {
-        this.canvas.fill(
+        canvas.fill(
           cellurarAutomaton.activationColor.red,
           cellurarAutomaton.activationColor.green,
           cellurarAutomaton.activationColor.blue
         );
       } else {
-        this.canvas.fill(
+        canvas.fill(
           this._backgroundColor.red,
           this._backgroundColor.green,
           this._backgroundColor.blue
         );
       }
     } else {
-      this.canvas.fill(
-        automataColor.red,
-        automataColor.green,
-        automataColor.blue
-      );
+      canvas.fill(automataColor.red, automataColor.green, automataColor.blue);
     }
-    this.canvas.stroke(
+    canvas.stroke(
       this._gridColor.red,
       this._gridColor.green,
       this._gridColor.blue
     );
-    this.canvas.square(
-      this._pixelSize * x,
-      this._pixelSize * y,
-      this._pixelSize
-    );
-    this.canvas.pop();
+    const pixelSize = this._pixelSize;
+    canvas.square(pixelSize * x, pixelSize * y, pixelSize);
+    canvas.pop();
   }
 
   applyCellularAutomatonRule(
     cellurarAutomaton: CellularAutomaton,
-    stepsToCompute: number
+    stepsToCompute: number,
+    canvas: p5
   ): void {
     let gridPixelsCopy = new Array<Array<Pixel>>();
     for (let i = 0; i < stepsToCompute; i++) {
@@ -140,7 +140,7 @@ export class Grid {
     }
     for (let x = 0; x < this.gridWidth; x += 1) {
       for (let y = 0; y < this.gridHeight; y += 1) {
-        this.drawPixel(x, y, undefined);
+        this.drawPixel(x, y, canvas);
       }
     }
   }
@@ -181,10 +181,6 @@ export class Grid {
     this.gridWidth = width;
   }
 
-  getCanvas(): p5 {
-    return this.canvas;
-  }
-
   getPixels(): Array<Array<Pixel>> {
     return this.gridPixels;
   }
@@ -195,6 +191,12 @@ export class Grid {
 
   set pixelSize(pixelSize: number) {
     this._pixelSize = pixelSize;
+    this.recomputeSize();
+  }
+
+  private recomputeSize() {
+    this.gridWidth = Math.round(this.nodeWidth / this._pixelSize);
+    this.gridHeight = Math.round(this.nodeHeight / this._pixelSize);
   }
 
   get backgroundColor(): Color {
