@@ -1,3 +1,7 @@
+mat-sidenav-container {
+  height: 100%;
+}
+
 #headerRow {
   height: 5%;
 }
@@ -20,6 +24,11 @@
 }
 
 #headerColumn {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+#automataCreatorColumn {
   max-width: 100%;
   max-height: 100%;
 }

@@ -10,6 +10,8 @@ import { AutomataColorPickerComponent } from "./automata-color-picker/automata-c
 import { ColorPickerModule } from "ngx-color-picker";
 import { MatSliderModule } from "@angular/material/slider";
 import { AutomataCellSizeSliderComponent } from "./automata-cell-size-slider/automata-cell-size-slider.component";
+import { AutomataCreatorComponent } from "./automata-creator/automata-creator.component";
+import { MonacoEditorModule } from "ngx-monaco-editor";
 
 @NgModule({
   declarations: [
@@ -17,6 +19,7 @@ import { AutomataCellSizeSliderComponent } from "./automata-cell-size-slider/aut
     AutomataControlComponent,
     AutomataColorPickerComponent,
     AutomataCellSizeSliderComponent,
+    AutomataCreatorComponent,
   ],
   imports: [
     CommonModule,
@@ -27,6 +30,7 @@ import { AutomataCellSizeSliderComponent } from "./automata-cell-size-slider/aut
     MatFormFieldModule,
     MatIconModule,
     ColorPickerModule,
+    MonacoEditorModule,
   ],
 })
 export class AutomataGuiModule {}

@@ -17,6 +17,7 @@ export class P5Service {
   private _cellularAutomaton: CellularAutomaton = new BriansBrain(); //TODO allow to initialize externally
   private _grid: Grid;
   private initialized = false;
+  private visible = false;
   private node: HTMLElement;
   private canvas: p5;
   private _pixelSize = new BehaviorSubject<number>(DefaultSettings.pixelSize);
@@ -51,18 +52,21 @@ export class P5Service {
   private setup(node: HTMLElement, p: p5) {
     const width = node.getBoundingClientRect().width;
     const height = node.getBoundingClientRect().height;
-    p.colorMode(p.RGB, 255, 255, 255, 1);
-    p.stroke(1);
-    p.strokeWeight(1);
-    p.createCanvas(width, height);
-    const pixelSize = this.computeInitialPixelSize(width, height);
-    this.updatePixelSize(pixelSize);
-    this._grid = new Grid(width, height, pixelSize);
-    p.background(
-      this._grid.backgroundColor.red,
-      this._grid.backgroundColor.green,
-      this._grid.backgroundColor.blue
-    );
+    if (width !== 0 && height !== 0) {
+      p.colorMode(p.RGB, 255, 255, 255, 1);
+      p.stroke(1);
+      p.strokeWeight(1);
+      p.createCanvas(width, height);
+      const pixelSize = this.computeInitialPixelSize(width, height);
+      this.updatePixelSize(pixelSize);
+      this._grid = new Grid(width, height, pixelSize);
+      p.background(
+        this._grid.backgroundColor.red,
+        this._grid.backgroundColor.green,
+        this._grid.backgroundColor.blue
+      );
+      this.visible = true;
+    }
   }
 
   /**
@@ -167,19 +171,21 @@ export class P5Service {
   }
 
   private draw(): void {
-    if (!this.initialized) {
-      if (this._cellularAutomaton && !this._cellularAutomaton.getGrid()) {
-        this._cellularAutomaton.setGrid(this._grid); //we do it here because at this point we are sure the grid is already initialized
+    if (this.visible) {
+      if (!this.initialized) {
+        if (this._cellularAutomaton && !this._cellularAutomaton.getGrid()) {
+          this._cellularAutomaton.setGrid(this._grid); //we do it here because at this point we are sure the grid is already initialized
+        }
+        this._grid.redraw(this.canvas, this._cellularAutomaton);
+        this.initialized = true;
+      }
+      if (this.currentStep == this.maxStep) {
+        return;
       }
       this._grid.redraw(this.canvas, this._cellularAutomaton);
-      this.initialized = true;
+      this._cellularAutomaton.advance(this.canvas);
+      this.currentStep++;
     }
-    if (this.currentStep == this.maxStep) {
-      return;
-    }
-    this._grid.redraw(this.canvas, this._cellularAutomaton);
-    this._cellularAutomaton.advance(this.canvas);
-    this.currentStep++;
   }
 
   get grid(): Grid {

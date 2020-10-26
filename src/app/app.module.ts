@@ -21,6 +21,9 @@ import { ColorPickerModule } from "ngx-color-picker";
 import { AutomataColorPickerComponent } from "./automata-gui/automata-color-picker/automata-color-picker.component";
 import { MatSliderModule } from "@angular/material/slider";
 import { AutomataCellSizeSliderComponent } from "./automata-gui/automata-cell-size-slider/automata-cell-size-slider.component";
+import { MonacoEditorModule } from "ngx-monaco-editor";
+import { MatSidenavModule } from "@angular/material/sidenav";
+import { AutomataCreatorComponent } from "./automata-gui/automata-creator/automata-creator.component";
 
 @NgModule({
   declarations: [
@@ -32,6 +35,7 @@ import { AutomataCellSizeSliderComponent } from "./automata-gui/automata-cell-si
     HeaderComponent,
     AutomataColorPickerComponent,
     AutomataCellSizeSliderComponent,
+    AutomataCreatorComponent,
   ],
   imports: [
     FormsModule,
@@ -45,6 +49,8 @@ import { AutomataCellSizeSliderComponent } from "./automata-gui/automata-cell-si
     MatButtonModule,
     ColorPickerModule,
     MatSliderModule,
+    MatSidenavModule,
+    MonacoEditorModule.forRoot(),
     BrowserAnimationsModule,
     NgbModule,
     HttpClientModule, //needed for registering custom material icons
