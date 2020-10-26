@@ -17,7 +17,7 @@ export class BriansBrain extends CellularAutomaton {
   applyRule(x: number, y: number): Color {
     const numberOfActiveNeighbors = this.mooreNeighbors(x, y);
     if (
-      !this.isActive(x, y) &&
+      !this.isActiveForRule(x, y) &&
       !this.isDying(x, y) &&
       numberOfActiveNeighbors == 2
     ) {

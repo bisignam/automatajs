@@ -131,39 +131,13 @@ export class Grid {
     stepsToCompute: number,
     canvas: p5
   ): void {
-    let gridPixelsCopy = new Array<Array<Pixel>>();
     for (let i = 0; i < stepsToCompute; i++) {
-      gridPixelsCopy = this.cloneGrid();
       for (let x = 0; x < this.gridWidth; x += 1) {
         for (let y = 0; y < this.gridHeight; y += 1) {
-          gridPixelsCopy[x][y].setColor(cellurarAutomaton.applyRule(x, y));
+          this.gridPixels[x][y].originalColor = this.gridPixels[x][y].color;
+          this.gridPixels[x][y].color = cellurarAutomaton.applyRule(x, y);
+          this.drawPixel(x, y, canvas);
         }
-      }
-      this.setGrid(gridPixelsCopy);
-    }
-    for (let x = 0; x < this.gridWidth; x += 1) {
-      for (let y = 0; y < this.gridHeight; y += 1) {
-        this.drawPixel(x, y, canvas);
-      }
-    }
-  }
-
-  cloneGrid(): Array<Array<Pixel>> {
-    let clonedGrid = new Array<Array<Pixel>>();
-    clonedGrid = new Array(this.gridWidth);
-    for (let i = 0; i < this.gridWidth; i += 1) {
-      clonedGrid[i] = new Array(this.gridHeight);
-      for (let j = 0; j < this.gridHeight; j += 1) {
-        clonedGrid[i][j] = Pixel.fromPixel(this.gridPixels[i][j]);
-      }
-    }
-    return clonedGrid;
-  }
-
-  setGrid(newGrid: Array<Array<Pixel>>): void {
-    for (let x = 0; x < this.gridWidth; x += 1) {
-      for (let y = 0; y < this.gridHeight; y += 1) {
-        this.gridPixels[x][y] = Pixel.fromPixel(newGrid[x][y]);
       }
     }
   }

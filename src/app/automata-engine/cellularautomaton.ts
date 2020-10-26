@@ -18,7 +18,7 @@ export abstract class CellularAutomaton {
 
   abstract applyRule(x: number, y: number): Color;
 
-  mooreNeighbors(x: number, y: number): number {
+  protected mooreNeighbors(x: number, y: number): number {
     let activeNeighbors = 0;
     const neighbors = new Array<Pixel>();
     neighbors.push(this.xBeyondWidth(Pixel.XY(x + 1, y)));
@@ -38,7 +38,12 @@ export abstract class CellularAutomaton {
       this.xBeyondWidth(this.yBeyondHeight(Pixel.XY(x + 1, y + 1)))
     );
     for (const neighbor of neighbors) {
-      if (this.isActive(neighbor.getX(), neighbor.getY())) {
+      if (
+        this.grid
+          .getPixels()
+          [neighbor.getX()][neighbor.getY()].getOriginalColor()
+          .equals(this.activationColor)
+      ) {
         activeNeighbors++;
       }
     }
@@ -92,6 +97,12 @@ export abstract class CellularAutomaton {
   isActive(x: number, y: number): boolean {
     const activationColor = this._activationColor;
     const pixelColor = this.grid.getPixels()[x][y].getColor();
+    return activationColor.equals(pixelColor);
+  }
+
+  isActiveForRule(x: number, y: number): boolean {
+    const activationColor = this._activationColor;
+    const pixelColor = this.grid.getPixels()[x][y].getOriginalColor();
     return activationColor.equals(pixelColor);
   }
 

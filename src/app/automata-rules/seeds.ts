@@ -8,7 +8,7 @@ export class Seeds extends CellularAutomaton {
      **/
   public applyRule(x: number, y: number): Color {
     const numberOfActiveNeighbors = this.mooreNeighbors(x, y);
-    if (!this.isActive(x, y) && numberOfActiveNeighbors == 2) {
+    if (!this.isActiveForRule(x, y) && numberOfActiveNeighbors == 2) {
       return this._activationColor;
     }
     return this.grid.backgroundColor;
