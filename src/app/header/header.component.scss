@@ -3,21 +3,6 @@
 //   width: 100% !important;
 // }
 
-// .automataIcon {
-//   &mat-icon {
-//     @include md-icon-size(32px);
-//   }
-// }
-
-// #headerContainer {
-//   height: 100%;
-//   width: 100%;
-// }
-
-// #headerContainerContainer {
-//   height: 100%;
-//   width: 100%;
-// }
 .automataIcon {
   transform: scale(0.75);
 }
@@ -26,8 +11,3 @@
   color: black;
   transform: scale(0.4);
 }
-
-
-// .githubIcon:hover {
-//   color: black;
-// }

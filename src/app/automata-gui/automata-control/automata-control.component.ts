@@ -1,7 +1,5 @@
 import { Component } from "@angular/core";
 import { P5Service } from "src/app/automata-engine/p5-service";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars-experimental
-import { ColorPickerModule } from "ngx-color-picker";
 
 @Component({
   selector: "app-automata-control",

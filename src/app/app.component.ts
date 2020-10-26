@@ -4,6 +4,7 @@ import { DomSanitizer } from "@angular/platform-browser";
 import { P5Service } from "./automata-engine/p5-service";
 import { Color } from "./automata-engine/color";
 import { AdditionalColorType } from "./automata-engine/cellularautomaton";
+import { DefaultSettings } from "./automata-engine/defaultSettings";
 
 @Component({
   selector: "app-root",
@@ -12,9 +13,9 @@ import { AdditionalColorType } from "./automata-engine/cellularautomaton";
 })
 export class AppComponent {
   title = "AutomataJS";
-  backgroundColor = new Color(0, 0, 0);
-  gridColor = new Color(255, 255, 255);
-  activationColor = new Color(255, 0, 0);
+  backgroundColor = DefaultSettings.backgroundColor;
+  gridColor = DefaultSettings.gridColor;
+  activationColor = DefaultSettings.activationColor;
 
   constructor(
     private matIconRegistry: MatIconRegistry,
