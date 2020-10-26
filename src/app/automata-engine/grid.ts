@@ -93,17 +93,28 @@ export class Grid {
     x: number,
     y: number,
     canvas: p5,
-    cellurarAutomaton?: CellularAutomaton
+    cellularAutomaton?: CellularAutomaton
   ): void {
     if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
       canvas.push();
       const automataColor = this.gridPixels[x][y].getColor();
-      if (cellurarAutomaton) {
-        if (cellurarAutomaton.isActive(x, y)) {
+      if (cellularAutomaton) {
+        const pixelAdditionalColor = this.getPixelAdditionalColor(
+          x,
+          y,
+          cellularAutomaton
+        );
+        if (cellularAutomaton.isActive(x, y)) {
           canvas.fill(
-            cellurarAutomaton.activationColor.red,
-            cellurarAutomaton.activationColor.green,
-            cellurarAutomaton.activationColor.blue
+            cellularAutomaton.activationColor.red,
+            cellularAutomaton.activationColor.green,
+            cellularAutomaton.activationColor.blue
+          );
+        } else if (pixelAdditionalColor) {
+          canvas.fill(
+            pixelAdditionalColor.red,
+            pixelAdditionalColor.green,
+            pixelAdditionalColor.blue
           );
         } else {
           canvas.fill(
@@ -124,6 +135,19 @@ export class Grid {
       canvas.square(pixelSize * x, pixelSize * y, pixelSize);
       canvas.pop();
     }
+  }
+
+  getPixelAdditionalColor(
+    x: number,
+    y: number,
+    cellularAutomaton: CellularAutomaton
+  ): Color {
+    for (const colorType of cellularAutomaton.additionalColors) {
+      if (this.gridPixels[x][y].getColor().equals(colorType.color)) {
+        return colorType.color;
+      }
+    }
+    return undefined;
   }
 
   applyCellularAutomatonRule(

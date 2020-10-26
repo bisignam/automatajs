@@ -1,0 +1,13 @@
+//Disable the outline bootstrap puts on buttons when focused
+* {
+
+    &:active,
+    :focus {
+        outline: none !important;
+    }
+}
+
+//Use the same primary color as the one we use in Material
+a:not(.mat-button):not(.mat-raised-button):not(.mat-fab):not(.mat-mini-fab):not([mat-list-item]) {
+    color: #2c6494;
+}

@@ -5,6 +5,9 @@
 /* Importing Bootstrap SCSS file. */
 @import "~bootstrap/scss/bootstrap";
 
+/* Overwrite some styles from bootstrap that conflicts with Material */
+@import "reset.scss";
+
 body {
   font-family: Roboto, Arial, sans-serif;
   min-height: 100% !important;
@@ -17,6 +20,7 @@ body {
 .basic-container {
   padding: 30px;
 }
+
 .version-info {
   font-size: 8pt;
   float: right;
