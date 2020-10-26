@@ -41,8 +41,9 @@ export class Grid {
    * @param col the new pixel colors
    */
   resizeAndReset(width: number, height: number): void {
-    this.gridWidth = Math.floor(width / this._pixelSize);
-    this.gridHeight = Math.floor(height / this._pixelSize);
+    this.nodeWidth = width;
+    this.nodeHeight = height;
+    this.recomputeSize();
     this.reset();
   }
 
@@ -195,8 +196,8 @@ export class Grid {
   }
 
   private recomputeSize() {
-    this.gridWidth = Math.round(this.nodeWidth / this._pixelSize);
-    this.gridHeight = Math.round(this.nodeHeight / this._pixelSize);
+    this.gridWidth = Math.ceil(this.nodeWidth / this._pixelSize);
+    this.gridHeight = Math.ceil(this.nodeHeight / this._pixelSize);
   }
 
   get backgroundColor(): Color {
