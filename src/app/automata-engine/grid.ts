@@ -95,33 +95,35 @@ export class Grid {
     canvas: p5,
     cellurarAutomaton?: CellularAutomaton
   ): void {
-    canvas.push();
-    const automataColor = this.gridPixels[Number(x)][Number(y)].getColor();
-    if (cellurarAutomaton) {
-      if (cellurarAutomaton.isActive(x, y)) {
-        canvas.fill(
-          cellurarAutomaton.activationColor.red,
-          cellurarAutomaton.activationColor.green,
-          cellurarAutomaton.activationColor.blue
-        );
+    if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
+      canvas.push();
+      const automataColor = this.gridPixels[x][y].getColor();
+      if (cellurarAutomaton) {
+        if (cellurarAutomaton.isActive(x, y)) {
+          canvas.fill(
+            cellurarAutomaton.activationColor.red,
+            cellurarAutomaton.activationColor.green,
+            cellurarAutomaton.activationColor.blue
+          );
+        } else {
+          canvas.fill(
+            this._backgroundColor.red,
+            this._backgroundColor.green,
+            this._backgroundColor.blue
+          );
+        }
       } else {
-        canvas.fill(
-          this._backgroundColor.red,
-          this._backgroundColor.green,
-          this._backgroundColor.blue
-        );
+        canvas.fill(automataColor.red, automataColor.green, automataColor.blue);
       }
-    } else {
-      canvas.fill(automataColor.red, automataColor.green, automataColor.blue);
+      canvas.stroke(
+        this._gridColor.red,
+        this._gridColor.green,
+        this._gridColor.blue
+      );
+      const pixelSize = this._pixelSize;
+      canvas.square(pixelSize * x, pixelSize * y, pixelSize);
+      canvas.pop();
     }
-    canvas.stroke(
-      this._gridColor.red,
-      this._gridColor.green,
-      this._gridColor.blue
-    );
-    const pixelSize = this._pixelSize;
-    canvas.square(pixelSize * x, pixelSize * y, pixelSize);
-    canvas.pop();
   }
 
   applyCellularAutomatonRule(
@@ -193,6 +195,7 @@ export class Grid {
   set pixelSize(pixelSize: number) {
     this._pixelSize = pixelSize;
     this.recomputeSize();
+    this.reset();
   }
 
   private recomputeSize() {
