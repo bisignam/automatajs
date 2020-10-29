@@ -17,12 +17,12 @@ export class BriansBrain extends CellularAutomaton {
   applyRule(x: number, y: number): Color {
     const numberOfActiveNeighbors = this.mooreNeighbors(x, y);
     if (
-      !this.isActive(x, y) &&
+      !this.wasActive(x, y) &&
       !this.isDying(x, y) &&
       numberOfActiveNeighbors == 2
     ) {
       return this._activationColor;
-    } else if (this.isActive(x, y)) {
+    } else if (this.wasActive(x, y)) {
       return this.getAdditionalColor("Dying");
     }
     return this.grid.backgroundColor;
@@ -30,7 +30,7 @@ export class BriansBrain extends CellularAutomaton {
 
   isDying(x: number, y: number): boolean {
     return this.getAdditionalColor("Dying").equals(
-      this.grid.getPixels()[x][y].getOriginalColor()
+      this.grid.getPixels()[x][y].colorBeforeRuleApplication
     );
   }
 }

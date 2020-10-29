@@ -38,7 +38,7 @@ export abstract class CellularAutomaton {
       this.xBeyondWidth(this.yBeyondHeight(Pixel.XY(x + 1, y + 1)))
     );
     for (const neighbor of neighbors) {
-      if (this.isActive(neighbor.getX(), neighbor.getY())) {
+      if (this.wasActive(neighbor.getX(), neighbor.getY())) {
         activeNeighbors++;
       }
     }
@@ -92,6 +92,12 @@ export abstract class CellularAutomaton {
   isActive(x: number, y: number): boolean {
     const activationColor = this._activationColor;
     const pixelColor = this.grid.getPixels()[x][y].getColor();
+    return activationColor.equals(pixelColor);
+  }
+
+  wasActive(x: number, y: number): boolean {
+    const activationColor = this._activationColor;
+    const pixelColor = this.grid.getPixels()[x][y].colorBeforeRuleApplication;
     return activationColor.equals(pixelColor);
   }
 

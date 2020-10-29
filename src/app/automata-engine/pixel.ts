@@ -1,3 +1,4 @@
+import { CellularAutomaton } from "./cellularautomaton";
 import { Color } from "./color";
 
 export class Pixel {
@@ -5,6 +6,7 @@ export class Pixel {
   private y: number;
   private color: Color;
   private originalColor: Color;
+  private _colorBeforeRuleApplication: Color;
 
   constructor(x: number, y: number, color: Color, originalColor: Color) {
     this.x = x;
@@ -22,6 +24,11 @@ export class Pixel {
     );
   }
 
+  applyRule(rule: CellularAutomaton): void {
+    this._colorBeforeRuleApplication = this.color;
+    this.color = rule.applyRule(this.x, this.y);
+  }
+
   static XY(x: number, y: number): Pixel {
     return new Pixel(x, y, new Color(255, 255, 255), new Color(255, 255, 255));
   }
@@ -36,6 +43,14 @@ export class Pixel {
 
   getOriginalColor(): Color {
     return this.originalColor;
+  }
+
+  setOriginalColor(originalColor: Color): void {
+    this.originalColor = originalColor;
+  }
+
+  get colorBeforeRuleApplication(): Color {
+    return this._colorBeforeRuleApplication;
   }
 
   getX(): number {
