@@ -66,12 +66,32 @@ export class Grid {
     }
   }
 
+  drawGrid(canvas: p5): void {
+    canvas.push();
+    canvas.stroke(
+      this._gridColor.red,
+      this._gridColor.green,
+      this._gridColor.blue
+    );
+    let currentY = 0;
+    while (currentY <= this.nodeHeight) {
+      canvas.line(0, currentY, this.nodeWidth, currentY);
+      currentY += this.pixelSize;
+    }
+    let currentX = 0;
+    while (currentX <= this.nodeWidth) {
+      canvas.line(currentX, 0, currentX, this.nodeHeight);
+      currentX += this.pixelSize;
+    }
+    canvas.pop();
+  }
+
   /**
    * Redraws the grid
    *
    * @param col the new Color
    */
-  redraw(canvas: p5, cellularAutomaton?: CellularAutomaton): void {
+  redrawPixels(canvas: p5, cellularAutomaton?: CellularAutomaton): void {
     for (let i = 0; i < this.gridWidth; i += 1) {
       for (let j = 0; j < this.gridHeight; j += 1) {
         this.drawPixel(i, j, canvas, cellularAutomaton);
@@ -99,6 +119,7 @@ export class Grid {
       const pixelSize = this._pixelSize;
       const automataColor = this.gridPixels[x][y].getColor();
       if (
+        !this.gridPixels[x][y].colorBeforeRuleApplication ||
         !this.gridPixels[x][y]
           .getColor()
           .equals(this.gridPixels[x][y].colorBeforeRuleApplication)

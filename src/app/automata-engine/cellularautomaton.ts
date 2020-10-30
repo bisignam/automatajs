@@ -98,7 +98,7 @@ export abstract class CellularAutomaton {
   wasActive(x: number, y: number): boolean {
     const activationColor = this._activationColor;
     const pixelColor = this.grid.getPixels()[x][y].colorBeforeRuleApplication;
-    return activationColor.equals(pixelColor);
+    return pixelColor && activationColor.equals(pixelColor);
   }
 
   setGrid(grid: Grid): void {

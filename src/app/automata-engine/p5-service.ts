@@ -54,6 +54,7 @@ export class P5Service {
     p.colorMode(p.RGB, 255, 255, 255, 1);
     p.stroke(1);
     p.strokeWeight(1);
+    p.frameRate(10);
     p.createCanvas(width, height);
     const pixelSize = this.computeInitialPixelSize(width, height);
     this.updatePixelSize(pixelSize);
@@ -78,7 +79,7 @@ export class P5Service {
 
     this._grid.resizeAndReset(width, height);
     p.resizeCanvas(width, height);
-    this._grid.redraw(this.canvas, this._cellularAutomaton);
+    this._grid.redrawPixels(this.canvas, this._cellularAutomaton);
   }
 
   /**
@@ -111,7 +112,7 @@ export class P5Service {
     cellularAutomaton.setGrid(this._grid);
     this._cellularAutomaton = cellularAutomaton;
     this._grid.reset();
-    this._grid.redraw(this.canvas, this._cellularAutomaton);
+    this._grid.redrawPixels(this.canvas, this._cellularAutomaton);
   }
 
   reDraw(): void {
@@ -171,14 +172,19 @@ export class P5Service {
       if (this._cellularAutomaton && !this._cellularAutomaton.getGrid()) {
         this._cellularAutomaton.setGrid(this._grid); //we do it here because at this point we are sure the grid is already initialized
       }
-      this._grid.redraw(this.canvas, this._cellularAutomaton);
+      this.canvas.background(
+        this.grid.backgroundColor.red,
+        this.grid.backgroundColor.green,
+        this.grid.backgroundColor.blue
+      );
+      this.grid.drawGrid(this.canvas);
       this.initialized = true;
     }
     if (this.currentStep == this.maxStep) {
       return;
     }
-    this._grid.redraw(this.canvas, this._cellularAutomaton);
     this._cellularAutomaton.advance(this.canvas);
+    // this.grid.drawGrid(this.canvas);
     this.currentStep++;
   }
 
