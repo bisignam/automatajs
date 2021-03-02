@@ -1,6 +1,6 @@
 import { CellularAutomaton } from "../automata-engine/cellularautomaton";
 
-export class Seeds extends CellularAutomaton {
+export class DayAndNight extends CellularAutomaton {
   fragmentShader = `
   uniform vec2 u_resolution;
   uniform sampler2D u_texture;
@@ -43,14 +43,20 @@ export class Seeds extends CellularAutomaton {
   }
   
   /**
-     In each time step, a cell turns on or is "born" if it was off or "dead" but
-     had exactly two neighbors that were on; all other cells turn off.
+   dead cell becomes live (is born) if it has 3, 6, 7, or 8 live neighbors, and a
+   live cell remains alive (survives) if it has 3, 4, 6, 7, or 8 live neighbors,
      **/
   void main() {
     if (!isGridPixel(gl_FragCoord.xy) || !u_grid_active) {
       vec2 coord = getBlockCentre(gl_FragCoord.xy);
       int aliveNeighbors = aliveMooreNeighbors(coord);
-      if (wasAlive(coord) == 0 && aliveNeighbors == 2) {
+      if (wasAlive(coord) == 1 &&
+          (aliveNeighbors == 3 || aliveNeighbors == 4 || aliveNeighbors == 6 ||
+           aliveNeighbors == 7 || aliveNeighbors == 8)) {
+        gl_FragColor = u_alive_color;
+      } else if (wasAlive(coord) == 0 &&
+                 (aliveNeighbors == 3 || aliveNeighbors == 6 ||
+                  aliveNeighbors == 7 || aliveNeighbors == 8)) {
         gl_FragColor = u_alive_color;
       } else {
         gl_FragColor = u_dead_color;

@@ -1,6 +1,6 @@
 import { Component } from "@angular/core";
 import { DefaultSettings } from "src/app/automata-engine/defaultSettings";
-import { P5Service } from "src/app/automata-engine/p5-service";
+import { ThreeService } from "src/app/automata-engine/three-service";
 
 @Component({
   selector: "app-automata-cell-size-slider",
@@ -9,16 +9,16 @@ import { P5Service } from "src/app/automata-engine/p5-service";
 })
 export class AutomataCellSizeSliderComponent {
   private _pixelSize: number = DefaultSettings.pixelSize;
-  private p5Service: P5Service;
-  constructor(p5Service: P5Service) {
-    this.p5Service = p5Service;
-    this.p5Service.getPixelSize().subscribe((value) => {
+  private threeService: ThreeService;
+  constructor(p5Service: ThreeService) {
+    this.threeService = p5Service;
+    this.threeService.getPixelSize().subscribe((value) => {
       this._pixelSize = value;
     });
   }
   set pixelSize(pixelSize: number) {
     this._pixelSize = pixelSize;
-    this.p5Service.resizePixelsAndRedraw(pixelSize);
+    //this.threeService.resizePixelsAndRedraw(pixelSize);
   }
   get pixelSize(): number {
     return this._pixelSize;

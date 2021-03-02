@@ -1,16 +1,16 @@
 import { Component } from "@angular/core";
-import { P5Service } from "src/app/automata-engine/p5-service";
+import { ThreeService } from "src/app/automata-engine/three-service";
 
 @Component({
   selector: "app-automata-control",
   templateUrl: "./automata-control.component.html",
 })
 export class AutomataControlComponent {
-  private p5Service: P5Service;
+  private threeService: ThreeService;
   private _started: boolean;
 
-  constructor(p5Service: P5Service) {
-    this.p5Service = p5Service;
+  constructor(threeService: ThreeService) {
+    this.threeService = threeService;
   }
 
   get started(): boolean {
@@ -19,16 +19,16 @@ export class AutomataControlComponent {
 
   playAutomata(): void {
     this._started = true;
-    this.p5Service.startAutomata(100); //TODO Parametrize maxStep
+    this.threeService.startAutomata(100); //TODO Parametrize maxStep
   }
 
   stopAutomata(): void {
     this._started = false;
-    this.p5Service.stopAutomata();
+    this.threeService.stopAutomata();
   }
 
   clearGrid(): void {
     this._started = false;
-    this.p5Service.clearGrid();
+   // this.threeService.clearGrid();
   }
 }

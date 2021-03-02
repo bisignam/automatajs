@@ -1,5 +1,5 @@
 import { Component, Output, EventEmitter, Input } from "@angular/core";
-import { Color } from "src/app/automata-engine/color";
+import * as THREE from "three";
 
 @Component({
   selector: "app-color-picker",
@@ -7,17 +7,21 @@ import { Color } from "src/app/automata-engine/color";
   styleUrls: ["./automata-color-picker.component.scss"],
 })
 export class AutomataColorPickerComponent {
-  private _color: Color;
+  private _color: THREE.Color;
   @Output()
-  private chosenColor = new EventEmitter<Color>();
+  private chosenColor = new EventEmitter<THREE.Color>();
 
   @Input()
   get color(): string {
-    return this._color.toRgbaString();
+    return "#"+this._color.getHexString();
   }
 
   set color(color: string) {
-    this._color = Color.fromRgbaString(color);
+    //NOTE: when setting up the first time it seems the colors hex have no # prepended
+    if(!color.startsWith("#")) {
+      color = "#"+color;
+    }
+    this._color = new THREE.Color(color);
     this.chosenColor.emit(this._color);
   }
 }

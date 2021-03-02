@@ -1,22 +1,64 @@
 import { CellularAutomaton } from "../automata-engine/cellularautomaton";
-import { Color } from "../automata-engine/color";
 
 export class GameOfLife extends CellularAutomaton {
-  /** 
-     Any live cell with fewer than two live neighbours dies, as if by underpopulation.
-     Any live cell with two or three live neighbours lives on to the next generation.
-     Any live cell with more than three live neighbours dies, as if by overpopulation.
-     Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
-     **/
-  public applyRule(x: number, y: number): Color {
-    const numberOfActiveNeighbors = this.mooreNeighbors(x, y);
-    if (this.wasActive(x, y) && numberOfActiveNeighbors < 2) {
-      return this.grid.backgroundColor;
-    } else if (this.wasActive(x, y) && numberOfActiveNeighbors > 3) {
-      return this.grid.backgroundColor;
-    } else if (!this.wasActive(x, y) && numberOfActiveNeighbors == 3) {
-      return this._activationColor;
+  fragmentShader = `
+    uniform vec2 u_resolution;
+    uniform sampler2D u_texture;
+    uniform float u_automata_size; // The block size in pixels
+    uniform float u_grid_weigth;
+    uniform vec4 u_grid_color;
+    uniform bool u_grid_active;
+    
+    int wasAlive(vec2 coord) {
+      vec4 px = texture2D(
+          u_texture, mod(coord / u_resolution, 1.)); // mod for toroidal surface
+      return px.r < 0.1 ? 1 : 0;
     }
-    return this.grid.getPixels()[x][y].getColor();
-  }
+    
+    vec2 getBlockCenter(const in vec2 vPos) {
+      vec2 pos = floor((vPos - 0.5) / u_automata_size) * u_automata_size;
+      pos.x = pos.x + u_automata_size / 2.0;
+      pos.y = pos.y + u_automata_size / 2.0;
+      return pos;
+    }
+    
+    bool isGridPixel(const in vec2 vPos) {
+      bvec2 comparisonResult = lessThanEqual(mod(vPos - 0.5, u_automata_size),
+                                            vec2(u_grid_weigth, u_grid_weigth));
+      return comparisonResult != bvec2(false, false);
+    }
+    
+    void main() {
+      if (!isGridPixel(gl_FragCoord.xy) || !u_grid_active) {
+        vec2 coord = getBlockCenter(gl_FragCoord.xy);
+        int aliveNeighbors =
+            wasAlive(coord + vec2(-u_automata_size, -u_automata_size)) +
+            wasAlive(coord + vec2(-u_automata_size, 0.)) +
+            wasAlive(coord + vec2(-u_automata_size, u_automata_size)) +
+            wasAlive(coord + vec2(0., -u_automata_size)) +
+            wasAlive(coord + vec2(0., u_automata_size)) +
+            wasAlive(coord + vec2(u_automata_size, -u_automata_size)) +
+            wasAlive(coord + vec2(u_automata_size, 0.)) +
+            wasAlive(coord + vec2(u_automata_size, u_automata_size));
+        bool nowAlive =
+            (wasAlive(coord) == 1 ? 2 <= aliveNeighbors && aliveNeighbors <= 3
+                                  : 3 == aliveNeighbors);
+        gl_FragColor = nowAlive ? vec4(0., 0., 0., 1.) : vec4(1., 1., 1., 1.);
+      } else {
+        gl_FragColor = u_grid_color;
+      }
+    }
+  `;
+  vertexShader =  '';
+  uniforms = {
+    u_texture: { value: null },
+    u_resolution: { value: null },
+    u_automata_size: { value: null },
+    u_grid_weigth: { value: null },
+    u_grid_color: { value: null },
+    u_grid_active: { value: null },
+    u_alive_color: { value: null },
+    u_dying_color: { value: null },
+    u_dead_color: { value: null },
+  };
 }

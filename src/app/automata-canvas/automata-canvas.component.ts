@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, ViewChild } from "@angular/core";
-import { P5Service } from "../automata-engine/p5-service";
+import { ThreeService } from "../automata-engine/three-service";
 
 @Component({
   selector: "app-automata-canvas",
@@ -9,13 +9,13 @@ import { P5Service } from "../automata-engine/p5-service";
 export class AutomataCanvasComponent implements AfterViewInit {
   @ViewChild("automataCanvasContainer")
   automataCanvasContainer: ElementRef;
-  p5Service: P5Service;
+  threeService: ThreeService;
 
-  constructor(p5Service: P5Service) {
-    this.p5Service = p5Service;
+  constructor(threeService: ThreeService) {
+    this.threeService = threeService;
   }
 
   ngAfterViewInit(): void {
-    this.p5Service.createCanvas(this.automataCanvasContainer.nativeElement);
+    this.threeService.setup(this.automataCanvasContainer);
   }
 }

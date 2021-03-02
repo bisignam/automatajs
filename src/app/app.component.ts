@@ -1,8 +1,7 @@
 import { Component } from "@angular/core";
 import { MatIconRegistry } from "@angular/material/icon";
 import { DomSanitizer } from "@angular/platform-browser";
-import { P5Service } from "./automata-engine/p5-service";
-import { Color } from "./automata-engine/color";
+import { ThreeService } from "./automata-engine/three-service";
 import { AdditionalColorType } from "./automata-engine/cellularautomaton";
 import { DefaultSettings } from "./automata-engine/defaultSettings";
 
@@ -20,7 +19,7 @@ export class AppComponent {
   constructor(
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
-    private p5Service: P5Service
+    private threeService: ThreeService
   ) {
     this.matIconRegistry.addSvgIcon(
       "automatajs",
@@ -32,41 +31,35 @@ export class AppComponent {
       "github",
       this.domSanitizer.bypassSecurityTrustResourceUrl("../assets/github.svg")
     );
-    this.p5Service = p5Service;
-    this.p5Service.cellularAutomaton.activationColor = this.activationColor;
+    this.threeService = threeService;
+    this.threeService.activeColor = this.activationColor;
   }
 
-  onBackgroundColorChosen(color: Color): void {
-    if (this.p5Service.grid) {
-      this.p5Service.grid.backgroundColor = color;
-      this.p5Service.reDraw();
-    }
+  onBackgroundColorChosen(color: THREE.Color): void {
+    this.threeService.deadColor = color;
   }
 
-  onGridColorChosen(color: Color): void {
-    if (this.p5Service.grid) {
-      this.p5Service.grid.gridColor = color;
-      this.p5Service.reDraw();
-    }
+  onGridColorChosen(color: THREE.Color): void {
+  //   if (this.threeService.grid) {
+  //  //   this.threeService.grid.gridColor = color;
+  //     this.threeService.reDraw();
+  //   }
   }
 
-  onActivationColorChosen(color: Color): void {
-    if (this.p5Service.cellularAutomaton) {
-      this.p5Service.cellularAutomaton.activationColor = color;
-      this.p5Service.reDraw();
-    }
+  onActivationColorChosen(color: THREE.Color): void {
+    this.threeService.activeColor = color;
   }
 
-  onAutomataColorChosen(name: string, color: Color): void {
-    if (this.p5Service.cellularAutomaton) {
-      this.p5Service.cellularAutomaton.setAdditionalColor(name, color);
-    }
+  onAutomataColorChosen(name: string, color: THREE.Color): void {
+    // if (this.threeService.cellularAutomaton) {
+    //   this.threeService.cellularAutomaton.setAdditionalColor(name, color);
+    // }
   }
 
   getAdditionalColorsForAutomata(): Array<AdditionalColorType> {
-    if (this.p5Service.cellularAutomaton) {
-      return this.p5Service.cellularAutomaton.additionalColors;
-    }
-    return new Array<AdditionalColorType>();
+    // if (this.threeService.cellularAutomaton) {
+    //   return this.threeService.cellularAutomaton.additionalColors;
+    // }
+     return new Array<AdditionalColorType>();
   }
 }

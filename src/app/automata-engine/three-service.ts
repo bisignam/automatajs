@@ -1,126 +1,216 @@
-import { Injectable } from "@angular/core";
-import * as p5 from "p5";
+import { ElementRef, Injectable } from "@angular/core";
 import { CellularAutomaton } from "./cellularautomaton";
-import { Grid } from "./grid";
-import { Pixel } from "./pixel";
-import { BriansBrain } from "../automata-rules/briansbrain";
 import { BehaviorSubject, Observable } from "rxjs";
 import { DefaultSettings } from "./defaultSettings";
-import { Utils } from "./utils";
+import { OnDestroy } from "@angular/core";
+import * as THREE from 'three';
+import { DisplayPassShader } from "./display-pass-shader";
+import { Shader } from "three";
+import { Maze } from "../automata-rules/maze";
+import { DayAndNight } from "../automata-rules/dayandnight";
+import { Seeds } from "../automata-rules/seeds";
+import { BriansBrain } from "../automata-rules/briansbrain";
 
 @Injectable({
   providedIn: "root", //means singleton service
 })
-export class P5Service {
+export class ThreeService implements OnDestroy {
   private currentStep = 1;
   private maxStep = 1;
-  private _cellularAutomaton: CellularAutomaton = new BriansBrain(); //TODO allow to initialize externally
-  private _grid: Grid;
-  private initialized = false;
-  private node: HTMLElement;
-  private canvas: p5;
+  private canvas: HTMLCanvasElement;
   private _pixelSize = new BehaviorSubject<number>(DefaultSettings.pixelSize);
-
-  createCanvas(node: HTMLElement): void {
-    this.canvas = new p5((p: p5) => {
-      p.setup = () => {
-        this.setup(node, p);
-      };
-      p.windowResized = () => {
-        this.resize(node, p);
-      };
-      p.draw = () => {
-        this.draw();
-      };
-      p.mouseDragged = (mouseEvent: MouseEvent) => {
-        this.drawCell(mouseEvent);
-      };
-      p.mousePressed = (mouseEvent: MouseEvent) => {
-        this.drawCell(mouseEvent);
-      };
-    }, node);
-    this.node = node;
-  }
-
-  /**
-   * Method called during p5 canvas setup
-   * @param node the HTMLElement to attach the canvas to
-   * @param p the p5 canvas
-   * @param backGroundColor the background color
-   */
-  private setup(node: HTMLElement, p: p5) {
-    const width = node.getBoundingClientRect().width;
-    const height = node.getBoundingClientRect().height;
-    p.colorMode(p.RGB, 255, 255, 255, 1);
-    p.stroke(1);
-    p.strokeWeight(1);
-    p.frameRate(10);
-    p.createCanvas(width, height);
-    const pixelSize = this.computeInitialPixelSize(width, height);
-    this.updatePixelSize(pixelSize);
-    this._grid = new Grid(width, height, pixelSize);
-    p.background(
-      this._grid.backgroundColor.red,
-      this._grid.backgroundColor.green,
-      this._grid.backgroundColor.blue
-    );
-  }
+  private _cellularAutomaton: CellularAutomaton = new BriansBrain(); //TODO allow to initialize externally
+  private automatonMaterial: THREE.ShaderMaterial;
+  private renderer: THREE.WebGLRenderer;
+  private camera: THREE.OrthographicCamera;
+  private stepperScene: THREE.Scene;
+  private displayScene: THREE.Scene;
+  private frameId: number = null;
+  private squares: Array<THREE.Mesh>;
+  private buffers: Array<THREE.WebGLRenderTarget>;
+  private drawWithMouse = true; //NOTE: not exposed externally, just for debugging
+  private isDrawing = false;
+  private mouse: THREE.Vector2; //The mouse position
+  private raycaster: THREE.Raycaster; //For managing mouse interesection with objects
+  private automataSize = 1;
+  private initialized = false;
+  private nextStateIndex = 0;
+  private displayPassShader = new DisplayPassShader();
+  private _activeColor = new THREE.Color("#152609");
+  private _deadColor = DefaultSettings.backgroundColor;
+  private dyingColor = new THREE.Color("#428405");
+  private gridColor = new THREE.Color("#0D0D0D");
+  private gridWeight = 1;
+  private gridActive = false;
+  private play = false;
 
   /**
-   * Method called during p5 canvas windowResized
-   * @param node the HTMLElement to attach the canvas to
-   * @param p the p5 canvas
+   * Cancel the current animation frame
    */
-  private resize(node: HTMLElement, p: p5) {
-    this.currentStep = 1;
-    this.initialized = false;
-    const width = node.getBoundingClientRect().width;
-    const height = node.getBoundingClientRect().height;
-
-    this._grid.resizeAndReset(width, height);
-    p.resizeCanvas(width, height);
-    this._grid.redrawPixels(this.canvas, this._cellularAutomaton);
-  }
-
-  /**
-   * Method called on p5 mouseDragged and mousePressed events
-   *
-   * @param mouseEvent the MouseEvent
-   */
-  private drawCell(mouseEvent: MouseEvent) {
-    //if we are inside the canvas
-    if (this.node.matches(":hover")) {
-      this.eventuallyActivateCell(
-        new Pixel(
-          Math.round(mouseEvent.offsetX / this._grid.pixelSize),
-          Math.round(mouseEvent.offsetY / this._grid.pixelSize),
-          this._grid.backgroundColor,
-          this._grid.backgroundColor
-        )
-      );
+  public ngOnDestroy(): void {
+    if (this.frameId != null) {
+      cancelAnimationFrame(this.frameId);
     }
   }
 
-  /*
-    Sets the automata rule and stops the current automata
-  */
-  setAutomataAndStopCurrent(cellularAutomaton: CellularAutomaton): void {
-    this.currentStep = this.maxStep;
+  /**
+   * Setup the threejs component
+   * @param node the HTMLElement to attach the canvas to
+   */
+  public setup(canvas: ElementRef<HTMLCanvasElement>) {
+    this.canvas = canvas.nativeElement;
+    this.raycaster = new THREE.Raycaster();
+
+    this.squares = new Array<THREE.Mesh>();
+    const width = this.canvas.clientWidth;
+    const height = this.canvas.clientHeight;
+    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
+
+    this.renderer.setSize(width, height, false);
+    this.renderer.autoClearColor = false;
+
+    const step1 = new THREE.WebGLRenderTarget(width, height);
+    const step2 = new THREE.WebGLRenderTarget(width, height);
+
+    this.buffers = [step1, step2];
+
+    //We make the camera take the whole screen with his frustum
+    this.camera = new THREE.OrthographicCamera(
+      -(width / 2), // left
+      (width / 2), // right
+      (height / 2), // top
+      -(height / 2), // bottom
+      -1, // near,
+      1, // far
+    );
+
+
+    //NOTE: this must be called before configuring the mesh
+    // because the vector uniforms must be initialized
+    this.setupAutomataParameters();
+
+    this.stepperScene = new THREE.Scene();
+    //NOTE: cellular automaton IS A SHADER
+    const plane1 = new THREE.PlaneGeometry(this.canvas.clientWidth, this.canvas.clientHeight);
+    this.automatonMaterial = this.createShaderMaterial(this.cellularAutomaton);
+    this.stepperScene.add(new THREE.Mesh(plane1, this.automatonMaterial));
+    this.displayScene = new THREE.Scene();
+    const plane2 = new THREE.PlaneGeometry(this.canvas.clientWidth, this.canvas.clientHeight)
+    this.displayScene.add(new THREE.Mesh(plane2, this.createShaderMaterial(this.displayPassShader)));
+
+    this.configureMouseDrawingEvents(this.canvas);
+    this.animate = this.animate.bind(this);
     this.initialized = true;
-    cellularAutomaton.activationColor = this._cellularAutomaton.activationColor;
-    cellularAutomaton.copyAdditionalColorsFromAutomata(this._cellularAutomaton);
-    cellularAutomaton.setGrid(this._grid);
-    this._cellularAutomaton = cellularAutomaton;
-    this._grid.reset();
-    this._grid.redrawPixels(this.canvas, this._cellularAutomaton);
+    this.play = true; //enable playing animation
+    requestAnimationFrame(this.animate)
+  }
+
+  private reset(): void {
+    this.buffers[0].dispose();
+    this.buffers[1].dispose();
+    this.buffers[0] = new THREE.WebGLRenderTarget(this.canvas.width, this.canvas.height);
+    this.buffers[1] = new THREE.WebGLRenderTarget(this.canvas.width, this.canvas.height);
+    // this.automatonMaterial.dispose();
+    this.setupAutomataParameters();
+    this.automatonMaterial =  this.createShaderMaterial(this.cellularAutomaton);
+  }
+
+  private createShaderMaterial(shader: Shader): THREE.ShaderMaterial {
+    return new THREE.ShaderMaterial({ uniforms: shader.uniforms, fragmentShader: shader.fragmentShader });
+  }
+
+  private resizeRendererToDisplaySize(renderer: THREE.WebGLRenderer) {
+    const width = this.canvas.clientWidth;
+    const height = this.canvas.clientHeight;
+
+    const needResize = this.canvas.width !== width || this.canvas.height !== height;
+    if (needResize) {
+      renderer.setSize(width, height, false);
+    }
+    return needResize;
+  }
+
+  private configureMouseDrawingEvents(canvas: HTMLCanvasElement) {
+    this.mouse = new THREE.Vector2();
+    if (this.drawWithMouse) {
+      canvas.addEventListener('mousedown', e => {
+        this.isDrawing = true;
+      });
+
+      canvas.addEventListener('mousemove', e => {
+        e.preventDefault();
+        this.mouse.x = Math.floor((e.offsetX - (canvas.clientWidth / 2)) / this.automataSize) * this.automataSize - this.automataSize / 2;
+        this.mouse.y = Math.floor(((canvas.clientHeight / 2) - e.offsetY) / this.automataSize) * this.automataSize - this.automataSize / 2;;
+      });
+
+      canvas.addEventListener('click', e => {
+        e.preventDefault();
+        this.mouse.x = Math.floor((e.offsetX - (canvas.clientWidth / 2)) / this.automataSize) * this.automataSize - this.automataSize / 2;
+        this.mouse.y = Math.floor(((canvas.clientHeight / 2) - e.offsetY) / this.automataSize) * this.automataSize - this.automataSize / 2;;
+      });
+
+      canvas.addEventListener('mouseup', e => {
+        this.isDrawing = false;
+      });
+    }
+  }
+
+  public setupAutomataParameters() {
+    this._cellularAutomaton.uniforms = {
+      u_texture: { value: null },
+      u_resolution: { value: new THREE.Vector2(this.canvas.clientWidth, this.canvas.clientHeight) },
+      u_automata_size: { value: this.automataSize },
+      u_grid_weigth: { value: this.gridWeight },
+      u_grid_color: { value: new THREE.Vector4(this.gridColor.r, this.gridColor.g, this.gridColor.b, 1) },
+      u_grid_active: { value: this.gridActive },
+      u_alive_color: { value: new THREE.Vector4(this._activeColor.r, this._activeColor.g, this._activeColor.b, 1) },
+      u_dying_color: { value: new THREE.Vector4(this.dyingColor.r, this.dyingColor.g, this.dyingColor.b, 1) },
+      u_dead_color: { value: new THREE.Vector4(this._deadColor.r, this._deadColor.g, this._deadColor.b, 1) },
+    }
+  }
+
+  private drawSquare(x, y, scene) {
+    //we need a square, basically a plane with z set to zero
+    const automata = new THREE.PlaneGeometry(this.automataSize, this.automataSize);
+    const automataMaterial = new THREE.MeshBasicMaterial({ color: this._activeColor });
+    const automataMesh = new THREE.Mesh(automata, automataMaterial);
+    scene.add(automataMesh);
+    automataMesh.position.set(x, y, 0);
+    this.squares.push(automataMesh);
+  }
+
+  private clearSquares() {
+    for (const square of this.squares) {
+      this.stepperScene.remove(square);
+    }
+  }
+
+  private display(source) {
+    this.displayPassShader.uniforms.u_resolution.value.set(this.canvas.clientWidth, this.canvas.clientHeight);
+    this.displayPassShader.uniforms.u_texture.value = source.texture;
+    // console.log("(display.step) Received texture "+source.texture.uuid);
+    this.renderer.setRenderTarget(null);
+    this.renderer.render(this.displayScene, this.camera);
+  }
+
+  private drawSquareIfNecessary() {
+    if (this.isDrawing) {
+      // calculate objects intersecting the picking raytexture
+      const intersects = this.raycaster.intersectObjects(this.stepperScene.children);
+      if (intersects.length > 0) {
+        this.drawSquare(this.mouse.x, this.mouse.y, this.stepperScene);
+      }
+    }
+  }
+
+  setAutomataAndStopCurrent(automaton: CellularAutomaton) {
+    this.play = false;
+    this._cellularAutomaton = automaton;
+    this.reset();
+    this.play = true;
   }
 
   reDraw(): void {
-    this.initialized = false;
-  }
-
-  resizePixelsAndRedraw(pixelSize: number): void {
-    this._grid.pixelSize = pixelSize;
     this.initialized = false;
   }
 
@@ -145,55 +235,65 @@ export class P5Service {
     this.initialized = true;
   }
 
-  clearGrid(): void {
-    this.currentStep = this.maxStep - 1;
-    this._grid.reset();
-    this.initialized = true;
-  }
-
-  private eventuallyActivateCell(pixel: Pixel): void {
-    if (
-      pixel.getX() >= 0 &&
-      pixel.getX() < this._grid.getWidth() &&
-      pixel.getY() >= 0 &&
-      pixel.getY() < this._grid.getHeight()
-    ) {
-      this._grid.activate(
-        this.canvas,
-        this._cellularAutomaton,
-        pixel.getX(),
-        pixel.getY()
-      );
-    }
-  }
-
-  private draw(): void {
-    if (!this.initialized) {
-      if (this._cellularAutomaton && !this._cellularAutomaton.getGrid()) {
-        this._cellularAutomaton.setGrid(this._grid); //we do it here because at this point we are sure the grid is already initialized
+  public animate(): void {
+    if (this.play) {
+      requestAnimationFrame(() => {
+        this.animate();
+      });
+      this.resizeRendererToDisplaySize(this.renderer);
+      const previousStateIndex = 1 - this.nextStateIndex;
+      if (this.isDrawing) {
+        if (this.drawWithMouse) {
+          this.drawSquareIfNecessary();
+          this.renderer.setRenderTarget(null);
+          this.renderer.render(this.stepperScene, this.camera);
+          return;
+        }
+      } else {
+        this.stepForward(previousStateIndex);
+        this.displayStep();
+        this.clearSquares();
       }
-      this.canvas.background(
-        this.grid.backgroundColor.red,
-        this.grid.backgroundColor.green,
-        this.grid.backgroundColor.blue
-      );
-      this.grid.drawGrid(this.canvas);
-      this.initialized = true;
+      this.nextStateIndex = previousStateIndex;
+      this.currentStep++;
     }
-    if (this.currentStep == this.maxStep) {
-      return;
-    }
-    this._cellularAutomaton.advance(this.canvas);
-    // this.grid.drawGrid(this.canvas);
-    this.currentStep++;
   }
 
-  get grid(): Grid {
-    return this._grid;
+  private stepForward(previousStateIndex: number): void {
+    this._cellularAutomaton.step(this.canvas, this.renderer, this.buffers[previousStateIndex], this.buffers[this.nextStateIndex], this.stepperScene, this.camera); // Apply the automata
+  }
+
+  private displayStep(): void {
+    this.display(this.buffers[this.nextStateIndex]); //NOTE:here we simpy take the result of stepper and we paint it to screen
   }
 
   get cellularAutomaton(): CellularAutomaton {
     return this._cellularAutomaton;
+  }
+
+  public set activeColor(activeColor: THREE.Color) {
+    if (!activeColor) {
+      throw new Error('Invalid active color.');
+    }
+    this._activeColor = activeColor;
+    if (this.initialized) {
+      this.cellularAutomaton.uniforms.u_alive_color = { value: new THREE.Vector4(this._activeColor.r, this._activeColor.g, this._activeColor.b, 1) };
+    }
+  }
+
+  public get activeColor(): THREE.Color {
+    return this._activeColor;
+  }
+
+
+  public set deadColor(deadColor: THREE.Color) {
+    if (!deadColor) {
+      throw new Error('Invalid active color.');
+    }
+    this._deadColor = deadColor;
+    if (this.initialized) {
+      this.cellularAutomaton.uniforms.u_dead_color = { value: new THREE.Vector4(this._deadColor.r, this._deadColor.g, this._deadColor.b, 1) };
+    }
   }
 
   getPixelSize(): Observable<number> {
@@ -202,11 +302,5 @@ export class P5Service {
 
   updatePixelSize(pixelSize: number): void {
     this._pixelSize.next(pixelSize);
-  }
-
-  computeInitialPixelSize(width: number, height: number): number {
-    return (
-      Utils.getBiggestCommonDivisor(Math.floor(width), Math.floor(height)) * 10
-    );
   }
 }
