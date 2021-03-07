@@ -1,13 +1,13 @@
-import { AfterViewInit, Component, ElementRef, ViewChild } from "@angular/core";
-import { ThreeService } from "../automata-engine/three-service";
+import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
+import { ThreeService } from '../automata-engine/three-service';
 
 @Component({
-  selector: "app-automata-canvas",
-  templateUrl: "./automata-canvas.component.html",
-  styleUrls: ["./automata-canvas.component.scss"],
+  selector: 'app-automata-canvas',
+  templateUrl: './automata-canvas.component.html',
+  styleUrls: ['./automata-canvas.component.scss'],
 })
 export class AutomataCanvasComponent implements AfterViewInit {
-  @ViewChild("automataCanvasContainer")
+  @ViewChild('automataCanvasContainer')
   automataCanvasContainer: ElementRef;
   threeService: ThreeService;
 

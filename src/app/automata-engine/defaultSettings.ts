@@ -1,5 +1,5 @@
-import * as THREE from "three";
-import { BriansBrain } from "../automata-rules/briansbrain";
+import * as THREE from 'three';
+import { BriansBrain } from '../automata-rules/briansbrain';
 
 export class DefaultSettings {
   static automata = new BriansBrain();

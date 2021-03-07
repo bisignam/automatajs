@@ -1,4 +1,4 @@
-import { CellularAutomaton } from "../automata-engine/cellularautomaton";
+import { CellularAutomaton } from '../automata-engine/cellularautomaton';
 
 export class DayAndNight extends CellularAutomaton {
   fragmentShader = `
@@ -66,7 +66,7 @@ export class DayAndNight extends CellularAutomaton {
     }
   }
   `;
-  vertexShader =  '';
+  vertexShader = '';
   uniforms = {
     u_texture: { value: null },
     u_resolution: { value: null },

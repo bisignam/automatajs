@@ -1,18 +1,15 @@
-import { ElementRef, Injectable } from "@angular/core";
-import { CellularAutomaton } from "./cellularautomaton";
-import { BehaviorSubject, Observable } from "rxjs";
-import { DefaultSettings } from "./defaultSettings";
-import { OnDestroy } from "@angular/core";
+import { ElementRef, Injectable } from '@angular/core';
+import { CellularAutomaton } from './cellularautomaton';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { DefaultSettings } from './defaultSettings';
+import { OnDestroy } from '@angular/core';
 import * as THREE from 'three';
-import { DisplayPassShader } from "./display-pass-shader";
-import { Shader } from "three";
-import { Maze } from "../automata-rules/maze";
-import { DayAndNight } from "../automata-rules/dayandnight";
-import { Seeds } from "../automata-rules/seeds";
-import { BriansBrain } from "../automata-rules/briansbrain";
+import { DisplayPassShader } from './display-pass-shader';
+import { Shader } from 'three';
+import { BriansBrain } from '../automata-rules/briansbrain';
 
 @Injectable({
-  providedIn: "root", //means singleton service
+  providedIn: 'root', //means singleton service
 })
 export class ThreeService implements OnDestroy {
   private currentStep = 1;
@@ -32,14 +29,15 @@ export class ThreeService implements OnDestroy {
   private isDrawing = false;
   private mouse: THREE.Vector2; //The mouse position
   private raycaster: THREE.Raycaster; //For managing mouse interesection with objects
-  private automataSize = 1;
+  private automataSize = 4;
   private initialized = false;
   private nextStateIndex = 0;
   private displayPassShader = new DisplayPassShader();
-  private _activeColor = new THREE.Color("#152609");
+  private _activeColor = new THREE.Color('#152609');
   private _deadColor = DefaultSettings.backgroundColor;
-  private dyingColor = new THREE.Color("#428405");
-  private gridColor = new THREE.Color("#0D0D0D");
+  private dyingColor = new THREE.Color('#428405');
+  private gridColor = new THREE.Color('#0D0D0D');
+
   private gridWeight = 1;
   private gridActive = false;
   private play = false;
@@ -48,6 +46,7 @@ export class ThreeService implements OnDestroy {
    * Cancel the current animation frame
    */
   public ngOnDestroy(): void {
+    /*  */
     if (this.frameId != null) {
       cancelAnimationFrame(this.frameId);
     }
@@ -57,7 +56,7 @@ export class ThreeService implements OnDestroy {
    * Setup the threejs component
    * @param node the HTMLElement to attach the canvas to
    */
-  public setup(canvas: ElementRef<HTMLCanvasElement>) {
+  public setup(canvas: ElementRef<HTMLCanvasElement>): void {
     this.canvas = canvas.nativeElement;
     this.raycaster = new THREE.Raycaster();
 
@@ -77,13 +76,12 @@ export class ThreeService implements OnDestroy {
     //We make the camera take the whole screen with his frustum
     this.camera = new THREE.OrthographicCamera(
       -(width / 2), // left
-      (width / 2), // right
-      (height / 2), // top
+      width / 2, // right
+      height / 2, // top
       -(height / 2), // bottom
       -1, // near,
-      1, // far
+      1 // far
     );
-
 
     //NOTE: this must be called before configuring the mesh
     // because the vector uniforms must be initialized
@@ -91,39 +89,57 @@ export class ThreeService implements OnDestroy {
 
     this.stepperScene = new THREE.Scene();
     //NOTE: cellular automaton IS A SHADER
-    const plane1 = new THREE.PlaneGeometry(this.canvas.clientWidth, this.canvas.clientHeight);
+    const plane1 = new THREE.PlaneGeometry(
+      this.canvas.clientWidth,
+      this.canvas.clientHeight
+    );
     this.automatonMaterial = this.createShaderMaterial(this.cellularAutomaton);
     this.stepperScene.add(new THREE.Mesh(plane1, this.automatonMaterial));
     this.displayScene = new THREE.Scene();
-    const plane2 = new THREE.PlaneGeometry(this.canvas.clientWidth, this.canvas.clientHeight)
-    this.displayScene.add(new THREE.Mesh(plane2, this.createShaderMaterial(this.displayPassShader)));
+    const plane2 = new THREE.PlaneGeometry(
+      this.canvas.clientWidth,
+      this.canvas.clientHeight
+    );
+    this.displayScene.add(
+      new THREE.Mesh(plane2, this.createShaderMaterial(this.displayPassShader))
+    );
 
     this.configureMouseDrawingEvents(this.canvas);
     this.animate = this.animate.bind(this);
     this.initialized = true;
     this.play = true; //enable playing animation
-    requestAnimationFrame(this.animate)
+    requestAnimationFrame(this.animate);
   }
 
   private reset(): void {
     this.buffers[0].dispose();
     this.buffers[1].dispose();
-    this.buffers[0] = new THREE.WebGLRenderTarget(this.canvas.width, this.canvas.height);
-    this.buffers[1] = new THREE.WebGLRenderTarget(this.canvas.width, this.canvas.height);
+    this.buffers[0] = new THREE.WebGLRenderTarget(
+      this.canvas.width,
+      this.canvas.height
+    );
+    this.buffers[1] = new THREE.WebGLRenderTarget(
+      this.canvas.width,
+      this.canvas.height
+    );
     // this.automatonMaterial.dispose();
     this.setupAutomataParameters();
-    this.automatonMaterial =  this.createShaderMaterial(this.cellularAutomaton);
+    this.automatonMaterial = this.createShaderMaterial(this.cellularAutomaton);
   }
 
   private createShaderMaterial(shader: Shader): THREE.ShaderMaterial {
-    return new THREE.ShaderMaterial({ uniforms: shader.uniforms, fragmentShader: shader.fragmentShader });
+    return new THREE.ShaderMaterial({
+      uniforms: shader.uniforms,
+      fragmentShader: shader.fragmentShader,
+    });
   }
 
   private resizeRendererToDisplaySize(renderer: THREE.WebGLRenderer) {
     const width = this.canvas.clientWidth;
     const height = this.canvas.clientHeight;
 
-    const needResize = this.canvas.width !== width || this.canvas.height !== height;
+    const needResize =
+      this.canvas.width !== width || this.canvas.height !== height;
     if (needResize) {
       renderer.setSize(width, height, false);
     }
@@ -133,46 +149,100 @@ export class ThreeService implements OnDestroy {
   private configureMouseDrawingEvents(canvas: HTMLCanvasElement) {
     this.mouse = new THREE.Vector2();
     if (this.drawWithMouse) {
-      canvas.addEventListener('mousedown', e => {
+      canvas.addEventListener('mousedown', (_e) => {
         this.isDrawing = true;
       });
 
-      canvas.addEventListener('mousemove', e => {
+      canvas.addEventListener('mousemove', (e) => {
         e.preventDefault();
-        this.mouse.x = Math.floor((e.offsetX - (canvas.clientWidth / 2)) / this.automataSize) * this.automataSize - this.automataSize / 2;
-        this.mouse.y = Math.floor(((canvas.clientHeight / 2) - e.offsetY) / this.automataSize) * this.automataSize - this.automataSize / 2;;
+        this.mouse.x =
+          Math.floor((e.offsetX - canvas.clientWidth / 2) / this.automataSize) *
+            this.automataSize -
+          this.automataSize / 2;
+        this.mouse.y =
+          Math.floor(
+            (canvas.clientHeight / 2 - e.offsetY) / this.automataSize
+          ) *
+            this.automataSize -
+          this.automataSize / 2;
       });
 
-      canvas.addEventListener('click', e => {
+      canvas.addEventListener('click', (e) => {
         e.preventDefault();
-        this.mouse.x = Math.floor((e.offsetX - (canvas.clientWidth / 2)) / this.automataSize) * this.automataSize - this.automataSize / 2;
-        this.mouse.y = Math.floor(((canvas.clientHeight / 2) - e.offsetY) / this.automataSize) * this.automataSize - this.automataSize / 2;;
+        this.mouse.x =
+          Math.floor((e.offsetX - canvas.clientWidth / 2) / this.automataSize) *
+            this.automataSize -
+          this.automataSize / 2;
+        this.mouse.y =
+          Math.floor(
+            (canvas.clientHeight / 2 - e.offsetY) / this.automataSize
+          ) *
+            this.automataSize -
+          this.automataSize / 2;
       });
 
-      canvas.addEventListener('mouseup', e => {
+      canvas.addEventListener('mouseup', (_e) => {
         this.isDrawing = false;
       });
     }
   }
 
-  public setupAutomataParameters() {
+  private setupAutomataParameters(): void {
     this._cellularAutomaton.uniforms = {
       u_texture: { value: null },
-      u_resolution: { value: new THREE.Vector2(this.canvas.clientWidth, this.canvas.clientHeight) },
+      u_resolution: {
+        value: new THREE.Vector2(
+          this.canvas.clientWidth,
+          this.canvas.clientHeight
+        ),
+      },
       u_automata_size: { value: this.automataSize },
       u_grid_weigth: { value: this.gridWeight },
-      u_grid_color: { value: new THREE.Vector4(this.gridColor.r, this.gridColor.g, this.gridColor.b, 1) },
+      u_grid_color: {
+        value: new THREE.Vector4(
+          this.gridColor.r,
+          this.gridColor.g,
+          this.gridColor.b,
+          1
+        ),
+      },
       u_grid_active: { value: this.gridActive },
-      u_alive_color: { value: new THREE.Vector4(this._activeColor.r, this._activeColor.g, this._activeColor.b, 1) },
-      u_dying_color: { value: new THREE.Vector4(this.dyingColor.r, this.dyingColor.g, this.dyingColor.b, 1) },
-      u_dead_color: { value: new THREE.Vector4(this._deadColor.r, this._deadColor.g, this._deadColor.b, 1) },
-    }
+      u_alive_color: {
+        value: new THREE.Vector4(
+          this._activeColor.r,
+          this._activeColor.g,
+          this._activeColor.b,
+          1
+        ),
+      },
+      u_dying_color: {
+        value: new THREE.Vector4(
+          this.dyingColor.r,
+          this.dyingColor.g,
+          this.dyingColor.b,
+          1
+        ),
+      },
+      u_dead_color: {
+        value: new THREE.Vector4(
+          this._deadColor.r,
+          this._deadColor.g,
+          this._deadColor.b,
+          1
+        ),
+      },
+    };
   }
 
   private drawSquare(x, y, scene) {
     //we need a square, basically a plane with z set to zero
-    const automata = new THREE.PlaneGeometry(this.automataSize, this.automataSize);
-    const automataMaterial = new THREE.MeshBasicMaterial({ color: this._activeColor });
+    const automata = new THREE.PlaneGeometry(
+      this.automataSize,
+      this.automataSize
+    );
+    const automataMaterial = new THREE.MeshBasicMaterial({
+      color: this._activeColor,
+    });
     const automataMesh = new THREE.Mesh(automata, automataMaterial);
     scene.add(automataMesh);
     automataMesh.position.set(x, y, 0);
@@ -186,7 +256,10 @@ export class ThreeService implements OnDestroy {
   }
 
   private display(source) {
-    this.displayPassShader.uniforms.u_resolution.value.set(this.canvas.clientWidth, this.canvas.clientHeight);
+    this.displayPassShader.uniforms.u_resolution.value.set(
+      this.canvas.clientWidth,
+      this.canvas.clientHeight
+    );
     this.displayPassShader.uniforms.u_texture.value = source.texture;
     // console.log("(display.step) Received texture "+source.texture.uuid);
     this.renderer.setRenderTarget(null);
@@ -196,14 +269,16 @@ export class ThreeService implements OnDestroy {
   private drawSquareIfNecessary() {
     if (this.isDrawing) {
       // calculate objects intersecting the picking raytexture
-      const intersects = this.raycaster.intersectObjects(this.stepperScene.children);
+      const intersects = this.raycaster.intersectObjects(
+        this.stepperScene.children
+      );
       if (intersects.length > 0) {
         this.drawSquare(this.mouse.x, this.mouse.y, this.stepperScene);
       }
     }
   }
 
-  setAutomataAndStopCurrent(automaton: CellularAutomaton) {
+  public setAutomataAndStopCurrent(automaton: CellularAutomaton): void {
     this.play = false;
     this._cellularAutomaton = automaton;
     this.reset();
@@ -260,7 +335,14 @@ export class ThreeService implements OnDestroy {
   }
 
   private stepForward(previousStateIndex: number): void {
-    this._cellularAutomaton.step(this.canvas, this.renderer, this.buffers[previousStateIndex], this.buffers[this.nextStateIndex], this.stepperScene, this.camera); // Apply the automata
+    this._cellularAutomaton.step(
+      this.canvas,
+      this.renderer,
+      this.buffers[previousStateIndex],
+      this.buffers[this.nextStateIndex],
+      this.stepperScene,
+      this.camera
+    ); // Apply the automata
   }
 
   private displayStep(): void {
@@ -277,7 +359,14 @@ export class ThreeService implements OnDestroy {
     }
     this._activeColor = activeColor;
     if (this.initialized) {
-      this.cellularAutomaton.uniforms.u_alive_color = { value: new THREE.Vector4(this._activeColor.r, this._activeColor.g, this._activeColor.b, 1) };
+      this.cellularAutomaton.uniforms.u_alive_color = {
+        value: new THREE.Vector4(
+          this._activeColor.r,
+          this._activeColor.g,
+          this._activeColor.b,
+          1
+        ),
+      };
     }
   }
 
@@ -285,14 +374,20 @@ export class ThreeService implements OnDestroy {
     return this._activeColor;
   }
 
-
   public set deadColor(deadColor: THREE.Color) {
     if (!deadColor) {
       throw new Error('Invalid active color.');
     }
     this._deadColor = deadColor;
     if (this.initialized) {
-      this.cellularAutomaton.uniforms.u_dead_color = { value: new THREE.Vector4(this._deadColor.r, this._deadColor.g, this._deadColor.b, 1) };
+      this.cellularAutomaton.uniforms.u_dead_color = {
+        value: new THREE.Vector4(
+          this._deadColor.r,
+          this._deadColor.g,
+          this._deadColor.b,
+          1
+        ),
+      };
     }
   }
 

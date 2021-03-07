@@ -1,11 +1,11 @@
-import { Component } from "@angular/core";
-import { DefaultSettings } from "src/app/automata-engine/defaultSettings";
-import { ThreeService } from "src/app/automata-engine/three-service";
+import { Component } from '@angular/core';
+import { DefaultSettings } from 'src/app/automata-engine/defaultSettings';
+import { ThreeService } from 'src/app/automata-engine/three-service';
 
 @Component({
-  selector: "app-automata-cell-size-slider",
-  templateUrl: "./automata-cell-size-slider.component.html",
-  styleUrls: ["./automata-cell-size-slider.component.scss"],
+  selector: 'app-automata-cell-size-slider',
+  templateUrl: './automata-cell-size-slider.component.html',
+  styleUrls: ['./automata-cell-size-slider.component.scss'],
 })
 export class AutomataCellSizeSliderComponent {
   private _pixelSize: number = DefaultSettings.pixelSize;
