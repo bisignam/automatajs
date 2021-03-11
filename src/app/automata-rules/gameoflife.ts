@@ -1,4 +1,4 @@
-import { CellularAutomaton } from "../automata-engine/cellularautomaton";
+import { CellularAutomaton } from '../automata-engine/cellularautomaton';
 
 export class GameOfLife extends CellularAutomaton {
   fragmentShader = `
@@ -8,11 +8,13 @@ export class GameOfLife extends CellularAutomaton {
     uniform float u_grid_weigth;
     uniform vec4 u_grid_color;
     uniform bool u_grid_active;
+    uniform vec4 u_alive_color;
+    uniform vec4 u_dead_color;
     
     int wasAlive(vec2 coord) {
       vec4 px = texture2D(
           u_texture, mod(coord / u_resolution, 1.)); // mod for toroidal surface
-      return px.r < 0.1 ? 1 : 0;
+      return equal(px, u_alive_color) == bvec4(true, true, true, true) ? 1 : 0;
     }
     
     vec2 getBlockCenter(const in vec2 vPos) {
@@ -43,13 +45,13 @@ export class GameOfLife extends CellularAutomaton {
         bool nowAlive =
             (wasAlive(coord) == 1 ? 2 <= aliveNeighbors && aliveNeighbors <= 3
                                   : 3 == aliveNeighbors);
-        gl_FragColor = nowAlive ? vec4(0., 0., 0., 1.) : vec4(1., 1., 1., 1.);
+        gl_FragColor = nowAlive ? u_alive_color : u_dead_color;
       } else {
         gl_FragColor = u_grid_color;
       }
     }
   `;
-  vertexShader =  '';
+  vertexShader = '';
   uniforms = {
     u_texture: { value: null },
     u_resolution: { value: null },

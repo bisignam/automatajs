@@ -1,9 +1,10 @@
-import { Component } from "@angular/core";
-import { ThreeService } from "src/app/automata-engine/three-service";
+import { Component } from '@angular/core';
+import { CellularAutomaton } from 'src/app/automata-engine/cellularautomaton';
+import { ThreeService } from 'src/app/automata-engine/three-service';
 
 @Component({
-  selector: "app-automata-control",
-  templateUrl: "./automata-control.component.html",
+  selector: 'app-automata-control',
+  templateUrl: './automata-control.component.html',
 })
 export class AutomataControlComponent {
   private threeService: ThreeService;
@@ -29,6 +30,6 @@ export class AutomataControlComponent {
 
   clearGrid(): void {
     this._started = false;
-   // this.threeService.clearGrid();
+    this.threeService.reset();
   }
 }

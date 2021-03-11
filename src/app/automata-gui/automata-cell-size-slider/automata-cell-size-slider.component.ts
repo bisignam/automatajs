@@ -8,19 +8,19 @@ import { ThreeService } from 'src/app/automata-engine/three-service';
   styleUrls: ['./automata-cell-size-slider.component.scss'],
 })
 export class AutomataCellSizeSliderComponent {
-  private _pixelSize: number = DefaultSettings.pixelSize;
+  private _automataSize: number = DefaultSettings.pixelSize;
   private threeService: ThreeService;
-  constructor(p5Service: ThreeService) {
-    this.threeService = p5Service;
-    this.threeService.getPixelSize().subscribe((value) => {
-      this._pixelSize = value;
+  constructor(threeService: ThreeService) {
+    this.threeService = threeService;
+    this.threeService.getAutomataSizeObservable().subscribe((value) => {
+      this._automataSize = value;
     });
   }
-  set pixelSize(pixelSize: number) {
-    this._pixelSize = pixelSize;
-    //this.threeService.resizePixelsAndRedraw(pixelSize);
+  set automataSize(automataSize: number) {
+    this._automataSize = automataSize;
+    this.threeService.resizeAutomata(automataSize);
   }
-  get pixelSize(): number {
-    return this._pixelSize;
+  get automataSize(): number {
+    return this._automataSize;
   }
 }
