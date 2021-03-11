@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { CellularAutomaton } from 'src/app/automata-engine/cellularautomaton';
 import { ThreeService } from 'src/app/automata-engine/three-service';
 
 @Component({
@@ -30,6 +29,7 @@ export class AutomataControlComponent {
 
   clearGrid(): void {
     this._started = false;
+    this.threeService.stopAutomata();
     this.threeService.reset();
   }
 }

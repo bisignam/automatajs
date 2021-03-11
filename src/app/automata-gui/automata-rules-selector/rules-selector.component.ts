@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { GameOfLife } from 'src/app/automata-rules/gameoflife';
 import { CellularAutomaton } from 'src/app/automata-engine/cellularautomaton';
 import { ThreeService } from 'src/app/automata-engine/three-service';
@@ -17,6 +17,9 @@ interface Rule {
   styleUrls: ['./rules-selector.component.scss'],
 })
 export class RulesSelectorComponent {
+  @Output()
+  private chosenRule = new EventEmitter<CellularAutomaton>();
+
   rules: Rule[] = [
     { value: new GameOfLife(), viewValue: 'Game Of Life' },
     { value: new BriansBrain(), viewValue: "Brian's Brain" },
@@ -40,5 +43,6 @@ export class RulesSelectorComponent {
   set selectedRule(rule: CellularAutomaton) {
     this._selectedRule = rule;
     this.threeService.setAutomataAndStopCurrent(rule);
+    this.chosenRule.emit(rule);
   }
 }

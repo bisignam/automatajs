@@ -59,7 +59,6 @@ export class ThreeService implements OnDestroy {
 
   /**
    * Setup the threejs component
-   * @param node the HTMLElement to attach the canvas to
    */
   public setup(canvas: ElementRef<HTMLCanvasElement>): void {
     this.canvas = canvas.nativeElement;
@@ -120,23 +119,17 @@ export class ThreeService implements OnDestroy {
   }
 
   public reset(): void {
-    ///  this.setupAutomataParameters();
-    this.clearSquares();
-    const scene = new THREE.Scene();
-    const plane = new THREE.PlaneGeometry(
+    //NOTE: diposing and recreating the renderer is the only way I found
+    // to reset the whole shader
+    this.renderer.dispose();
+    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
+    this.renderer.setSize(
       this.canvas.clientWidth,
-      this.canvas.clientHeight
+      this.canvas.clientHeight,
+      false
     );
-    const material = new THREE.MeshBasicMaterial({
-      color: this._deadColor,
-    });
-    scene.add(new THREE.Mesh(plane, material));
-    this.renderer.setRenderTarget(
-      this.buffers[this.computePreviouStateIndex()]
-    );
-    this.renderer.render(scene, this.camera);
-    plane.dispose();
-    material.dispose();
+    this.renderer.setRenderTarget(null);
+    this.renderer.render(this.stepperScene, this.camera);
   }
 
   private createShaderMaterial(shader: Shader): THREE.ShaderMaterial {
@@ -258,7 +251,7 @@ export class ThreeService implements OnDestroy {
     };
   }
 
-  private drawSquare(x, y, scene) {
+  private drawSquare(x: number, y: number, scene: THREE.Scene) {
     //we need a square, basically a plane with z set to zero
     const automata = new THREE.PlaneGeometry(
       this._automataSize.value,
@@ -339,7 +332,8 @@ export class ThreeService implements OnDestroy {
   }
 
   private displayStep(): void {
-    this.display(this.buffers[this.nextStateIndex]); //NOTE:here we simpy take the result of stepper and we paint it to screen
+    //NOTE:here we simpy take the result of stepper and we paint it to screen
+    this.display(this.buffers[this.nextStateIndex]);
   }
 
   /**
@@ -362,31 +356,13 @@ export class ThreeService implements OnDestroy {
 
   public setAutomataAndStopCurrent(automaton: CellularAutomaton): void {
     this.play = false;
-    this.renderer.dispose();
-    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
-    this.renderer.setSize(
-      this.canvas.clientWidth,
-      this.canvas.clientHeight,
-      false
-    );
+    this.reset();
     automaton.uniforms = THREE.UniformsUtils.clone(
       this._cellularAutomaton.uniforms
     );
+    //NOTE: orders of operations matters
     this.automatonMesh.material = this.createShaderMaterial(automaton);
     this._cellularAutomaton = automaton;
-    this.play = true;
-  }
-
-  private updateAutomataShader(): void {
-    this.automatonMaterial = this.createShaderMaterial(this._cellularAutomaton);
-    this.clearSquares();
-    const scope = this;
-    this.stepperScene.traverse(function (child) {
-      if (child instanceof THREE.Mesh) {
-        child.material = scope.automatonMaterial;
-        child.material.child.material.needsUpdate = true;
-      }
-    });
   }
 
   get cellularAutomaton(): CellularAutomaton {
@@ -407,6 +383,10 @@ export class ThreeService implements OnDestroy {
           1
         ),
       };
+      if (!this.play) {
+        this.renderer.setRenderTarget(null);
+        this.renderer.render(this.stepperScene, this.camera);
+      }
     }
   }
 
@@ -428,6 +408,10 @@ export class ThreeService implements OnDestroy {
           1
         ),
       };
+      if (!this.play) {
+        this.renderer.setRenderTarget(null);
+        this.renderer.render(this.stepperScene, this.camera);
+      }
     }
   }
 

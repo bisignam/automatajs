@@ -1,17 +1,28 @@
 <div class="row row-fluid">
   <div class="col-sm-4"></div>
   <div class="col-sm-4 text-center">
-    <app-rules-selector></app-rules-selector>
+    <app-rules-selector (chosenRule)="stopAutomata()"></app-rules-selector>
     <div class="row mt-4">
       <div class="col-sm-6 text-center">
-        <button class="controlButton" mat-fab color="primary" aria-label="Clear values" (click)="clearGrid()">
+        <button
+          class="controlButton"
+          mat-fab
+          color="primary"
+          aria-label="Clear values"
+          (click)="clearGrid()"
+        >
           <mat-icon>clear_presentation</mat-icon>
         </button>
       </div>
       <div class="col-sm-6 text-center">
-        <button class="controlButton" mat-fab color="primary" aria-label="Start/Stop the automata"
-          (click)="started ? stopAutomata() : playAutomata()">
-          <mat-icon>{{ started ? "stop" : "play_arrow" }}</mat-icon>
+        <button
+          class="controlButton"
+          mat-fab
+          color="primary"
+          aria-label="Start/Stop the automata"
+          (click)="started ? stopAutomata() : playAutomata()"
+        >
+          <mat-icon>{{ started ? 'stop' : 'play_arrow' }}</mat-icon>
         </button>
       </div>
       <div class="col-md-4"></div>
