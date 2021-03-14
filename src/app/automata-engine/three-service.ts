@@ -9,6 +9,8 @@ import { Scene, Shader } from 'three';
 import { BriansBrain } from '../automata-rules/briansbrain';
 import { Maze } from '../automata-rules/maze';
 import { GameOfLife } from '../automata-rules/gameoflife';
+import { ChangeColorShader } from './change-color-shader';
+import { preserveWhitespacesDefault } from '@angular/compiler';
 
 @Injectable({
   providedIn: 'root', //means singleton service
@@ -23,6 +25,7 @@ export class ThreeService implements OnDestroy {
   private camera: THREE.OrthographicCamera;
   private stepperScene: THREE.Scene;
   private displayScene: THREE.Scene;
+  private changeColorScene: THREE.Scene;
   private frameId: number = null;
   private squares: Array<THREE.Mesh>;
   private buffers: Array<THREE.WebGLRenderTarget>;
@@ -36,6 +39,7 @@ export class ThreeService implements OnDestroy {
   private initialized = false;
   private nextStateIndex = 0;
   private displayPassShader = new DisplayPassShader();
+  private changeColorShader = new ChangeColorShader();
   private _activeColor = new THREE.Color('#152609');
   private _deadColor = DefaultSettings.backgroundColor;
   private dyingColor = new THREE.Color('#428405');
@@ -111,6 +115,16 @@ export class ThreeService implements OnDestroy {
     this.displayScene.add(
       new THREE.Mesh(plane2, this.createShaderMaterial(this.displayPassShader))
     );
+
+    this.changeColorScene = new THREE.Scene();
+    const plane4 = new THREE.PlaneGeometry(
+      this.canvas.clientWidth,
+      this.canvas.clientHeight
+    );
+    this.changeColorScene.add(
+      new THREE.Mesh(plane4, this.createShaderMaterial(this.changeColorShader))
+    );
+
     this.configureMouseDrawingEvents(this.canvas);
     this.animate = this.animate.bind(this);
     this.initialized = true;
@@ -196,6 +210,27 @@ export class ThreeService implements OnDestroy {
     }
   }
 
+  private setupChangeColorShader(
+    oldColor: THREE.Color,
+    newColor: THREE.Color
+  ): void {
+    this.changeColorShader.uniforms.u_texture = {
+      value: this.buffers[this.computePreviouStateIndex()].texture,
+    };
+    this.changeColorShader.uniforms.u_resolution = {
+      value: new THREE.Vector2(
+        this.canvas.clientWidth,
+        this.canvas.clientHeight
+      ),
+    };
+    this.changeColorShader.uniforms.u_old_color = {
+      value: new THREE.Vector4(oldColor.r, oldColor.g, oldColor.b, 1),
+    };
+    this.changeColorShader.uniforms.u_new_color = {
+      value: new THREE.Vector4(newColor.r, newColor.g, newColor.b, 1),
+    };
+  }
+
   private setupAutomataParameters(automaton: CellularAutomaton): void {
     if (!automaton.uniforms.u_texture) {
       automaton.uniforms.u_texture = {
@@ -249,6 +284,7 @@ export class ThreeService implements OnDestroy {
         1
       ),
     };
+    automaton.uniforms.u_copy_step = { value: false };
   }
 
   private drawSquare(x: number, y: number, scene: THREE.Scene) {
@@ -310,24 +346,28 @@ export class ThreeService implements OnDestroy {
     return 1 - this.nextStateIndex;
   }
 
-  private stepForward(previousStateIndex: number): void {
+  private stepForward(previousStateIndex: number, copyStep?: Boolean): void {
     this._cellularAutomaton.step(
       this.canvas,
       this.renderer,
       this.buffers[previousStateIndex],
       this.buffers[this.nextStateIndex],
       this.stepperScene,
-      this.camera
+      this.camera,
+      copyStep
     ); // Apply the automata
   }
 
-  private display(source: THREE.WebGLRenderTarget) {
+  private display(
+    source: THREE.WebGLRenderTarget,
+    target?: THREE.WebGLRenderTarget
+  ) {
     this.displayPassShader.uniforms.u_resolution.value.set(
       this.canvas.clientWidth,
       this.canvas.clientHeight
     );
     this.displayPassShader.uniforms.u_texture.value = source.texture;
-    this.renderer.setRenderTarget(null);
+    this.renderer.setRenderTarget(!target ? null : target);
     this.renderer.render(this.displayScene, this.camera);
   }
 
@@ -373,8 +413,22 @@ export class ThreeService implements OnDestroy {
     if (!activeColor) {
       throw new Error('Invalid active color.');
     }
-    this._activeColor = activeColor;
+    const wasPlaying = this.play;
+    if (wasPlaying) {
+      this.play = false;
+    }
     if (this.initialized) {
+      //NOTE: If it was not playing we need to maintain th drawn squares
+      //The ones which are not already painted on the offscreen renderer target
+      if (!wasPlaying) {
+        this.stepForward(this.computePreviouStateIndex(), true);
+        this.display(
+          this.buffers[this.nextStateIndex],
+          this.buffers[this.computePreviouStateIndex()]
+        );
+      }
+      this.setupChangeColorShader(this._activeColor.clone(), activeColor);
+      this._activeColor = activeColor;
       this.cellularAutomaton.uniforms.u_alive_color = {
         value: new THREE.Vector4(
           this._activeColor.r,
@@ -383,10 +437,15 @@ export class ThreeService implements OnDestroy {
           1
         ),
       };
-      if (!this.play) {
-        this.renderer.setRenderTarget(null);
-        this.renderer.render(this.stepperScene, this.camera);
-      }
+      //NOTE: maintain the previous state of the scene
+      this.renderer.setRenderTarget(this.buffers[this.nextStateIndex]);
+      this.renderer.render(this.changeColorScene, this.camera);
+      this.displayStep();
+      this.clearSquares();
+      this.nextStateIndex = this.computePreviouStateIndex();
+    }
+    if (wasPlaying) {
+      this.play = true;
     }
   }
 
