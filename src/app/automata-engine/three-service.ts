@@ -5,7 +5,7 @@ import { DefaultSettings } from './defaultSettings';
 import { OnDestroy } from '@angular/core';
 import * as THREE from 'three';
 import { DisplayPassShader } from './display-pass-shader';
-import { Scene, Shader } from 'three';
+import { Raycaster, Scene, Shader, Texture, WebGLRenderTarget } from 'three';
 import { BriansBrain } from '../automata-rules/briansbrain';
 import { Maze } from '../automata-rules/maze';
 import { GameOfLife } from '../automata-rules/gameoflife';
@@ -117,12 +117,12 @@ export class ThreeService implements OnDestroy {
     );
 
     this.changeColorScene = new THREE.Scene();
-    const plane4 = new THREE.PlaneGeometry(
+    const plane3 = new THREE.PlaneGeometry(
       this.canvas.clientWidth,
       this.canvas.clientHeight
     );
     this.changeColorScene.add(
-      new THREE.Mesh(plane4, this.createShaderMaterial(this.changeColorShader))
+      new THREE.Mesh(plane3, this.createShaderMaterial(this.changeColorShader))
     );
 
     this.configureMouseDrawingEvents(this.canvas);
@@ -132,9 +132,30 @@ export class ThreeService implements OnDestroy {
     requestAnimationFrame(this.animate);
   }
 
-  public reset(): void {
-    //NOTE: diposing and recreating the renderer is the only way I found
-    // to reset the whole shader
+  public reset(automaton?: CellularAutomaton): void {
+    //If we pass the automaton it means we want to reset the scene with the new one
+    if (automaton) {
+      this.automatonMaterial.dispose();
+      // //NOTE: orders of operations matters
+      // automaton.uniforms = THREE.UniformsUtils.clone(
+      //   this._cellularAutomaton.uniforms
+      // );
+      this.automatonMaterial = this.createShaderMaterial(automaton);
+      this.automatonMesh.material = this.automatonMaterial;
+      this.automatonMesh.material.needsUpdate = true;
+      this.automatonMesh.material.uniformsNeedUpdate = true;
+      this.setupAutomataParameters(automaton);
+    }
+    this.stepperScene.clear();
+    this.stepperScene = new THREE.Scene();
+    this.automatonPlane.dispose();
+    this.automatonPlane = new THREE.PlaneGeometry(
+      this.canvas.clientWidth,
+      this.canvas.clientHeight
+    );
+    this.stepperScene.add(this.automatonMesh);
+    // this.buffers[this.computePreviouStateIndex()].texture = new THREE.CanvasTexture
+    // this.buffers[this.computePreviouStateIndex()].texture.needsUpdate = true;
     this.renderer.dispose();
     this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
     this.renderer.setSize(
@@ -142,8 +163,14 @@ export class ThreeService implements OnDestroy {
       this.canvas.clientHeight,
       false
     );
-    this.renderer.setRenderTarget(null);
-    this.renderer.render(this.stepperScene, this.camera);
+    this.renderer.autoClearColor = false;
+    this.stepForward(this.computePreviouStateIndex(), true);
+    this.display(
+      this.buffers[this.nextStateIndex],
+      this.buffers[this.computePreviouStateIndex()]
+    );
+    this.displayStep();
+    this.nextStateIndex = this.computePreviouStateIndex();
   }
 
   private createShaderMaterial(shader: Shader): THREE.ShaderMaterial {
@@ -297,6 +324,9 @@ export class ThreeService implements OnDestroy {
       color: this._activeColor,
     });
     const automataMesh = new THREE.Mesh(automata, automataMaterial);
+    console.log(
+      'Drawing square on scene ' + scene.uuid + ' at (' + x + ',' + y + ')'
+    );
     scene.add(automataMesh);
     automataMesh.position.set(x, y, 0);
     this.squares.push(automataMesh);
@@ -310,7 +340,6 @@ export class ThreeService implements OnDestroy {
 
   private drawSquareIfNecessary() {
     if (this.isDrawing) {
-      // calculate objects intersecting the picking raytexture
       const intersects = this.raycaster.intersectObjects(
         this.stepperScene.children
       );
@@ -396,13 +425,9 @@ export class ThreeService implements OnDestroy {
 
   public setAutomataAndStopCurrent(automaton: CellularAutomaton): void {
     this.play = false;
-    this.reset();
-    automaton.uniforms = THREE.UniformsUtils.clone(
-      this._cellularAutomaton.uniforms
-    );
-    //NOTE: orders of operations matters
-    this.automatonMesh.material = this.createShaderMaterial(automaton);
+    this.reset(automaton);
     this._cellularAutomaton = automaton;
+    this.play = true;
   }
 
   get cellularAutomaton(): CellularAutomaton {
@@ -421,6 +446,10 @@ export class ThreeService implements OnDestroy {
       //NOTE: If it was not playing we need to maintain th drawn squares
       //The ones which are not already painted on the offscreen renderer target
       if (!wasPlaying) {
+        //NOTE: by passing true to copyStep we tell to the automata shader
+        // to act as a copy shader but always on the stepper scene
+        // this way we can manage a copy of the previous state without
+        // creating a new scene
         this.stepForward(this.computePreviouStateIndex(), true);
         this.display(
           this.buffers[this.nextStateIndex],

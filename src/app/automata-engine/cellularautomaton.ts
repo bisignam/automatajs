@@ -98,7 +98,7 @@ export abstract class CellularAutomaton implements Shader {
     );
     //   console.log("(automata.step) Received texture "+source.texture.uuid);
     this.uniforms.u_texture.value = source.texture;
-    this.uniforms.u_copy_step.value = copyStep;
+    this.uniforms.u_copy_step.value = copyStep ? true : false;
     renderer.setRenderTarget(target);
     renderer.render(scene, camera);
   }
