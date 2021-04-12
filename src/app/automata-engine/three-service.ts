@@ -50,6 +50,7 @@ export class ThreeService implements OnDestroy {
   private play = false;
   private automatonMesh: THREE.Mesh<THREE.PlaneGeometry, THREE.ShaderMaterial>;
   private automatonPlane: THREE.PlaneGeometry;
+  private textureLoader = new THREE.TextureLoader();
 
   /**
    * Cancel the current animation frame
@@ -66,6 +67,8 @@ export class ThreeService implements OnDestroy {
    */
   public setup(canvas: ElementRef<HTMLCanvasElement>): void {
     this.canvas = canvas.nativeElement;
+    var glContextAttributes = { preserveDrawingBuffer: true };
+    var gl = this.canvas.getContext('experimental-webgl', glContextAttributes);
     this.raycaster = new THREE.Raycaster();
 
     this.squares = new Array<THREE.Mesh>();
@@ -133,42 +136,44 @@ export class ThreeService implements OnDestroy {
   }
 
   public reset(automaton?: CellularAutomaton): void {
+    let previousStateIndex = this.computePreviouStateIndex();
     //If we pass the automaton it means we want to reset the scene with the new one
     if (automaton) {
-      this.automatonMaterial.dispose();
-      // //NOTE: orders of operations matters
-      // automaton.uniforms = THREE.UniformsUtils.clone(
-      //   this._cellularAutomaton.uniforms
-      // );
-      this.automatonMaterial = this.createShaderMaterial(automaton);
-      this.automatonMesh.material = this.automatonMaterial;
-      this.automatonMesh.material.needsUpdate = true;
-      this.automatonMesh.material.uniformsNeedUpdate = true;
-      this.setupAutomataParameters(automaton);
+      this.textureLoader.load(this.canvas.toDataURL(), (texture) => {
+        let newTexture = texture.clone();
+        this.renderer.dispose();
+        this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
+        this.renderer.setSize(
+          this.canvas.clientWidth,
+          this.canvas.clientHeight,
+          false
+        );
+        this.renderer.autoClearColor = false;
+        this.buffers[previousStateIndex].dispose();
+        this.buffers[previousStateIndex] = new THREE.WebGLRenderTarget(
+          this.canvas.clientWidth,
+          this.canvas.clientHeight
+        );
+        this.buffers[this.nextStateIndex].dispose();
+        this.buffers[this.nextStateIndex] = new THREE.WebGLRenderTarget(
+          this.canvas.clientWidth,
+          this.canvas.clientHeight
+        );
+        newTexture.minFilter = THREE.LinearFilter;
+        this.buffers[previousStateIndex].texture = newTexture;
+        this.buffers[previousStateIndex].texture.needsUpdate = true;
+        this.automatonMesh.material.fragmentShader = automaton.fragmentShader;
+        this.automatonMesh.material.needsUpdate = true;
+        this.automatonMesh.material.uniformsNeedUpdate = true;
+      });
     }
-    this.stepperScene.clear();
-    this.stepperScene = new THREE.Scene();
-    this.automatonPlane.dispose();
-    this.automatonPlane = new THREE.PlaneGeometry(
-      this.canvas.clientWidth,
-      this.canvas.clientHeight
-    );
-    this.stepperScene.add(this.automatonMesh);
-    // this.buffers[this.computePreviouStateIndex()].texture = new THREE.CanvasTexture
-    // this.buffers[this.computePreviouStateIndex()].texture.needsUpdate = true;
-    this.renderer.dispose();
-    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
-    this.renderer.setSize(
-      this.canvas.clientWidth,
-      this.canvas.clientHeight,
-      false
-    );
-    this.renderer.autoClearColor = false;
     this.stepForward(this.computePreviouStateIndex(), true);
     this.display(
       this.buffers[this.nextStateIndex],
       this.buffers[this.computePreviouStateIndex()]
     );
+    this.nextStateIndex = previousStateIndex;
+    this.stepForward(this.computePreviouStateIndex());
     this.displayStep();
     this.nextStateIndex = this.computePreviouStateIndex();
   }
@@ -426,7 +431,6 @@ export class ThreeService implements OnDestroy {
   public setAutomataAndStopCurrent(automaton: CellularAutomaton): void {
     this.play = false;
     this.reset(automaton);
-    this._cellularAutomaton = automaton;
     this.play = true;
   }
 
