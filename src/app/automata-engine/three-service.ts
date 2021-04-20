@@ -135,47 +135,60 @@ export class ThreeService implements OnDestroy {
     requestAnimationFrame(this.animate);
   }
 
-  public reset(automaton?: CellularAutomaton): void {
+  private changeAutomaton(
+    previousStateIndex: number,
+    automaton: CellularAutomaton
+  ): Promise<Texture> {
+    let self = this;
+    return new Promise(function (resolve, reject) {
+      self.textureLoader.load(self.canvas.toDataURL(), (texture) => {
+        self.renderer.dispose();
+        self.renderer = new THREE.WebGLRenderer({ canvas: self.canvas });
+        self.renderer.setSize(
+          self.canvas.clientWidth,
+          self.canvas.clientHeight,
+          false
+        );
+        self.renderer.autoClearColor = false;
+        self.buffers[previousStateIndex].dispose();
+        self.buffers[previousStateIndex] = new THREE.WebGLRenderTarget(
+          self.canvas.clientWidth,
+          self.canvas.clientHeight
+        );
+        self.buffers[self.nextStateIndex].dispose();
+        self.buffers[self.nextStateIndex] = new THREE.WebGLRenderTarget(
+          self.canvas.clientWidth,
+          self.canvas.clientHeight
+        );
+        texture.minFilter = THREE.LinearFilter;
+        self.buffers[previousStateIndex].texture = texture;
+        self.buffers[previousStateIndex].texture.needsUpdate = true;
+        self.automatonMesh.material.fragmentShader = automaton.fragmentShader;
+        self.automatonMesh.material.needsUpdate = true;
+        self.automatonMesh.material.uniformsNeedUpdate = true;
+        resolve(texture);
+      });
+    });
+  }
+
+  private copyStep(previousStateIndex: number) {
+    this.stepForward(previousStateIndex, true);
+    this.display(
+      this.buffers[this.nextStateIndex],
+      this.buffers[previousStateIndex]
+    );
+    this.nextStateIndex = previousStateIndex;
+  }
+
+  public async reset(automaton?: CellularAutomaton): Promise<void> {
     let previousStateIndex = this.computePreviouStateIndex();
     //If we pass the automaton it means we want to reset the scene with the new one
     if (automaton) {
-      this.textureLoader.load(this.canvas.toDataURL(), (texture) => {
-        let newTexture = texture.clone();
-        this.renderer.dispose();
-        this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
-        this.renderer.setSize(
-          this.canvas.clientWidth,
-          this.canvas.clientHeight,
-          false
-        );
-        this.renderer.autoClearColor = false;
-        this.buffers[previousStateIndex].dispose();
-        this.buffers[previousStateIndex] = new THREE.WebGLRenderTarget(
-          this.canvas.clientWidth,
-          this.canvas.clientHeight
-        );
-        this.buffers[this.nextStateIndex].dispose();
-        this.buffers[this.nextStateIndex] = new THREE.WebGLRenderTarget(
-          this.canvas.clientWidth,
-          this.canvas.clientHeight
-        );
-        newTexture.minFilter = THREE.LinearFilter;
-        this.buffers[previousStateIndex].texture = newTexture;
-        this.buffers[previousStateIndex].texture.needsUpdate = true;
-        this.automatonMesh.material.fragmentShader = automaton.fragmentShader;
-        this.automatonMesh.material.needsUpdate = true;
-        this.automatonMesh.material.uniformsNeedUpdate = true;
-      });
+      await this.changeAutomaton(previousStateIndex, automaton);
+      this.copyStep(previousStateIndex);
+    } else {
+      this.copyStep(previousStateIndex);
     }
-    this.stepForward(this.computePreviouStateIndex(), true);
-    this.display(
-      this.buffers[this.nextStateIndex],
-      this.buffers[this.computePreviouStateIndex()]
-    );
-    this.nextStateIndex = previousStateIndex;
-    this.stepForward(this.computePreviouStateIndex());
-    this.displayStep();
-    this.nextStateIndex = this.computePreviouStateIndex();
   }
 
   private createShaderMaterial(shader: Shader): THREE.ShaderMaterial {
@@ -329,9 +342,6 @@ export class ThreeService implements OnDestroy {
       color: this._activeColor,
     });
     const automataMesh = new THREE.Mesh(automata, automataMaterial);
-    console.log(
-      'Drawing square on scene ' + scene.uuid + ' at (' + x + ',' + y + ')'
-    );
     scene.add(automataMesh);
     automataMesh.position.set(x, y, 0);
     this.squares.push(automataMesh);
@@ -425,12 +435,15 @@ export class ThreeService implements OnDestroy {
    * Stops the automata animation
    */
   public stopAutomata(): void {
+    // console.log('stopAutomata');
     this.play = false;
   }
 
-  public setAutomataAndStopCurrent(automaton: CellularAutomaton): void {
+  public async setAutomataAndStopCurrent(
+    automaton: CellularAutomaton
+  ): Promise<void> {
     this.play = false;
-    this.reset(automaton);
+    await this.reset(automaton);
     this.play = true;
   }
 
@@ -507,14 +520,14 @@ export class ThreeService implements OnDestroy {
     }
   }
 
-  resizeAutomata(automataSize: number) {
+  async resizeAutomata(automataSize: number) {
     this.play = false;
     this.automataSize = automataSize;
     if (this.initialized) {
       this.cellularAutomaton.uniforms.u_automata_size = {
         value: automataSize,
       };
-      this.reset();
+      await this.reset();
     }
     this.play = true;
   }
