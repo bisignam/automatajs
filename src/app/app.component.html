@@ -8,10 +8,11 @@
     <div class="col-sm-1"></div>
     <div id="gridColorChoserColumn" class="col-sm-10">
       <span>Background: </span>
-      <app-color-picker [color]="backgroundColor.getHexString()" (chosenColor)="onBackgroundColorChosen($event)">
+      <app-color-picker
+        [color]="backgroundColor.getHexString()"
+        (chosenColor)="onBackgroundColorChosen($event)"
+      >
       </app-color-picker>
-      <span class="ml-3">Grid: </span>
-      <app-color-picker [color]="gridColor.getHexString()" (chosenColor)="onGridColorChosen($event)"></app-color-picker>
     </div>
     <div class="col-sm-1"></div>
   </div>
@@ -28,12 +29,17 @@
     <div class="col-sm-1"></div>
     <div id="automataColorsChosersColumn" class="col-sm-10">
       <span>Active: </span>
-      <app-color-picker [color]="activationColor.getHexString()" (chosenColor)="onActivationColorChosen($event)">
+      <app-color-picker
+        [color]="activationColor.getHexString()"
+        (chosenColor)="onActivationColorChosen($event)"
+      >
       </app-color-picker>
       <ng-container *ngFor="let colorType of getAdditionalColorsForAutomata()">
-        <span class="ml-3">{{colorType.name}}: </span>
-        <app-color-picker [color]="colorType.color.getHexString()"
-          (chosenColor)="onAutomataColorChosen(colorType.name, $event)"></app-color-picker>
+        <span class="ml-3">{{ colorType.name }}: </span>
+        <app-color-picker
+          [color]="colorType.color.getHexString()"
+          (chosenColor)="onAutomataColorChosen(colorType.name, $event)"
+        ></app-color-picker>
       </ng-container>
     </div>
     <div class="col-sm-1"></div>

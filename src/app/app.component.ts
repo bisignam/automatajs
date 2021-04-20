@@ -13,7 +13,6 @@ import { DefaultSettings } from './automata-engine/defaultSettings';
 export class AppComponent {
   title = 'AutomataJS';
   backgroundColor = DefaultSettings.backgroundColor;
-  gridColor = DefaultSettings.gridColor;
   activationColor = DefaultSettings.activationColor;
 
   constructor(
@@ -37,13 +36,6 @@ export class AppComponent {
 
   onBackgroundColorChosen(color: THREE.Color): void {
     this.threeService.deadColor = color;
-  }
-
-  onGridColorChosen(color: THREE.Color): void {
-    //   if (this.threeService.grid) {
-    //  //   this.threeService.grid.gridColor = color;
-    //     this.threeService.reDraw();
-    //   }
   }
 
   onActivationColorChosen(color: THREE.Color): void {
