@@ -10,6 +10,7 @@ import { AutomataColorPickerComponent } from './automata-color-picker/automata-c
 import { ColorPickerModule } from 'ngx-color-picker';
 import { MatSliderModule } from '@angular/material/slider';
 import { AutomataCellSizeSliderComponent } from './automata-cell-size-slider/automata-cell-size-slider.component';
+import { MatButtonModule } from '@angular/material/button';
 
 @NgModule({
   exports: [
@@ -33,6 +34,7 @@ import { AutomataCellSizeSliderComponent } from './automata-cell-size-slider/aut
     MatFormFieldModule,
     MatIconModule,
     ColorPickerModule,
+    MatButtonModule,
   ],
 })
 export class AutomataGuiModule {}

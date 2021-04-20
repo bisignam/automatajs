@@ -5,12 +5,9 @@ import { DefaultSettings } from './defaultSettings';
 import { OnDestroy } from '@angular/core';
 import * as THREE from 'three';
 import { DisplayPassShader } from './display-pass-shader';
-import { Raycaster, Scene, Shader, Texture, WebGLRenderTarget } from 'three';
-import { BriansBrain } from '../automata-rules/briansbrain';
-import { Maze } from '../automata-rules/maze';
+import { Shader, Texture } from 'three';
 import { GameOfLife } from '../automata-rules/gameoflife';
 import { ChangeColorShader } from './change-color-shader';
-import { preserveWhitespacesDefault } from '@angular/compiler';
 
 @Injectable({
   providedIn: 'root', //means singleton service
