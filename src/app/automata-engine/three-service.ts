@@ -439,9 +439,15 @@ export class ThreeService implements OnDestroy {
   public async setAutomataAndStopCurrent(
     automaton: CellularAutomaton
   ): Promise<void> {
-    this.play = false;
+    let wasPlaying = false;
+    if (this.play) {
+      wasPlaying = true;
+      this.play = false;
+    }
     await this.reset(automaton);
-    this.play = true;
+    if (wasPlaying) {
+      this.play = true;
+    }
   }
 
   get cellularAutomaton(): CellularAutomaton {
@@ -518,6 +524,11 @@ export class ThreeService implements OnDestroy {
   }
 
   async resizeAutomata(automataSize: number) {
+    let wasPlaying = false;
+    if (this.play) {
+      wasPlaying = true;
+      this.play = false;
+    }
     this.play = false;
     this.automataSize = automataSize;
     if (this.initialized) {
@@ -526,7 +537,9 @@ export class ThreeService implements OnDestroy {
       };
       await this.reset();
     }
-    this.play = true;
+    if (wasPlaying) {
+      this.play = true;
+    }
   }
 
   getAutomataSizeObservable(): Observable<number> {
