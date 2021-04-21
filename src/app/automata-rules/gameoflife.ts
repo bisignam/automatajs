@@ -15,12 +15,15 @@ export class GameOfLife extends CellularAutomaton {
     u_copy_step: { value: false },
   };
   constructor() {
-    super(`
+    super(
+      `
       int aliveNeighbors = aliveMooreNeighbors(coord);
       bool nowAlive =
           (wasAlive(coord) == 1 ? 2 <= aliveNeighbors && aliveNeighbors <= 3
                                 : 3 == aliveNeighbors);
       gl_FragColor = nowAlive ? u_alive_color : u_dead_color;
-  `);
+  `,
+      []
+    );
   }
 }

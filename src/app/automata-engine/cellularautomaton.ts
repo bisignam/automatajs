@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import { Shader } from 'three';
 
 export interface AdditionalColorType {
-  name: string;
+  displayName: string;
+  uniformName: string;
   color: THREE.Color;
 }
 
@@ -12,7 +13,22 @@ export abstract class CellularAutomaton implements Shader {
   automataShader: string;
   fragmentShader: string;
 
-  constructor(automataShader: string) {
+  private _additionalColors: Map<String, AdditionalColorType> = new Map<
+    String,
+    AdditionalColorType
+  >();
+
+  constructor(
+    automataShader: string,
+    additionalColorsList: Array<AdditionalColorType>,
+    additionalFunctions?: string
+  ) {
+    let additionalColorsUniforms = '';
+    additionalColorsList.forEach((addC) => {
+      this._additionalColors.set(addC.displayName, addC);
+      additionalColorsUniforms += 'uniform vec4 ' + addC.uniformName + ';\n';
+    });
+
     //NOTE: basically we are creating a template for all automata shaders
     //like importing some common functions
     this.fragmentShader =
@@ -24,20 +40,15 @@ export abstract class CellularAutomaton implements Shader {
     uniform vec4 u_grid_color;
     uniform bool u_grid_active;
     uniform vec4 u_alive_color;
-    uniform vec4 u_dying_color;
     uniform vec4 u_dead_color;
     uniform bool u_copy_step;
-    
+    ` +
+      additionalColorsUniforms +
+      `
     int wasAlive(vec2 coord) {
       vec4 px = texture2D(
           u_texture, mod(coord / u_resolution, 1.)); // mod for toroidal surface
       return equal(px, u_alive_color) == bvec4(true, true, true, true) ? 1 : 0;
-    }
-
-    int wasDying(vec2 coord) {
-      vec4 px = texture2D(
-          u_texture, mod(coord / u_resolution, 1.)); // mod for toroidal surface
-      return equal(px, u_dying_color) == bvec4(true, true, true, true) ? 1 : 0;
     }
 
     int aliveMooreNeighbors(const in vec2 coord) {
@@ -63,7 +74,9 @@ export abstract class CellularAutomaton implements Shader {
                                             vec2(u_grid_weigth, u_grid_weigth));
       return comparisonResult != bvec2(false, false);
     }
-    
+    ` +
+      (additionalFunctions ? additionalFunctions : '') +
+      `
     void main() {
       if(u_copy_step == true) {
         vec2 coord = gl_FragCoord.xy/u_resolution;
@@ -81,8 +94,6 @@ export abstract class CellularAutomaton implements Shader {
   `;
   }
 
-  protected _additionalColors: Array<AdditionalColorType> = new Array<AdditionalColorType>();
-
   public step(
     canvas: HTMLCanvasElement,
     renderer: THREE.WebGLRenderer,
@@ -96,10 +107,27 @@ export abstract class CellularAutomaton implements Shader {
       canvas.clientWidth,
       canvas.clientHeight
     );
-    //   console.log("(automata.step) Received texture "+source.texture.uuid);
     this.uniforms.u_texture.value = source.texture;
     this.uniforms.u_copy_step.value = copyStep ? true : false;
     renderer.setRenderTarget(target);
     renderer.render(scene, camera);
+  }
+
+  public getAdditionalColor(displayName: string): AdditionalColorType {
+    return this._additionalColors.get(displayName);
+  }
+
+  public setadditionalColor(displayName: string, color: THREE.Color): void {
+    this._additionalColors.get(displayName).color = color;
+  }
+
+  public get additionalColorsArray(): Array<AdditionalColorType> {
+    let additionalColorsArray = new Array<AdditionalColorType>();
+    this._additionalColors.forEach(
+      (value: AdditionalColorType, key: string) => {
+        additionalColorsArray.push(value);
+      }
+    );
+    return additionalColorsArray;
   }
 }

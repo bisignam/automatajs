@@ -15,7 +15,8 @@ export class Maze extends CellularAutomaton {
     u_copy_step: { value: false },
   };
   constructor() {
-    super(`
+    super(
+      `
       /**
       cells survive from one generation to the next if they have at least 1 and at
       most 5 neighbours. Cells are born if they have exactly 3 neighbours
@@ -29,6 +30,8 @@ export class Maze extends CellularAutomaton {
       } else {
         gl_FragColor = u_dead_color;
       }
-  `);
+  `,
+      []
+    );
   }
 }

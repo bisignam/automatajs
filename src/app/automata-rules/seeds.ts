@@ -15,7 +15,8 @@ export class Seeds extends CellularAutomaton {
     u_copy_step: { value: false },
   };
   constructor() {
-    super(`
+    super(
+      `
       /**
      In each time step, a cell turns on or is "born" if it was off or "dead" but
      had exactly two neighbors that were on; all other cells turn off.
@@ -26,6 +27,8 @@ export class Seeds extends CellularAutomaton {
       } else {
         gl_FragColor = u_dead_color;
       }
-  `);
+  `,
+      []
+    );
   }
 }

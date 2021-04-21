@@ -35,10 +35,10 @@
       >
       </app-color-picker>
       <ng-container *ngFor="let colorType of getAdditionalColorsForAutomata()">
-        <span class="ml-3">{{ colorType.name }}: </span>
+        <span class="ml-3">{{ colorType.displayName }}: </span>
         <app-color-picker
           [color]="colorType.color.getHexString()"
-          (chosenColor)="onAutomataColorChosen(colorType.name, $event)"
+          (chosenColor)="onAutomataColorChosen(colorType.displayName, $event)"
         ></app-color-picker>
       </ng-container>
     </div>

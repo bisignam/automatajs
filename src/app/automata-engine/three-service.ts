@@ -37,13 +37,8 @@ export class ThreeService implements OnDestroy {
   private nextStateIndex = 0;
   private displayPassShader = new DisplayPassShader();
   private changeColorShader = new ChangeColorShader();
-  private _activeColor = new THREE.Color('#152609');
+  private _activeColor = DefaultSettings.activationColor;
   private _deadColor = DefaultSettings.backgroundColor;
-  private dyingColor = new THREE.Color('#428405');
-  private gridColor = new THREE.Color('#0D0D0D');
-
-  private gridWeight = 1;
-  private gridActive = false;
   private play = false;
   private automatonMesh: THREE.Mesh<THREE.PlaneGeometry, THREE.ShaderMaterial>;
   private automatonPlane: THREE.PlaneGeometry;
@@ -160,9 +155,25 @@ export class ThreeService implements OnDestroy {
         texture.minFilter = THREE.LinearFilter;
         self.buffers[previousStateIndex].texture = texture;
         self.buffers[previousStateIndex].texture.needsUpdate = true;
-        self.automatonMesh.material.fragmentShader = automaton.fragmentShader;
-        self.automatonMesh.material.needsUpdate = true;
-        self.automatonMesh.material.uniformsNeedUpdate = true;
+        self.automatonPlane.dispose();
+        self.automatonPlane = new THREE.PlaneGeometry(
+          self.canvas.clientWidth,
+          self.canvas.clientHeight
+        );
+        self._cellularAutomaton = automaton;
+        self.automatonMaterial.dispose();
+        self.automatonMaterial = self.createShaderMaterial(
+          self._cellularAutomaton
+        );
+        self.automatonMesh.clear();
+        self.automatonMesh = new THREE.Mesh(
+          self.automatonPlane,
+          self.automatonMaterial
+        );
+        self.setupAutomataParameters(automaton);
+        self.stepperScene.clear();
+        self.stepperScene = new THREE.Scene();
+        self.stepperScene.add(self.automatonMesh);
         resolve(texture);
       });
     });
@@ -289,18 +300,13 @@ export class ThreeService implements OnDestroy {
       value: this._automataSize.value,
     }),
       (automaton.uniforms.u_grid_weigth = {
-        value: this.gridWeight,
-      }),
-      (automaton.uniforms.u_grid_color = {
-        value: new THREE.Vector4(
-          this.gridColor.r,
-          this.gridColor.g,
-          this.gridColor.b,
-          1
-        ),
+        value: 1,
       });
+    automaton.uniforms.u_grid_color = {
+      value: new THREE.Vector4(0, 0, 0, 1),
+    };
     (automaton.uniforms.u_grid_active = {
-      value: this.gridActive,
+      value: false,
     }),
       (automaton.uniforms.u_alive_color = {
         value: new THREE.Vector4(
@@ -309,24 +315,26 @@ export class ThreeService implements OnDestroy {
           this._activeColor.b,
           1
         ),
+      }),
+      (automaton.uniforms.u_dead_color = {
+        value: new THREE.Vector4(
+          this._deadColor.r,
+          this._deadColor.g,
+          this._deadColor.b,
+          1
+        ),
       });
-    automaton.uniforms.u_dying_color = {
-      value: new THREE.Vector4(
-        this.dyingColor.r,
-        this.dyingColor.g,
-        this.dyingColor.b,
-        1
-      ),
-    };
-    automaton.uniforms.u_dead_color = {
-      value: new THREE.Vector4(
-        this._deadColor.r,
-        this._deadColor.g,
-        this._deadColor.b,
-        1
-      ),
-    };
     automaton.uniforms.u_copy_step = { value: false };
+    //Here we set the additional colors which can exist or not depending on the specific shader we are using
+    this.setupAdditionalAutomataParameters(automaton);
+  }
+
+  private setupAdditionalAutomataParameters(automaton: CellularAutomaton) {
+    this._cellularAutomaton.additionalColorsArray.forEach((addC) => {
+      automaton.uniforms[addC.uniformName] = {
+        value: new THREE.Vector4(addC.color.r, addC.color.g, addC.color.b, 1),
+      };
+    });
   }
 
   private drawSquare(x: number, y: number, scene: THREE.Scene) {
@@ -374,13 +382,17 @@ export class ThreeService implements OnDestroy {
         return;
       }
     } else if (this.play || this.currentStep === 1) {
-      const previousStateIndex = this.computePreviouStateIndex();
-      this.stepForward(previousStateIndex);
-      this.displayStep();
-      this.clearSquares();
-      this.nextStateIndex = previousStateIndex;
-      this.currentStep++;
+      this.forwardAndDisplay();
     }
+  }
+
+  public forwardAndDisplay() {
+    const previousStateIndex = this.computePreviouStateIndex();
+    this.stepForward(previousStateIndex);
+    this.displayStep();
+    this.clearSquares();
+    this.nextStateIndex = previousStateIndex;
+    this.currentStep++;
   }
 
   computePreviouStateIndex(): number {
@@ -454,9 +466,25 @@ export class ThreeService implements OnDestroy {
     return this._cellularAutomaton;
   }
 
+  public get activeColor(): THREE.Color {
+    return this._activeColor;
+  }
+
   public set activeColor(activeColor: THREE.Color) {
-    if (!activeColor) {
-      throw new Error('Invalid active color.');
+    this.changeColor('activeColor', activeColor);
+  }
+
+  public get deadColor() {
+    return this._deadColor;
+  }
+
+  public set deadColor(deadColor: THREE.Color) {
+    this.changeColor('deadColor', deadColor);
+  }
+
+  public changeColor(name: string, color: THREE.Color) {
+    if (!color) {
+      throw new Error('Invalid ' + name + ' color.');
     }
     const wasPlaying = this.play;
     if (wasPlaying) {
@@ -476,16 +504,42 @@ export class ThreeService implements OnDestroy {
           this.buffers[this.computePreviouStateIndex()]
         );
       }
-      this.setupChangeColorShader(this._activeColor.clone(), activeColor);
-      this._activeColor = activeColor;
-      this.cellularAutomaton.uniforms.u_alive_color = {
-        value: new THREE.Vector4(
-          this._activeColor.r,
-          this._activeColor.g,
-          this._activeColor.b,
-          1
-        ),
-      };
+      if (name === 'activeColor') {
+        this.setupChangeColorShader(this._activeColor.clone(), color);
+        this._activeColor = color;
+        this.cellularAutomaton.uniforms.u_alive_color = {
+          value: new THREE.Vector4(
+            this._activeColor.r,
+            this._activeColor.g,
+            this._activeColor.b,
+            1
+          ),
+        };
+      } else if (name === 'deadColor') {
+        this.setupChangeColorShader(this._deadColor.clone(), color);
+        this._deadColor = color;
+        this.cellularAutomaton.uniforms.u_dead_color = {
+          value: new THREE.Vector4(
+            this._deadColor.r,
+            this._deadColor.g,
+            this._deadColor.b,
+            1
+          ),
+        };
+      } else {
+        //We are dealing with an additional color
+        let additionalColor = this._cellularAutomaton.getAdditionalColor(name);
+        this.setupChangeColorShader(additionalColor.color.clone(), color);
+        additionalColor.color = color;
+        this.cellularAutomaton.uniforms[additionalColor.uniformName] = {
+          value: new THREE.Vector4(
+            additionalColor.color.r,
+            additionalColor.color.g,
+            additionalColor.color.b,
+            1
+          ),
+        };
+      }
       //NOTE: maintain the previous state of the scene
       this.renderer.setRenderTarget(this.buffers[this.nextStateIndex]);
       this.renderer.render(this.changeColorScene, this.camera);
@@ -495,31 +549,6 @@ export class ThreeService implements OnDestroy {
     }
     if (wasPlaying) {
       this.play = true;
-    }
-  }
-
-  public get activeColor(): THREE.Color {
-    return this._activeColor;
-  }
-
-  public set deadColor(deadColor: THREE.Color) {
-    if (!deadColor) {
-      throw new Error('Invalid active color.');
-    }
-    this._deadColor = deadColor;
-    if (this.initialized) {
-      this.cellularAutomaton.uniforms.u_dead_color = {
-        value: new THREE.Vector4(
-          this._deadColor.r,
-          this._deadColor.g,
-          this._deadColor.b,
-          1
-        ),
-      };
-      if (!this.play) {
-        this.renderer.setRenderTarget(null);
-        this.renderer.render(this.stepperScene, this.camera);
-      }
     }
   }
 

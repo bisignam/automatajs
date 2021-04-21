@@ -16,7 +16,8 @@ export class DayAndNight extends CellularAutomaton {
   };
 
   constructor() {
-    super(`
+    super(
+      `
     /**
      dead cell becomes live (is born) if it has 3, 6, 7, or 8 live neighbors, and a
      live cell remains alive (survives) if it has 3, 4, 6, 7, or 8 live neighbors,
@@ -33,6 +34,8 @@ export class DayAndNight extends CellularAutomaton {
         } else {
           gl_FragColor = u_dead_color;
         }
-  `);
+  `,
+      []
+    );
   }
 }

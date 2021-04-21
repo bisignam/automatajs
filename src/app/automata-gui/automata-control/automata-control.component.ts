@@ -28,8 +28,11 @@ export class AutomataControlComponent {
   }
 
   clearGrid(): void {
+    let previousActiveColor = this.threeService.activeColor.clone();
+    this.threeService.activeColor = this.threeService.deadColor.clone();
+    this.threeService.activeColor = previousActiveColor;
+    this.threeService.forwardAndDisplay();
     this._started = false;
     this.threeService.stopAutomata();
-    this.threeService.reset();
   }
 }

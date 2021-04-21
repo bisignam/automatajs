@@ -1,4 +1,8 @@
-import { CellularAutomaton } from '../automata-engine/cellularautomaton';
+import * as THREE from 'three';
+import {
+  CellularAutomaton,
+  AdditionalColorType,
+} from '../automata-engine/cellularautomaton';
 
 export class BriansBrain extends CellularAutomaton {
   vertexShader = '';
@@ -16,7 +20,8 @@ export class BriansBrain extends CellularAutomaton {
   };
 
   constructor() {
-    super(`
+    super(
+      `
     /**
         In each time step, a cell turns on if it was off but had exactly two
       neighbors that were on, just like the birth rule for Seeds. All cells that
@@ -32,6 +37,20 @@ export class BriansBrain extends CellularAutomaton {
       } else {
         gl_FragColor = u_dead_color;
       }
-  `);
+      `,
+      [
+        {
+          color: new THREE.Color('#54b082'),
+          displayName: 'Dying',
+          uniformName: 'u_dying_color',
+        },
+      ],
+      `
+      int wasDying(vec2 coord) {
+        vec4 px = texture2D(u_texture, mod(coord / u_resolution, 1.)); // mod for toroidal surface
+        return equal(px, u_dying_color) == bvec4(true, true, true, true) ? 1 : 0;
+      }
+      `
+    );
   }
 }

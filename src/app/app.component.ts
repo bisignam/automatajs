@@ -42,16 +42,16 @@ export class AppComponent {
     this.threeService.activeColor = color;
   }
 
-  onAutomataColorChosen(name: string, color: THREE.Color): void {
-    // if (this.threeService.cellularAutomaton) {
-    //   this.threeService.cellularAutomaton.setAdditionalColor(name, color);
-    // }
+  onAutomataColorChosen(displayName: string, color: THREE.Color): void {
+    if (this.threeService.cellularAutomaton) {
+      this.threeService.changeColor(displayName, color);
+    }
   }
 
-  getAdditionalColorsForAutomata(): Array<AdditionalColorType> {
-    // if (this.threeService.cellularAutomaton) {
-    //   return this.threeService.cellularAutomaton.additionalColors;
-    // }
+  getAdditionalColorsForAutomata(): Iterable<AdditionalColorType> {
+    if (this.threeService.cellularAutomaton) {
+      return this.threeService.cellularAutomaton.additionalColorsArray;
+    }
     return new Array<AdditionalColorType>();
   }
 }
