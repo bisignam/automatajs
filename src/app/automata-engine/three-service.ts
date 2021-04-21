@@ -373,7 +373,7 @@ export class ThreeService implements OnDestroy {
         this.renderer.render(this.stepperScene, this.camera);
         return;
       }
-    } else if (this.play) {
+    } else if (this.play || this.currentStep === 1) {
       const previousStateIndex = this.computePreviouStateIndex();
       this.stepForward(previousStateIndex);
       this.displayStep();
