@@ -73,6 +73,8 @@ moreover all these parameters can be modified while the automata is running thus
 # Development Roadmap
 
 - Add possibility to define custom automaton, for instance by editing a shader file using the [Monaco Editor](https://github.com/Microsoft/monaco-editor)
+- Make the application mobile friendly.
+- Manage resize of window.
 - Introduce usage of a logging library.
 
 # Contribute
