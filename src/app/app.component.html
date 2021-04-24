@@ -22,12 +22,14 @@
       <app-automata-canvas></app-automata-canvas>
     </div>
     <div class="col-sm-1">
-      <app-automata-cell-size-slider></app-automata-cell-size-slider>
+      <app-automata-cell-size-slider
+        class="text-right"
+      ></app-automata-cell-size-slider>
     </div>
   </div>
   <div id="automataColorsChosersRow" class="row row-fluid mt-2">
     <div class="col-sm-1"></div>
-    <div id="automataColorsChosersColumn" class="col-sm-10">
+    <div id="automataColorsChosersColumn" class="col-sm-8">
       <span>Active: </span>
       <app-color-picker
         [color]="activationColor.getHexString()"
@@ -41,6 +43,10 @@
           (chosenColor)="onAutomataColorChosen(colorType.displayName, $event)"
         ></app-color-picker>
       </ng-container>
+    </div>
+    <div class="col-sm-2">
+      <span>FPS:</span>
+      <app-automata-fps-cap-slider></app-automata-fps-cap-slider>
     </div>
     <div class="col-sm-1"></div>
   </div>

@@ -7,4 +7,5 @@ export class DefaultSettings {
   static gridColor = new THREE.Color(255, 255, 255);
   static activationColor = new THREE.Color('#a8c9ea');
   static pixelSize = 10;
+  static fpsCap = 30;
 }

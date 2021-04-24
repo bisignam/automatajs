@@ -11,6 +11,7 @@ import { ColorPickerModule } from 'ngx-color-picker';
 import { MatSliderModule } from '@angular/material/slider';
 import { AutomataCellSizeSliderComponent } from './automata-cell-size-slider/automata-cell-size-slider.component';
 import { MatButtonModule } from '@angular/material/button';
+import { AutomataFPSSliderComponent } from './automata-fps-slider/automata-fps-cap-slider.component';
 
 @NgModule({
   exports: [
@@ -18,12 +19,14 @@ import { MatButtonModule } from '@angular/material/button';
     AutomataControlComponent,
     AutomataColorPickerComponent,
     AutomataCellSizeSliderComponent,
+    AutomataFPSSliderComponent,
   ],
   declarations: [
     RulesSelectorComponent,
     AutomataControlComponent,
     AutomataColorPickerComponent,
     AutomataCellSizeSliderComponent,
+    AutomataFPSSliderComponent,
   ],
   imports: [
     CommonModule,

@@ -43,6 +43,7 @@ export class ThreeService implements OnDestroy {
   private automatonMesh: THREE.Mesh<THREE.PlaneGeometry, THREE.ShaderMaterial>;
   private automatonPlane: THREE.PlaneGeometry;
   private textureLoader = new THREE.TextureLoader();
+  private _fpsCap: number = DefaultSettings.fpsCap;
 
   /**
    * Cancel the current animation frame
@@ -370,9 +371,13 @@ export class ThreeService implements OnDestroy {
   }
 
   public animate(): void {
-    requestAnimationFrame(() => {
-      this.animate();
-    });
+    setTimeout(
+      () =>
+        requestAnimationFrame(() => {
+          this.animate();
+        }),
+      1000 / this._fpsCap
+    );
     this.resizeRendererToDisplaySize(this.renderer);
     if (this.isDrawing) {
       if (this.drawWithMouse) {
@@ -581,5 +586,21 @@ export class ThreeService implements OnDestroy {
 
   private get automataSize(): number {
     return this._automataSize.value;
+  }
+
+  public get fpsCap(): number {
+    return this._fpsCap;
+  }
+
+  public set fpsCap(value: number) {
+    let wasPlaying = false;
+    if (this.play) {
+      wasPlaying = true;
+      this.play = false;
+    }
+    this._fpsCap = value;
+    if (wasPlaying) {
+      this.play = true;
+    }
   }
 }
