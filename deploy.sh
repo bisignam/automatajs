@@ -2,10 +2,7 @@
 
 set -e 
 
-if [ $1 != "skipBuild" ]
-then    
-    ng build
-fi
+ng build --prod
 
 ssh mbisignani@linode "rm -rf ~/AutomataJS"
 
