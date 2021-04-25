@@ -29,7 +29,7 @@
   </div>
   <div id="automataColorsChosersRow" class="row row-fluid mt-2">
     <div class="col-sm-1"></div>
-    <div id="automataColorsChosersColumn" class="col-sm-8">
+    <div id="automataColorsChosersColumn" class="col-sm-4">
       <span>Active: </span>
       <app-color-picker
         [color]="activationColor.getHexString()"
@@ -45,10 +45,9 @@
       </ng-container>
     </div>
     <div class="col-sm-2">
-      <span>FPS:</span>
       <app-automata-fps-cap-slider></app-automata-fps-cap-slider>
     </div>
-    <div class="col-sm-1"></div>
+    <div class="col-sm-5"></div>
   </div>
   <div id="automataControlsRow" class="row row-fluid">
     <div class="col-sm-1 col-md-2"></div>
