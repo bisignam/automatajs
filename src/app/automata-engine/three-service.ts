@@ -8,6 +8,7 @@ import { DisplayPassShader } from './display-pass-shader';
 import { Shader, Texture } from 'three';
 import { GameOfLife } from '../automata-rules/gameoflife';
 import { ChangeColorShader } from './change-color-shader';
+import { ResetAllColorsShader } from './reset-all-colors-shader';
 
 @Injectable({
   providedIn: 'root', //means singleton service
@@ -23,6 +24,7 @@ export class ThreeService implements OnDestroy {
   private stepperScene: THREE.Scene;
   private displayScene: THREE.Scene;
   private changeColorScene: THREE.Scene;
+  private resetAllColorsScene: THREE.Scene;
   private frameId: number = null;
   private squares: Array<THREE.Mesh>;
   private buffers: Array<THREE.WebGLRenderTarget>;
@@ -37,6 +39,7 @@ export class ThreeService implements OnDestroy {
   private nextStateIndex = 0;
   private displayPassShader = new DisplayPassShader();
   private changeColorShader = new ChangeColorShader();
+  private resetAllColorsShader = new ResetAllColorsShader();
   private _activeColor = DefaultSettings.activationColor;
   private _deadColor = DefaultSettings.backgroundColor;
   private play = false;
@@ -119,6 +122,17 @@ export class ThreeService implements OnDestroy {
     );
     this.changeColorScene.add(
       new THREE.Mesh(plane3, this.createShaderMaterial(this.changeColorShader))
+    );
+    this.resetAllColorsScene = new THREE.Scene();
+    const plane4 = new THREE.PlaneGeometry(
+      this.canvas.clientWidth,
+      this.canvas.clientHeight
+    );
+    this.resetAllColorsScene.add(
+      new THREE.Mesh(
+        plane4,
+        this.createShaderMaterial(this.resetAllColorsShader)
+      )
     );
 
     this.configureMouseDrawingEvents(this.canvas);
@@ -281,6 +295,21 @@ export class ThreeService implements OnDestroy {
       value: new THREE.Vector4(oldColor.r, oldColor.g, oldColor.b, 1),
     };
     this.changeColorShader.uniforms.u_new_color = {
+      value: new THREE.Vector4(newColor.r, newColor.g, newColor.b, 1),
+    };
+  }
+
+  private setupResetAllColorsShader(newColor: THREE.Color): void {
+    this.resetAllColorsShader.uniforms.u_texture = {
+      value: this.buffers[this.computePreviouStateIndex()].texture,
+    };
+    this.resetAllColorsShader.uniforms.u_resolution = {
+      value: new THREE.Vector2(
+        this.canvas.clientWidth,
+        this.canvas.clientHeight
+      ),
+    };
+    this.resetAllColorsShader.uniforms.u_new_color = {
       value: new THREE.Vector4(newColor.r, newColor.g, newColor.b, 1),
     };
   }
@@ -554,6 +583,17 @@ export class ThreeService implements OnDestroy {
     }
     if (wasPlaying) {
       this.play = true;
+    }
+  }
+
+  public clear() {
+    if (this.initialized) {
+      this.setupResetAllColorsShader(this.deadColor);
+      this.renderer.setRenderTarget(this.buffers[this.nextStateIndex]);
+      this.renderer.render(this.resetAllColorsScene, this.camera);
+      this.displayStep();
+      this.clearSquares();
+      this.nextStateIndex = this.computePreviouStateIndex();
     }
   }
 
