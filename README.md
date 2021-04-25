@@ -2,7 +2,7 @@
   <img src="./src/assets/automatajs.svg" width="500" alt="stacklogo" />
 </h1>
 
-<div align="center"><img width="55" src="https://raw.githubusercontent.com/gilbarbara/logos/master/logos/angular-icon.svg"/><img width="55" src="https://raw.githubusercontent.com/gilbarbara/logos/master/logos/bootstrap.svg"/><img width="55" src="https://raw.githubusercontent.com/gilbarbara/logos/master/logos/jasmine.svg"/><img width="55" src="https://raw.githubusercontent.com/gilbarbara/logos/master/logos/javascript.svg"/><img width="55" src="https://raw.githubusercontent.com/gilbarbara/logos/master/logos/karma.svg"/><img width="55" src="https://raw.githubusercontent.com/gilbarbara/logos/master/logos/prettier.svg"/><img width="55" src="https://raw.githubusercontent.com/gilbarbara/logos/master/logos/protactor.svg"/><img width="55" src="https://raw.githubusercontent.com/gilbarbara/logos/master/logos/typescript-icon.svg"/>
+<div align="center"><img width="55" src="https://raw.githubusercontent.com/gilbarbara/logos/master/logos/angular-icon.svg"/><img width="55" src="https://raw.githubusercontent.com/gilbarbara/logos/master/logos/bootstrap.svg"/>
 <img itemprop="image" src="https://avatars.githubusercontent.com/u/13802008?s=200&amp;v=4" width="55" alt="@threejs">
 </div>
 
