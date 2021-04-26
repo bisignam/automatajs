@@ -1,0 +1,19 @@
+#automataCanvasContainer {
+  position: absolute;
+  height: 100% !important;
+  width: 100% !important;
+  box-shadow: 15px 15px 70px 10px grey;
+}
+
+mat-card-content {
+}
+
+// remove borders from mat-card
+mat-card {
+  transition: none !important;
+  box-shadow: none !important;
+}
+
+#canvasActions {
+  z-index: 1;
+}

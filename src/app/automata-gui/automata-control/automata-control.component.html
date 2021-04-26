@@ -1,9 +1,8 @@
 <div class="row row-fluid">
-  <div class="col-sm-4"></div>
-  <div class="col-sm-4 text-center">
-    <app-rules-selector></app-rules-selector>
+  <div class="col-sm-12 text-center">
     <div class="row mt-4">
-      <div class="col-sm-6 text-center">
+      <div class="col-sm-2"></div>
+      <div class="col-sm-2 text-center">
         <button
           class="controlButton"
           mat-fab
@@ -14,7 +13,10 @@
           <mat-icon>clear_presentation</mat-icon>
         </button>
       </div>
-      <div class="col-sm-6 text-center">
+      <div class="col-sm-4 text-center">
+        <app-rules-selector></app-rules-selector>
+      </div>
+      <div class="col-sm-2 text-center">
         <button
           class="controlButton"
           mat-fab
@@ -25,8 +27,7 @@
           <mat-icon>{{ started ? 'stop' : 'play_arrow' }}</mat-icon>
         </button>
       </div>
-      <div class="col-md-4"></div>
+      <div class="col-sm-2"></div>
     </div>
   </div>
-  <div class="col-sm-4"></div>
 </div>
