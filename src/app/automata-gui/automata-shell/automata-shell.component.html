@@ -34,6 +34,26 @@
         ></app-automata-transport-bar>
       </div>
 
+      <div
+        *ngIf="showAutoImmersiveOptIn"
+        #autoImmersiveBanner
+        class="auto-immersive-banner"
+        role="dialog"
+        aria-live="polite"
+      >
+        <div class="auto-immersive-banner__text">
+          Immersive mode &mdash; go fullscreen automatically when you're idle?
+        </div>
+        <div class="auto-immersive-banner__actions">
+          <button type="button" class="auto-immersive-banner__btn auto-immersive-banner__btn--primary" (click)="onAutoImmersiveOptIn(true)">
+            Yes
+          </button>
+          <button type="button" class="auto-immersive-banner__btn" (click)="onAutoImmersiveOptIn(false)">
+            Not now
+          </button>
+        </div>
+      </div>
+
       <button
         *ngIf="exitPillVisible"
         #exitPillButton

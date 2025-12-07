@@ -18,6 +18,8 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   private readonly idleCountdownSeconds = 3;
   private readonly idleCountdownDelayMs = 2000;
   private readonly immersiveTransportAutoHideMs = 4000;
+  private readonly autoImmersiveIdleMs = 20000;
+  private readonly autoImmersiveDialogMs = 8000;
   private readonly immersiveEase: Easing = [0.33, 1, 0.68, 1];
 
   simulationConfig: SimulationConfig = {
@@ -39,6 +41,9 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   idleCountdownVisible = false;
   idleCountdownRemaining = 0;
   exitPillVisible = false;
+  showAutoImmersiveOptIn = false;
+  private readonly autoImmersivePreferenceKey = 'automatajs_autoImmersivePreference';
+  private autoImmersivePreference: 'unknown' | 'enabled' | 'disabled' = 'unknown';
 
   @ViewChild('appHeader') private headerRef?: ElementRef<HTMLElement>;
   @ViewChild('shellMain') private shellRef?: ElementRef<HTMLElement>;
@@ -67,6 +72,12 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       this.animateExitPillEnter(this.exitPillEl);
     }
   }
+  @ViewChild('autoImmersiveBanner') set autoImmersiveBannerRef(ref: ElementRef<HTMLDivElement> | undefined) {
+    this.autoImmersiveBannerEl = ref?.nativeElement;
+    if (this.autoImmersiveBannerEl) {
+      this.animateAutoImmersiveBannerEnter(this.autoImmersiveBannerEl);
+    }
+  }
 
   private controlPanelEl?: HTMLElement;
   private transportBarEl?: HTMLElement;
@@ -77,6 +88,9 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   private immersiveHandleIconAnimations = new WeakMap<HTMLElement, ReturnType<typeof animate>>();
   private exitPillHoverAnimations = new WeakMap<HTMLElement, ReturnType<typeof animate>>();
   private exitPillEl?: HTMLElement;
+  private autoImmersiveBannerEl?: HTMLElement;
+  private autoImmersiveOptInDismissTimerId?: number;
+  private autoImmersiveIdleTimerId?: number;
   private idleCountdownIntervalId?: number;
   private idleDelayTimeoutId?: number;
   private transportAutoHideTimeoutId?: number;
@@ -87,6 +101,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   private readonly canvasRadius = 18;
 
   ngOnInit(): void {
+    this.loadAutoImmersivePreference();
     this.updateResponsiveState(window.innerWidth);
     this.updateAutoImmersiveState();
   }
@@ -101,6 +116,8 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.cancelIdleCountdown();
     this.clearIdleDelayTimeout();
     this.clearTransportAutoHide();
+    this.clearAutoImmersiveOptInDismissTimer();
+    this.clearAutoImmersiveIdleTimer();
   }
 
   get isImmersive(): boolean {
@@ -312,6 +329,8 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     }
     this.cancelIdleCountdown();
     this.clearIdleDelayTimeout();
+    this.clearAutoImmersiveIdleTimer();
+    this.hideAutoImmersiveOptIn();
   }
 
   private patchUiState(partial: Partial<UiState>): void {
@@ -343,6 +362,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   private handleIdleActivity(): void {
+    this.clearAutoImmersiveIdleTimer();
     if (!this.shouldAutoImmersive()) {
       this.cancelIdleCountdown();
       this.clearIdleDelayTimeout();
@@ -355,8 +375,18 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.clearIdleDelayTimeout();
     this.cancelIdleCountdown();
     if (!this.shouldAutoImmersive()) {
+      this.clearAutoImmersiveIdleTimer();
       return;
     }
+    if (this.autoImmersivePreference === 'disabled') {
+      this.clearAutoImmersiveIdleTimer();
+      return;
+    }
+    if (this.autoImmersivePreference === 'unknown') {
+      this.startAutoImmersiveOptInIdleTimer();
+      return;
+    }
+    this.clearAutoImmersiveIdleTimer();
     this.idleDelayTimeoutId = window.setTimeout(() => this.startIdleCountdown(), this.idleCountdownDelayMs);
   }
 
@@ -604,6 +634,123 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     ).finished.finally(() => {
       this.exitPillVisible = false;
       this.exitPillEl = undefined;
+    });
+  }
+
+  onAutoImmersiveOptIn(accepted: boolean): void {
+    this.hideAutoImmersiveOptIn(accepted ? 'enabled' : 'disabled');
+  }
+
+  private loadAutoImmersivePreference(): void {
+    try {
+      const stored = localStorage.getItem(this.autoImmersivePreferenceKey);
+      if (stored === 'enabled' || stored === 'disabled') {
+        this.autoImmersivePreference = stored;
+      }
+    } catch {
+      this.autoImmersivePreference = 'disabled';
+    }
+  }
+
+  private saveAutoImmersivePreference(value: 'enabled' | 'disabled'): void {
+    try {
+      localStorage.setItem(this.autoImmersivePreferenceKey, value);
+    } catch {
+      // ignore
+    }
+  }
+
+  private showAutoImmersiveOptInBanner(): void {
+    if (this.showAutoImmersiveOptIn) {
+      return;
+    }
+    this.cancelIdleCountdown();
+    this.clearIdleDelayTimeout();
+    this.clearAutoImmersiveIdleTimer();
+    this.showAutoImmersiveOptIn = true;
+    this.clearAutoImmersiveOptInDismissTimer();
+    this.autoImmersiveOptInDismissTimerId = window.setTimeout(
+      () => this.handleAutoImmersiveOptInDismiss(),
+      this.autoImmersiveDialogMs,
+    );
+  }
+
+  private handleAutoImmersiveOptInDismiss(): void {
+    this.hideAutoImmersiveOptIn('disabled');
+  }
+
+  private hideAutoImmersiveOptIn(value?: 'enabled' | 'disabled'): void {
+    if (!this.showAutoImmersiveOptIn) {
+      if (value) {
+        this.setAutoImmersivePreference(value);
+      }
+      return;
+    }
+    this.clearAutoImmersiveOptInDismissTimer();
+    const el = this.autoImmersiveBannerEl;
+    const finalize = (): void => {
+      this.showAutoImmersiveOptIn = false;
+      this.autoImmersiveBannerEl = undefined;
+      this.clearAutoImmersiveIdleTimer();
+      if (value) {
+        this.setAutoImmersivePreference(value);
+        if (value === 'enabled') {
+          this.scheduleAutoImmersive();
+        }
+      }
+    };
+    if (!el) {
+      finalize();
+      return;
+    }
+    animate(
+      el,
+      { opacity: [1, 0], transform: ['translate(-50%, 0)', 'translate(-50%, -6px)'] },
+      { duration: 0.18, easing: 'ease-in' },
+    ).finished.finally(() => finalize());
+  }
+
+  private setAutoImmersivePreference(value: 'enabled' | 'disabled'): void {
+    this.autoImmersivePreference = value;
+    this.saveAutoImmersivePreference(value);
+    this.clearAutoImmersiveIdleTimer();
+  }
+
+  private clearAutoImmersiveOptInDismissTimer(): void {
+    if (this.autoImmersiveOptInDismissTimerId !== undefined) {
+      window.clearTimeout(this.autoImmersiveOptInDismissTimerId);
+      this.autoImmersiveOptInDismissTimerId = undefined;
+    }
+  }
+
+  private startAutoImmersiveOptInIdleTimer(): void {
+    if (this.autoImmersiveIdleTimerId !== undefined || this.showAutoImmersiveOptIn) {
+      return;
+    }
+    this.autoImmersiveIdleTimerId = window.setTimeout(() => {
+      this.autoImmersiveIdleTimerId = undefined;
+      if (this.autoImmersivePreference !== 'unknown' || !this.shouldAutoImmersive() || this.showAutoImmersiveOptIn) {
+        return;
+      }
+      this.showAutoImmersiveOptInBanner();
+    }, this.autoImmersiveIdleMs);
+  }
+
+  private clearAutoImmersiveIdleTimer(): void {
+    if (this.autoImmersiveIdleTimerId !== undefined) {
+      window.clearTimeout(this.autoImmersiveIdleTimerId);
+      this.autoImmersiveIdleTimerId = undefined;
+    }
+  }
+
+  private animateAutoImmersiveBannerEnter(banner: HTMLElement): void {
+    animate(
+      banner,
+      { opacity: [0, 1], transform: ['translate(-50%, -10px) scale(0.96)', 'translate(-50%, 0) scale(1)'] },
+      { duration: 0.22, easing: 'ease-out' },
+    ).finished.finally(() => {
+      banner.style.opacity = '';
+      banner.style.transform = '';
     });
   }
 
