@@ -1,8 +1,17 @@
-import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  AfterViewChecked,
+  AfterViewInit,
+  Component,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { DefaultSettings } from '../../automata-engine/defaultSettings';
 import { AutomataControlComponent } from '../automata-control/automata-control.component';
 import { SimulationConfig, SimulationStatus, UiState } from '../ui-state';
-import { animate } from '@motionone/dom';
+import { animate, timeline } from '@motionone/dom';
 import type { Easing } from '@motionone/types';
 
 @Component({
@@ -11,7 +20,7 @@ import type { Easing } from '@motionone/types';
   styleUrls: ['./automata-shell.component.scss'],
   standalone: false,
 })
-export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit {
+export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
   @ViewChild(AutomataControlComponent) private controlComponent?: AutomataControlComponent;
 
   private readonly escapeKey = 'Escape';
@@ -60,6 +69,8 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       this.animateHandleEnter(ref.nativeElement);
     }
   }
+  @ViewChild('bottomHint') bottomHintRef?: ElementRef<HTMLElement>;
+  @ViewChild('rightHint') rightHintRef?: ElementRef<HTMLElement>;
 
   private controlPanelEl?: HTMLElement;
   private transportBarEl?: HTMLElement;
@@ -76,6 +87,10 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   private readonly shellPadding = { top: 12, right: 20, bottom: 20, left: 20 };
   private readonly shellGap = 16;
   private readonly canvasRadius = 18;
+  private readonly immersiveHintStorageKey = 'automatajs_hasSeenImmersiveHints';
+  showImmersiveHints = false;
+  private immersiveHintTimeoutId?: number;
+  private hasRunHintAnimation = false;
 
   ngOnInit(): void {
     this.updateResponsiveState(window.innerWidth);
@@ -92,6 +107,19 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.cancelIdleCountdown();
     this.clearIdleDelayTimeout();
     this.clearTransportAutoHide();
+    this.clearImmersiveHintTimeout();
+  }
+  ngAfterViewChecked(): void {
+    if (!this.showImmersiveHints || this.hasRunHintAnimation) {
+      return;
+    }
+    const bottomEl = this.bottomHintRef?.nativeElement;
+    const rightEl = this.rightHintRef?.nativeElement;
+    if (!bottomEl || !rightEl) {
+      return;
+    }
+    this.runHintIntroAnimation(bottomEl, rightEl);
+    this.hasRunHintAnimation = true;
   }
 
   get isImmersive(): boolean {
@@ -121,6 +149,11 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       this.animateImmersiveHandleIcon(iconWrapper, entering);
     }
   }
+  onAnyHandleClicked(): void {
+    if (this.showImmersiveHints) {
+      this.hideImmersiveHints();
+    }
+  }
 
   enterImmersive(): void {
     if (this.isImmersive) {
@@ -136,6 +169,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       lastUserInteractionAt: Date.now(),
     });
     this.playImmersiveSceneTransition(true);
+    this.maybeShowImmersiveHints();
   }
 
   exitImmersive(): void {
@@ -151,6 +185,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       lastUserInteractionAt: Date.now(),
     });
     this.playImmersiveSceneTransition(false);
+    this.hideImmersiveHints();
     this.scheduleAutoImmersive();
   }
 
@@ -516,13 +551,13 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   ): { base: string; hover: string } {
     if (variant === 'control') {
       return {
-        base: 'translateY(-50%) scaleX(1)',
-        hover: 'translateY(-50%) scaleX(1.2)',
+        base: 'scaleX(1)',
+        hover: 'scaleX(1.2)',
       };
     }
     return {
-      base: 'translateX(-50%) scale(1)',
-      hover: 'translateX(-50%) scale(1.12)',
+      base: 'scale(1)',
+      hover: 'scale(1.12)',
     };
   }
 
@@ -532,6 +567,73 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
         handle.style.opacity = '';
       });
     });
+  }
+
+  private maybeShowImmersiveHints(): void {
+    if (this.hasSeenImmersiveHints()) {
+      return;
+    }
+    this.showImmersiveHints = true;
+    this.hasRunHintAnimation = false;
+    this.clearImmersiveHintTimeout();
+    this.immersiveHintTimeoutId = window.setTimeout(() => this.hideImmersiveHints(), 3000);
+  }
+
+  private hasSeenImmersiveHints(): boolean {
+    try {
+      return localStorage.getItem(this.immersiveHintStorageKey) === '1';
+    } catch {
+      return true;
+    }
+  }
+
+  private markImmersiveHintsSeen(): void {
+    try {
+      localStorage.setItem(this.immersiveHintStorageKey, '1');
+    } catch {
+      // ignore
+    }
+  }
+
+  private hideImmersiveHints(): void {
+    if (!this.showImmersiveHints) {
+      this.clearImmersiveHintTimeout();
+      return;
+    }
+    this.clearImmersiveHintTimeout();
+    const hintEls = [this.bottomHintRef?.nativeElement, this.rightHintRef?.nativeElement];
+    hintEls.forEach((el) => {
+      if (!el) {
+        return;
+      }
+      animate(el, { opacity: 0, y: 6, scale: 0.96 }, { duration: 0.2, easing: 'ease-in' });
+    });
+    window.setTimeout(() => {
+      this.showImmersiveHints = false;
+      this.hasRunHintAnimation = false;
+      this.markImmersiveHintsSeen();
+    }, 200);
+  }
+
+  private clearImmersiveHintTimeout(): void {
+    if (this.immersiveHintTimeoutId !== undefined) {
+      window.clearTimeout(this.immersiveHintTimeoutId);
+      this.immersiveHintTimeoutId = undefined;
+    }
+  }
+
+  private runHintIntroAnimation(bottomEl: HTMLElement, rightEl: HTMLElement): void {
+    const intro = (el: HTMLElement, delay: number) =>
+      timeline([
+        [
+          el,
+          { opacity: [0, 1], y: [8, 0], scale: [0.9, 1] },
+          { duration: 0.28, easing: 'ease-out', delay },
+        ],
+        [el, { scale: [1, 1.03, 1] }, { duration: 0.6, easing: 'ease-in-out' }],
+      ]);
+    intro(bottomEl, 0);
+    intro(rightEl, 0.08);
   }
 
   private requestPanelOpen(animate: boolean): void {

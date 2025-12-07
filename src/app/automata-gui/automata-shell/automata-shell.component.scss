@@ -146,13 +146,27 @@
   opacity: 0.85;
 }
 
+.immersive-handle-wrapper {
+  position: absolute;
+}
+
+.immersive-handle-wrapper--right {
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
+
+.immersive-handle-wrapper--bottom {
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+}
+
 .immersive-handle--right {
   width: var(--control-handle-width, 14px);
   height: var(--control-handle-height, 92px);
-  right: 0;
-  top: 50%;
   border-radius: 2px;
-  transform: translateY(-50%) scaleX(1);
+  transform: scaleX(1);
   transform-origin: center;
 }
 
@@ -164,9 +178,7 @@
 .immersive-handle--bottom {
   width: var(--transport-handle-width, 60px);
   height: var(--transport-handle-height, 20px);
-  left: 50%;
-  bottom: 10px;
-  transform: translateX(-50%) scale(1);
+  transform: scale(1);
   transform-origin: center;
 }
 
@@ -191,6 +203,36 @@
 .immersive-handle__icon-row lucide-icon {
   color: inherit;
   stroke-width: 1.8;
+}
+
+.immersive-hint {
+  position: absolute;
+  pointer-events: none;
+  font-size: 11px;
+  line-height: 1;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(7, 9, 14, 0.9);
+  color: rgba(235, 240, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(8px) scale(0.9);
+  backdrop-filter: blur(6px);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.immersive-hint--bottom {
+  bottom: 32px;
+  left: 50%;
+  transform: translate(-50%, 8px) scale(0.9);
+}
+
+.immersive-hint--right {
+  right: 40px;
+  top: 50%;
+  transform: translateY(-50%) translateY(8px) scale(0.9);
 }
 
 .automata-shell__panel {
