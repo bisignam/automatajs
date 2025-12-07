@@ -98,7 +98,7 @@
   opacity: 0.9;
 }
 
-.transport-bar {
+.transport-tray {
   position: absolute;
   left: 50%;
   bottom: 18px;
@@ -113,7 +113,7 @@
   backdrop-filter: blur(8px);
 }
 
-.transport-bar--hidden {
+.transport-tray--hidden {
   opacity: 0;
   transform: translateX(-50%) translateY(8px);
   pointer-events: none;

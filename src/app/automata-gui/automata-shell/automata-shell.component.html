@@ -1,75 +1,78 @@
-<div
-  class="automata-shell"
-  [class.automata-shell--immersive]="uiState.isImmersive"
-  [class.automata-shell--mobile]="uiState.isMobile"
->
-  <header class="automata-shell__header">
-    <div class="brand" aria-label="AutomataJS">
-      <img class="brand-logo" src="assets/automatajs.svg" alt="AutomataJS logo" />
-      <span>AutomataJS</span>
+<div class="automata-app" [class.immersive]="isImmersive">
+  <header #appHeader class="automata-header">
+    <div class="automata-header__left" aria-label="AutomataJS">
+      <img class="automata-logo" src="assets/automatajs.svg" alt="AutomataJS" />
     </div>
-    <div class="header-actions">
-      <button type="button" class="header-button" (click)="openAbout()">About</button>
-      <button
-        type="button"
-        class="header-button header-button--primary"
-        (click)="uiState.isControlPanelOpen ? closePanel() : openPanel()"
-      >
-        {{ uiState.isControlPanelOpen ? 'Hide controls' : 'Show controls' }}
-      </button>
+    <div class="automata-header__right">
+      <button type="button" class="ghost-button" (click)="openAbout()">ABOUT</button>
+      <button type="button" class="ghost-button" (click)="enterImmersive()">HIDE CONTROLS</button>
     </div>
   </header>
 
-  <div class="automata-shell__main">
-    <div class="canvas-pane">
-      <div class="canvas-pane__surface">
-        <app-automata-canvas></app-automata-canvas>
+  <main #shellMain class="automata-shell">
+    <section #canvasSection class="automata-shell__canvas">
+      <app-automata-canvas></app-automata-canvas>
+      <div class="idle-countdown" *ngIf="idleCountdownVisible">
+        Switching to immersive mode in {{ idleCountdownRemaining }}s
       </div>
 
-      <app-automata-transport-bar
-        class="automata-shell__transport"
-        [class.automata-shell__transport--immersive]="uiState.isImmersive"
-        [class.automata-shell__transport--hidden]="uiState.isImmersive && !isImmersiveTransportVisible"
-        [status]="uiState.status"
-        [speed]="simulationConfig.speed"
-        (mouseenter)="onTransportInteraction()"
-        (focusin)="onTransportInteraction()"
-        (play)="onPlay()"
-        (pause)="onPause()"
-        (reset)="onReset()"
-        (step)="onStep()"
-        (speedChange)="onSpeedChange($event)"
-      ></app-automata-transport-bar>
-    </div>
-
-    <section
-      class="controls-pane"
-      [class.controls-pane--collapsed]="!uiState.isControlPanelOpen && !uiState.isMobile"
-      [class.controls-pane--mobile-hidden]="uiState.isMobile && !uiState.isControlPanelOpen"
-    >
-      <div class="panel__body">
-        <div class="panel__header">
-          <div>
-            <p class="panel__eyebrow">Control center</p>
-          </div>
-          <button type="button" class="panel__close" (click)="closePanel()">Close</button>
-        </div>
-
-        <div class="panel__content">
-          <app-automata-control
-            [config]="simulationConfig"
-            [status]="uiState.status"
-            [uiState]="uiState"
-            (configChange)="onConfigChange($event)"
-            (statusChange)="onStatusChange($event)"
-            (uiStateChange)="onUiStateChange($event)"
-          ></app-automata-control>
-        </div>
-
-        <div class="panel__handle" *ngIf="uiState.isMobile"></div>
+      <div
+        #transportBar
+        class="transport-tray"
+        [class.transport-tray--hidden]="isImmersive && !transportVisible"
+      >
+        <app-automata-transport-bar
+          [status]="uiState.status"
+          [speed]="simulationConfig.speed"
+          (mouseenter)="onImmersiveTransportInteraction()"
+          (focusin)="onImmersiveTransportInteraction()"
+          (play)="onPlay()"
+          (pause)="onPause()"
+          (reset)="onReset()"
+          (step)="onStep()"
+          (speedChange)="onSpeedChange($event)"
+        ></app-automata-transport-bar>
       </div>
+
+      <button
+        #sideHandle
+        *ngIf="isImmersive"
+        class="immersive-handle immersive-handle--right"
+        type="button"
+        aria-label="Show controls"
+        (click)="exitImmersive()"
+      >
+        <span class="handle-arrow handle-arrow--left"></span>
+      </button>
+
+      <button
+        #bottomHandle
+        *ngIf="isImmersive && !transportVisible"
+        class="immersive-handle immersive-handle--bottom"
+        type="button"
+        aria-label="Show transport"
+        (click)="showTransport()"
+      >
+        <span class="handle-arrow handle-arrow--up"></span>
+      </button>
     </section>
-  </div>
+
+    <aside #controlPanel class="automata-shell__panel" *ngIf="panelOpen && !isImmersive">
+      <div class="panel__header">
+        <p class="panel__eyebrow">Control center</p>
+      </div>
+      <div class="panel__body">
+        <app-automata-control
+          [config]="simulationConfig"
+          [status]="uiState.status"
+          [uiState]="uiState"
+          (configChange)="onConfigChange($event)"
+          (statusChange)="onStatusChange($event)"
+          (uiStateChange)="onUiStateChange($event)"
+        ></app-automata-control>
+      </div>
+    </aside>
+  </main>
 
   <div class="automata-shell__about" *ngIf="isAboutOpen">
     <div class="about-card" role="dialog" aria-modal="true" aria-label="About AutomataJS">
