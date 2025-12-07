@@ -35,6 +35,8 @@ export class ThreeService implements OnDestroy {
   private _automataSize = new BehaviorSubject<number>(
     DefaultSettings.pixelSize
   );
+  private simulationWidth = 0;
+  private simulationHeight = 0;
   private initialized = false;
   private nextStateIndex = 0;
   private displayPassShader = new DisplayPassShader();
@@ -62,30 +64,35 @@ export class ThreeService implements OnDestroy {
    * Setup the threejs component
    */
   public setup(canvas: ElementRef<HTMLCanvasElement>): void {
+    if (this.initialized) {
+      return;
+    }
     this.canvas = canvas.nativeElement;
     var glContextAttributes = { preserveDrawingBuffer: true };
     var gl = this.canvas.getContext('experimental-webgl', glContextAttributes);
     this.raycaster = new THREE.Raycaster();
 
     this.squares = new Array<THREE.Mesh>();
-    const width = this.canvas.clientWidth;
-    const height = this.canvas.clientHeight;
+    const width = Math.max(1, Math.floor(this.canvas.clientWidth));
+    const height = Math.max(1, Math.floor(this.canvas.clientHeight));
+    this.simulationWidth = width;
+    this.simulationHeight = height;
     this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
 
-    this.renderer.setSize(width, height, false);
+    this.resizeRendererToDisplaySize(this.canvas);
     this.renderer.autoClearColor = false;
 
-    const step1 = new THREE.WebGLRenderTarget(width, height);
-    const step2 = new THREE.WebGLRenderTarget(width, height);
+    const step1 = new THREE.WebGLRenderTarget(this.simulationWidth, this.simulationHeight);
+    const step2 = new THREE.WebGLRenderTarget(this.simulationWidth, this.simulationHeight);
 
     this.buffers = [step1, step2];
 
     //We make the camera take the whole screen with his frustum
     this.camera = new THREE.OrthographicCamera(
-      -(width / 2), // left
-      width / 2, // right
-      height / 2, // top
-      -(height / 2), // bottom
+      -(this.simulationWidth / 2), // left
+      this.simulationWidth / 2, // right
+      this.simulationHeight / 2, // top
+      -(this.simulationHeight / 2), // bottom
       -1, // near,
       1 // far
     );
@@ -97,8 +104,8 @@ export class ThreeService implements OnDestroy {
     this.stepperScene = new THREE.Scene();
     //NOTE: cellular automaton IS A SHADER
     this.automatonPlane = new THREE.PlaneGeometry(
-      this.canvas.clientWidth,
-      this.canvas.clientHeight
+      this.simulationWidth,
+      this.simulationHeight
     );
     this.automatonMaterial = this.createShaderMaterial(this.cellularAutomaton);
     this.automatonMesh = new THREE.Mesh(
@@ -108,8 +115,8 @@ export class ThreeService implements OnDestroy {
     this.stepperScene.add(this.automatonMesh);
     this.displayScene = new THREE.Scene();
     const plane2 = new THREE.PlaneGeometry(
-      this.canvas.clientWidth,
-      this.canvas.clientHeight
+      this.simulationWidth,
+      this.simulationHeight
     );
     this.displayScene.add(
       new THREE.Mesh(plane2, this.createShaderMaterial(this.displayPassShader))
@@ -117,16 +124,16 @@ export class ThreeService implements OnDestroy {
 
     this.changeColorScene = new THREE.Scene();
     const plane3 = new THREE.PlaneGeometry(
-      this.canvas.clientWidth,
-      this.canvas.clientHeight
+      this.simulationWidth,
+      this.simulationHeight
     );
     this.changeColorScene.add(
       new THREE.Mesh(plane3, this.createShaderMaterial(this.changeColorShader))
     );
     this.resetAllColorsScene = new THREE.Scene();
     const plane4 = new THREE.PlaneGeometry(
-      this.canvas.clientWidth,
-      this.canvas.clientHeight
+      this.simulationWidth,
+      this.simulationHeight
     );
     this.resetAllColorsScene.add(
       new THREE.Mesh(
@@ -166,17 +173,17 @@ export class ThreeService implements OnDestroy {
   ): void {
     this.renderer.dispose();
     this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
-    this.renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight, false);
+    this.resizeRendererToDisplaySize(this.canvas);
     this.renderer.autoClearColor = false;
     this.buffers[previousStateIndex].dispose();
     this.buffers[previousStateIndex] = new THREE.WebGLRenderTarget(
-      this.canvas.clientWidth,
-      this.canvas.clientHeight
+      this.simulationWidth,
+      this.simulationHeight
     );
     this.buffers[this.nextStateIndex].dispose();
     this.buffers[this.nextStateIndex] = new THREE.WebGLRenderTarget(
-      this.canvas.clientWidth,
-      this.canvas.clientHeight
+      this.simulationWidth,
+      this.simulationHeight
     );
     if (preservedTexture) {
       preservedTexture.minFilter = THREE.LinearFilter;
@@ -185,8 +192,8 @@ export class ThreeService implements OnDestroy {
     }
     this.automatonPlane.dispose();
     this.automatonPlane = new THREE.PlaneGeometry(
-      this.canvas.clientWidth,
-      this.canvas.clientHeight
+      this.simulationWidth,
+      this.simulationHeight
     );
     this._cellularAutomaton = automaton;
     this.automatonMaterial.dispose();
@@ -233,14 +240,17 @@ export class ThreeService implements OnDestroy {
     });
   }
 
-  private resizeRendererToDisplaySize(renderer: THREE.WebGLRenderer) {
-    const width = this.canvas.clientWidth;
-    const height = this.canvas.clientHeight;
+  private resizeRendererToDisplaySize(canvas: HTMLCanvasElement): boolean {
+    if (!canvas) {
+      return false;
+    }
+    const dpr = window.devicePixelRatio || 1;
+    const width = Math.max(1, Math.floor(canvas.clientWidth * dpr));
+    const height = Math.max(1, Math.floor(canvas.clientHeight * dpr));
 
-    const needResize =
-      this.canvas.width !== width || this.canvas.height !== height;
+    const needResize = canvas.width !== width || canvas.height !== height;
     if (needResize) {
-      renderer.setSize(width, height, false);
+      this.renderer.setSize(width, height, false);
     }
     return needResize;
   }
@@ -278,18 +288,35 @@ export class ThreeService implements OnDestroy {
     canvas: HTMLCanvasElement,
     event: MouseEvent
   ): void {
-    this.mouse.x =
-      Math.floor(
-        (event.offsetX - canvas.clientWidth / 2) / this._automataSize.value
-      ) *
-        this._automataSize.value -
-      this._automataSize.value / 2;
-    this.mouse.y =
-      Math.floor(
-        (canvas.clientHeight / 2 - event.offsetY) / this._automataSize.value
-      ) *
-        this._automataSize.value -
-      this._automataSize.value / 2;
+    if (!canvas) {
+      return;
+    }
+    const rect = canvas.getBoundingClientRect();
+    const domWidth = Math.max(rect.width, 1);
+    const domHeight = Math.max(rect.height, 1);
+    const normalizedX = (event.clientX - rect.left) / domWidth;
+    const normalizedY = (event.clientY - rect.top) / domHeight;
+
+    const left = this.camera.left;
+    const right = this.camera.right;
+    const bottom = this.camera.bottom;
+    const top = this.camera.top;
+
+    const worldX = left + normalizedX * (right - left);
+    const worldY = bottom + (1 - normalizedY) * (top - bottom);
+    const cellSize = this._automataSize.value;
+
+    const spanX = right - left;
+    const spanY = top - bottom;
+    const totalCols = Math.max(Math.floor(spanX / cellSize), 1);
+    const totalRows = Math.max(Math.floor(spanY / cellSize), 1);
+    const col = Math.floor((worldX - left) / cellSize);
+    const row = Math.floor((worldY - bottom) / cellSize);
+    const clampedCol = Math.min(Math.max(col, 0), totalCols - 1);
+    const clampedRow = Math.min(Math.max(row, 0), totalRows - 1);
+
+    this.mouse.x = left + clampedCol * cellSize + cellSize / 2;
+    this.mouse.y = bottom + clampedRow * cellSize + cellSize / 2;
   }
 
   private setupChangeColorShader(
@@ -300,10 +327,7 @@ export class ThreeService implements OnDestroy {
       value: this.buffers[this.computePreviouStateIndex()].texture,
     };
     this.changeColorShader.uniforms.u_resolution = {
-      value: new THREE.Vector2(
-        this.canvas.clientWidth,
-        this.canvas.clientHeight
-      ),
+      value: new THREE.Vector2(this.simulationWidth, this.simulationHeight),
     };
     this.changeColorShader.uniforms.u_old_color = {
       value: new THREE.Vector4(oldColor.r, oldColor.g, oldColor.b, 1),
@@ -318,10 +342,7 @@ export class ThreeService implements OnDestroy {
       value: this.buffers[this.computePreviouStateIndex()].texture,
     };
     this.resetAllColorsShader.uniforms.u_resolution = {
-      value: new THREE.Vector2(
-        this.canvas.clientWidth,
-        this.canvas.clientHeight
-      ),
+      value: new THREE.Vector2(this.simulationWidth, this.simulationHeight),
     };
     this.resetAllColorsShader.uniforms.u_new_color = {
       value: new THREE.Vector4(newColor.r, newColor.g, newColor.b, 1),
@@ -335,10 +356,7 @@ export class ThreeService implements OnDestroy {
       };
     }
     automaton.uniforms.u_resolution = {
-      value: new THREE.Vector2(
-        this.canvas.clientWidth,
-        this.canvas.clientHeight
-      ),
+      value: new THREE.Vector2(this.simulationWidth, this.simulationHeight),
     };
     (automaton.uniforms.u_automata_size = {
       value: this._automataSize.value,
@@ -421,7 +439,7 @@ export class ThreeService implements OnDestroy {
         }),
       1000 / this._fpsCap
     );
-    this.resizeRendererToDisplaySize(this.renderer);
+    this.resizeRendererToDisplaySize(this.canvas);
     if (this.isDrawing) {
       if (this.drawWithMouse) {
         this.drawSquareIfNecessary();
