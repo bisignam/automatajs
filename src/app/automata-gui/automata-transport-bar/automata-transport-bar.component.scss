@@ -87,6 +87,14 @@
   width: 18px;
   height: 18px;
   color: currentColor;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.transport-button span {
+  line-height: 1;
 }
 
 .transport-button--primary.play-btn--running {
@@ -121,12 +129,26 @@
   color: var(--ui-text-muted);
 }
 
+.transport-bar__speed-label > lucide-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
 .transport-bar__speed-meta {
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
   line-height: 1.1;
   color: var(--ui-text-muted);
+}
+
+.transport-bar__speed-meta span,
+.transport-bar__speed-meta small {
+  line-height: 1.1;
 }
 
 .transport-bar__speed input[type='range'] {
