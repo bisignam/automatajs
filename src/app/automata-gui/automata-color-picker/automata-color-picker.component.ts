@@ -1,36 +1,39 @@
-import { Component, Output, EventEmitter, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import * as THREE from 'three';
+import '../../shared/hex-color-picker.element';
 
 @Component({
   selector: 'app-color-picker',
   templateUrl: './automata-color-picker.component.html',
   styleUrls: ['./automata-color-picker.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
 export class AutomataColorPickerComponent {
-  private _color: THREE.Color = new THREE.Color('#000000');
-  @Output()
-  private chosenColor = new EventEmitter<THREE.Color>();
+  @Input() label = '';
+  private _color = '#ff0000';
 
   @Input()
   get color(): string {
-    return '#' + this._color.getHexString();
+    return this._color;
   }
 
   set color(color: string) {
-    this._color = this.parseColor(color);
+    this._color = this.normalizeHex(color);
   }
 
-  onColorPickerChange(value: string): void {
-    this._color = this.parseColor(value);
-    this.chosenColor.emit(this._color.clone());
+  @Output('chosenColor')
+  readonly colorChange = new EventEmitter<THREE.Color>();
+
+  onColorChanged(event: Event): void {
+    const detail = (event as CustomEvent<{ value: string }>).detail;
+    const next = this.normalizeHex(detail?.value);
+    this._color = next;
+    this.colorChange.emit(new THREE.Color(next));
   }
 
-  private parseColor(rawColor: string): THREE.Color {
-    if (!rawColor) {
-      return new THREE.Color('#000000');
-    }
-    const normalized = rawColor.startsWith('#') ? rawColor : `#${rawColor}`;
-    return new THREE.Color(normalized);
+  private normalizeHex(value?: string): string {
+    const normalized = (value ?? '#ff0000').trim();
+    return normalized.startsWith('#') ? normalized : `#${normalized}`;
   }
 }

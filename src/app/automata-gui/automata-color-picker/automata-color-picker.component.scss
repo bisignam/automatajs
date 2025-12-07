@@ -1,10 +1,40 @@
-input.color-picker-input {
-  width: 52px;
-  height: 32px;
-  padding: 0;
-  border: 1px solid rgba(15, 23, 42, 0.1);
-  border-radius: 10px;
-  cursor: pointer;
-  background: #fff;
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+.auto-color-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  width: 100%;
+}
+
+.auto-color-picker__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-subtle, rgba(226, 232, 240, 0.75));
+}
+
+.auto-color-picker__label {
+  font-weight: 600;
+}
+
+.auto-color-picker__swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1px solid rgba(15, 23, 42, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.auto-color-picker__body {
+  border-radius: 18px;
+  padding: 0.85rem;
+  background: rgba(5, 8, 20, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.3);
+}
+
+.auto-color-picker__widget {
+  width: 100%;
 }

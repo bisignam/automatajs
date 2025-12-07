@@ -1,0 +1,395 @@
+From ccde1c44cf000b091879c28093933db735203733 Mon Sep 17 00:00:00 2001
+From: Mario Bisignani <bisignam@gmail.com>
+Date: Sun, 7 Dec 2025 20:27:28 +0100
+Subject: [PATCH 1/1] chore: refine mobile dock layout
+
+---
+ .../automata-shell.component.html             | 142 ++++++++----------
+ .../automata-shell.component.scss             | 108 +++++++++----
+ src/app/lucide-icons.ts                       |   4 +
+ 3 files changed, 143 insertions(+), 111 deletions(-)
+
+diff --git a/src/app/automata-gui/automata-shell/automata-shell.component.html b/src/app/automata-gui/automata-shell/automata-shell.component.html
+index 2a999cf..adf9773 100644
+--- a/src/app/automata-gui/automata-shell/automata-shell.component.html
++++ b/src/app/automata-gui/automata-shell/automata-shell.component.html
+@@ -29,6 +29,10 @@
+         (requestMobileFullScreen)="onRequestMobileFullScreen()"
+         (exitMobileFullScreen)="onExitMobileFullScreen()"
+       ></app-automata-canvas>
++      <div class="mobile-rule-label" *ngIf="isMobileLayout && uiState.ruleName">
++        {{ uiState.ruleName }}
++      </div>
++
+       <div class="idle-countdown" *ngIf="idleCountdownVisible">
+         Switching to immersive mode in {{ idleCountdownRemaining }}s
+       </div>
+@@ -90,83 +94,55 @@
+         </div>
+       </ng-container>
+ 
+-      <div class="mobile-dock" *ngIf="isMobileLayout" [class.mobile-dock--collapsed]="mobileDockCollapsed">
+-        <button
+-          type="button"
+-          class="mobile-dock__rule"
+-          (click)="openMobileRulePicker()"
+-          aria-label="Change rule"
+-        >
+-          <span class="mobile-dock__rule-name" *ngIf="!mobileDockCollapsed">
+-            {{ uiState.ruleName || 'Select rule' }}
+-          </span>
+-          <lucide-icon *ngIf="mobileDockCollapsed" name="sliders-horizontal" size="18"></lucide-icon>
+-          <lucide-icon name="chevron-down" class="mobile-dock__rule-chevron" size="16"></lucide-icon>
+-        </button>
+-
+-        <div class="mobile-dock__palette" *ngIf="mobilePaletteSwatches.length">
+-          <button
+-            type="button"
+-            class="mobile-dock__swatch"
+-            *ngFor="let swatch of mobilePaletteSwatches"
+-            [style.background-color]="swatch.color"
+-            (click)="openMobileColorPicker(swatch)"
+-            [attr.aria-label]="swatch.label + ' color'"
+-          ></button>
+-        </div>
+-
+-        <button
+-          type="button"
+-          class="mobile-dock__cell"
+-          (click)="openMobileCellSizeOverlay()"
+-          aria-label="Adjust cell size"
+-        >
+-          <lucide-icon name="sliders-horizontal" size="20"></lucide-icon>
+-        </button>
+-
+-        <div class="mobile-dock__separator" aria-hidden="true"></div>
+-
+-        <div class="mobile-dock__transport">
+-          <button
+-            type="button"
+-            class="mobile-dock__icon-button mobile-dock__icon-button--primary"
+-            (click)="toggleMobilePlay()"
+-            [attr.aria-label]="uiState.status === 'running' ? 'Pause' : 'Play'"
+-          >
+-            <lucide-icon [name]="uiState.status === 'running' ? 'pause' : 'play'"></lucide-icon>
+-          </button>
+-          <button
+-            type="button"
+-            class="mobile-dock__icon-button"
+-            (click)="onStep()"
+-            [disabled]="uiState.status === 'running'"
+-            aria-label="Step once"
+-          >
+-            <lucide-icon name="step-forward"></lucide-icon>
+-          </button>
++      <div class="mobile-dock-shell" *ngIf="isMobileLayout">
++        <div class="mobile-dock" [class.mobile-dock--collapsed]="mobileDockCollapsed">
+           <button
+             type="button"
+-            class="mobile-dock__icon-button"
+-            (click)="onReset()"
+-            aria-label="Reset simulation"
++            class="mobile-dock__rule"
++            (click)="openMobileRulePicker()"
++            aria-label="Change rule"
+           >
+-            <lucide-icon name="rotate-ccw"></lucide-icon>
++            <lucide-icon name="sparkles" size="18"></lucide-icon>
+           </button>
++
++          <div class="mobile-dock__palette" *ngIf="mobilePaletteSwatches.length">
++            <button
++              type="button"
++              class="mobile-dock__swatch"
++              *ngFor="let swatch of mobilePaletteSwatches"
++              [style.background-color]="swatch.color"
++              (click)="openMobileColorPicker(swatch)"
++              [attr.aria-label]="swatch.label + ' color'"
++            ></button>
++          </div>
++
+           <button
+             type="button"
+-            class="mobile-dock__icon-button"
+-            (click)="onClearGrid()"
+-            aria-label="Clear grid"
++            class="mobile-dock__cell"
++            (click)="openMobileCellSizeOverlay()"
++            aria-label="Adjust cell size"
+           >
+-            <lucide-icon name="trash-2"></lucide-icon>
++            <lucide-icon name="grid-3x3" size="20"></lucide-icon>
+           </button>
+-        </div>
+ 
++          <div class="mobile-dock__separator" aria-hidden="true"></div>
++
++          <div class="mobile-dock__transport">
++            <button
++              type="button"
++              class="mobile-dock__icon-button mobile-dock__icon-button--danger"
++              (click)="onClearGrid()"
++              aria-label="Clear grid"
++            >
++              <lucide-icon name="trash-2"></lucide-icon>
++            </button>
++          </div>
++        </div>
+         <button
+           type="button"
+-          class="mobile-dock__collapse"
++          class="mobile-dock-toggle"
+           (click)="toggleMobileDockCollapsed()"
+-          aria-label="Collapse dock"
++          [attr.aria-label]="mobileDockCollapsed ? 'Expand controls' : 'Collapse controls'"
+         >
+           <lucide-icon [name]="mobileDockCollapsed ? 'chevron-left' : 'chevron-right'" size="16"></lucide-icon>
+         </button>
+@@ -244,20 +220,30 @@
+       </button>
+ 
+       <div class="mobile-speed-strip" *ngIf="isMobileLayout">
+-        <div class="mobile-speed-strip__label">
+-          <lucide-icon name="gauge" size="16"></lucide-icon>
+-          <span>Speed</span>
++        <button
++          type="button"
++          class="mobile-speed-strip__play"
++          (click)="toggleMobilePlay()"
++          [attr.aria-label]="uiState.status === 'running' ? 'Pause' : 'Play'"
++        >
++          <lucide-icon [name]="uiState.status === 'running' ? 'pause' : 'play'" size="18"></lucide-icon>
++        </button>
++        <div class="mobile-speed-strip__slider">
++          <div class="mobile-speed-strip__label">
++            <lucide-icon name="gauge" size="16"></lucide-icon>
++            <span>Speed</span>
++          </div>
++          <input
++            type="range"
++            min="5"
++            max="120"
++            step="5"
++            [value]="simulationConfig.speed"
++            (input)="onMobileSpeedInput($event)"
++            aria-label="Adjust playback speed"
++          />
+         </div>
+-        <input
+-          type="range"
+-          min="5"
+-          max="120"
+-          step="5"
+-          [value]="simulationConfig.speed"
+-          (input)="onMobileSpeedInput($event)"
+-          aria-label="Adjust playback speed"
+-        />
+-        <span class="mobile-speed-strip__value">{{ simulationConfig.speed }} fps</span>
++        <span class="mobile-speed-strip__value">{{ simulationConfig.speed }} FPS</span>
+       </div>
+     </section>
+ 
+diff --git a/src/app/automata-gui/automata-shell/automata-shell.component.scss b/src/app/automata-gui/automata-shell/automata-shell.component.scss
+index 55bdcde..c4a006c 100644
+--- a/src/app/automata-gui/automata-shell/automata-shell.component.scss
++++ b/src/app/automata-gui/automata-shell/automata-shell.component.scss
+@@ -204,11 +204,38 @@
+   overflow-y: auto;
+ }
+ 
+-.mobile-dock {
++.mobile-rule-label {
++  position: absolute;
++  top: 12px;
++  left: 50%;
++  transform: translateX(-50%);
++  padding: 4px 12px;
++  border-radius: 999px;
++  background: rgba(5, 8, 20, 0.85);
++  border: 1px solid rgba(148, 163, 184, 0.35);
++  font-size: 0.85rem;
++  font-weight: 600;
++  color: var(--text-main);
++  z-index: 6;
++  text-align: center;
++  max-width: 70%;
++  white-space: nowrap;
++  overflow: hidden;
++  text-overflow: ellipsis;
++}
++
++.mobile-dock-shell {
+   position: absolute;
+   right: 12px;
+   top: 55%;
+   transform: translateY(-55%);
++  display: flex;
++  align-items: center;
++  gap: 0.4rem;
++  z-index: 6;
++}
++
++.mobile-dock {
+   width: 74px;
+   padding: 0.9rem 0.5rem;
+   border-radius: 999px;
+@@ -219,12 +246,13 @@
+   flex-direction: column;
+   align-items: center;
+   gap: 0.75rem;
+-  z-index: 6;
++  transition: transform 200ms ease, opacity 160ms ease;
+ }
+ 
+ .mobile-dock--collapsed {
+-  width: 60px;
+-  padding: 0.7rem 0.4rem;
++  transform: translateX(110%);
++  opacity: 0;
++  pointer-events: none;
+ }
+ 
+ .mobile-dock__rule {
+@@ -233,26 +261,10 @@
+   border: 1px solid rgba(148, 163, 184, 0.35);
+   background: rgba(15, 23, 42, 0.7);
+   color: var(--text-main);
+-  font-size: 0.75rem;
+-  font-weight: 600;
+-  text-overflow: ellipsis;
+-  overflow: hidden;
+-  white-space: nowrap;
+-  padding: 0.35rem 0.6rem;
++  padding: 0.45rem 0.35rem;
+   display: inline-flex;
+   align-items: center;
+-  justify-content: space-between;
+-  gap: 0.25rem;
+-}
+-
+-.mobile-dock__rule-name {
+-  flex: 1;
+-  overflow: hidden;
+-  text-overflow: ellipsis;
+-}
+-
+-.mobile-dock__rule-chevron {
+-  color: var(--text-subtle);
++  justify-content: center;
+ }
+ 
+ .mobile-dock__palette {
+@@ -329,11 +341,22 @@
+   background: rgba(79, 138, 216, 0.15);
+ }
+ 
+-.mobile-dock__collapse {
+-  border: none;
+-  background: transparent;
++.mobile-dock__icon-button--danger {
++  border-color: rgba(248, 113, 113, 0.6);
++  background: rgba(239, 68, 68, 0.15);
++}
++
++.mobile-dock-toggle {
++  width: 20px;
++  height: 140px;
++  border-radius: 999px;
++  border: 1px solid rgba(148, 163, 184, 0.35);
++  background: rgba(5, 8, 20, 0.85);
+   color: var(--text-subtle);
+-  padding: 0;
++  display: inline-flex;
++  align-items: center;
++  justify-content: center;
++  box-shadow: 0 16px 30px rgba(2, 6, 23, 0.45);
+ }
+ 
+ .mobile-speed-strip {
+@@ -345,13 +368,37 @@
+   border-radius: 999px;
+   border: 1px solid rgba(148, 163, 184, 0.35);
+   background: rgba(5, 8, 20, 0.9);
+-  padding: 0.45rem 0.85rem;
++  padding: 0.4rem 0.75rem;
+   display: flex;
+   align-items: center;
+-  gap: 0.6rem;
++  gap: 0.65rem;
+   z-index: 5;
+ }
+ 
++.mobile-speed-strip__play {
++  width: 42px;
++  height: 42px;
++  border-radius: 999px;
++  border: 1px solid rgba(79, 138, 216, 0.6);
++  background: rgba(79, 138, 216, 0.15);
++  color: var(--text-main);
++  display: inline-flex;
++  align-items: center;
++  justify-content: center;
++}
++
++.mobile-speed-strip__slider {
++  flex: 1 1 auto;
++  min-width: 0;
++  display: flex;
++  flex-direction: column;
++  gap: 0.25rem;
++}
++
++.mobile-speed-strip__slider input[type='range'] {
++  width: 100%;
++}
++
+ .mobile-speed-strip__label {
+   display: inline-flex;
+   align-items: center;
+@@ -362,11 +409,6 @@
+   text-transform: uppercase;
+ }
+ 
+-.mobile-speed-strip input[type='range'] {
+-  flex: 1 1 auto;
+-  min-width: 0;
+-}
+-
+ .mobile-speed-strip__value {
+   font-size: 0.75rem;
+   text-transform: uppercase;
+diff --git a/src/app/lucide-icons.ts b/src/app/lucide-icons.ts
+index 2657400..c097649 100644
+--- a/src/app/lucide-icons.ts
++++ b/src/app/lucide-icons.ts
+@@ -6,11 +6,13 @@ import {
+   ChevronUp,
+   Eye,
+   Gauge,
++  Grid3x3,
+   Maximize2,
+   Minimize2,
+   Pause,
+   Play,
+   RotateCcw,
++  Sparkles,
+   Settings,
+   SlidersHorizontal,
+   StepForward,
+@@ -27,11 +29,13 @@ export const LUCIDE_ICONS: LucideIcons = {
+   ChevronUp,
+   Eye,
+   Gauge,
++  Grid3x3,
+   Maximize2,
+   Minimize2,
+   Pause,
+   Play,
+   RotateCcw,
++  Sparkles,
+   Settings,
+   SlidersHorizontal,
+   StepForward,
+-- 
+2.43.0
+

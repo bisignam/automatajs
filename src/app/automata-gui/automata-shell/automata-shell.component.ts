@@ -121,6 +121,8 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   private readonly shellPadding = { top: 12, right: 20, bottom: 20, left: 20 };
   private readonly shellGap = 16;
   private readonly canvasRadius = 18;
+  private rulePickerSwipeStartY: number | null = null;
+  private readonly rulePickerSwipeThreshold = 32;
   isMobileLayout = false;
   isMobileFullScreen = false;
   mobileDockCollapsed = false;
@@ -407,6 +409,31 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.isMobileRulePickerOpen = false;
   }
 
+  onRulePickerTouchStart(event: TouchEvent | PointerEvent): void {
+    this.rulePickerSwipeStartY = this.getRulePickerClientY(event);
+  }
+
+  onRulePickerTouchEnd(event: TouchEvent | PointerEvent): void {
+    if (this.rulePickerSwipeStartY === null) {
+      return;
+    }
+    const endY = this.getRulePickerClientY(event);
+    if (endY === null) {
+      this.rulePickerSwipeStartY = null;
+      return;
+    }
+    const delta = endY - this.rulePickerSwipeStartY;
+    this.rulePickerSwipeStartY = null;
+    if (Math.abs(delta) < this.rulePickerSwipeThreshold) {
+      return;
+    }
+    this.cycleMobileRulePicker(delta > 0 ? 1 : -1);
+  }
+
+  onRulePickerTouchCancel(): void {
+    this.rulePickerSwipeStartY = null;
+  }
+
   cycleMobileRulePicker(direction: 1 | -1): void {
     if (!this.isMobileRulePickerOpen || !this.rulePresets.length) {
       return;
@@ -521,6 +548,14 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       return;
     }
     this.controlComponent.selectPreset(preset);
+  }
+
+  private getRulePickerClientY(event: TouchEvent | PointerEvent): number | null {
+    if ('touches' in event) {
+      const touch = event.changedTouches?.[0] ?? event.touches?.[0];
+      return touch ? touch.clientY : null;
+    }
+    return (event as PointerEvent).clientY ?? null;
   }
 
   private getRuleIndexByName(name?: string): number {

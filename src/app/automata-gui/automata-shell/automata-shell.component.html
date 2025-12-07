@@ -96,56 +96,58 @@
 
       <div class="mobile-dock-shell" *ngIf="isMobileLayout">
         <div class="mobile-dock" [class.mobile-dock--collapsed]="mobileDockCollapsed">
-          <button
-            type="button"
-            class="mobile-dock__rule"
-            (click)="openMobileRulePicker()"
-            aria-label="Change rule"
-          >
-            <lucide-icon name="sparkles" size="18"></lucide-icon>
-          </button>
-
-          <div class="mobile-dock__palette" *ngIf="mobilePaletteSwatches.length">
+          <div class="mobile-dock__content">
             <button
               type="button"
-              class="mobile-dock__swatch"
-              *ngFor="let swatch of mobilePaletteSwatches"
-              [style.background-color]="swatch.color"
-              (click)="openMobileColorPicker(swatch)"
-              [attr.aria-label]="swatch.label + ' color'"
-            ></button>
-          </div>
-
-          <button
-            type="button"
-            class="mobile-dock__cell"
-            (click)="openMobileCellSizeOverlay()"
-            aria-label="Adjust cell size"
-          >
-            <lucide-icon name="grid-3x3" size="20"></lucide-icon>
-          </button>
-
-          <div class="mobile-dock__separator" aria-hidden="true"></div>
-
-          <div class="mobile-dock__transport">
-            <button
-              type="button"
-              class="mobile-dock__icon-button mobile-dock__icon-button--danger"
-              (click)="onClearGrid()"
-              aria-label="Clear grid"
+              class="mobile-dock__rule"
+              (click)="openMobileRulePicker()"
+              aria-label="Change rule"
             >
-              <lucide-icon name="trash-2"></lucide-icon>
+              <lucide-icon name="sparkles" size="18"></lucide-icon>
             </button>
+
+            <div class="mobile-dock__palette" *ngIf="mobilePaletteSwatches.length">
+              <button
+                type="button"
+                class="mobile-dock__swatch"
+                *ngFor="let swatch of mobilePaletteSwatches"
+                [style.background-color]="swatch.color"
+                (click)="openMobileColorPicker(swatch)"
+                [attr.aria-label]="swatch.label + ' color'"
+              ></button>
+            </div>
+
+            <button
+              type="button"
+              class="mobile-dock__cell"
+              (click)="openMobileCellSizeOverlay()"
+              aria-label="Adjust cell size"
+            >
+              <lucide-icon name="grid-3x3" size="20"></lucide-icon>
+            </button>
+
+            <div class="mobile-dock__separator" aria-hidden="true"></div>
+
+            <div class="mobile-dock__transport">
+              <button
+                type="button"
+                class="mobile-dock__icon-button mobile-dock__icon-button--danger"
+                (click)="onClearGrid()"
+                aria-label="Clear grid"
+              >
+                <lucide-icon name="trash-2"></lucide-icon>
+              </button>
+            </div>
           </div>
+          <button
+            type="button"
+            class="mobile-dock__toggle"
+            (click)="toggleMobileDockCollapsed()"
+            [attr.aria-label]="mobileDockCollapsed ? 'Expand controls' : 'Collapse controls'"
+          >
+            <lucide-icon [name]="mobileDockCollapsed ? 'chevron-left' : 'chevron-right'" size="14"></lucide-icon>
+          </button>
         </div>
-        <button
-          type="button"
-          class="mobile-dock-toggle"
-          (click)="toggleMobileDockCollapsed()"
-          [attr.aria-label]="mobileDockCollapsed ? 'Expand controls' : 'Collapse controls'"
-        >
-          <lucide-icon [name]="mobileDockCollapsed ? 'chevron-left' : 'chevron-right'" size="16"></lucide-icon>
-        </button>
       </div>
 
       <div
@@ -295,7 +297,14 @@
       >
         <lucide-icon name="chevron-up"></lucide-icon>
       </button>
-      <div class="rule-picker__stack">
+      <div
+        class="rule-picker__stack"
+        (touchstart)="onRulePickerTouchStart($event)"
+        (touchend)="onRulePickerTouchEnd($event)"
+        (pointerdown)="onRulePickerTouchStart($event)"
+        (pointerup)="onRulePickerTouchEnd($event)"
+        (pointercancel)="onRulePickerTouchCancel()"
+      >
         <div
           class="rule-picker__item"
           *ngFor="let offset of rulePickerOffsets"
@@ -323,6 +332,7 @@
     <div class="mobile-overlay__panel" (click)="$event.stopPropagation()">
       <p class="mobile-overlay__title">{{ activeColorLabel }}</p>
       <app-color-picker
+        [label]="activeColorLabel || ''"
         [color]="activeColorValue"
         (chosenColor)="onMobileColorChosen($event)"
       ></app-color-picker>

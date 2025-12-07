@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatSelectModule } from '@angular/material/select';
 import { RulesSelectorComponent } from './automata-rules-selector/rules-selector.component';
@@ -35,5 +35,6 @@ import { LucideAngularModule } from 'lucide-angular';
     MatButtonModule,
     LucideAngularModule,
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AutomataGuiModule {}

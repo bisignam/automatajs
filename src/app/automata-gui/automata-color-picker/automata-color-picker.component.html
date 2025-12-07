@@ -1,6 +1,13 @@
-<input
-  type="color"
-  class="color-picker-input"
-  [value]="color"
-  (input)="onColorPickerChange($any($event.target).value)"
-/>
+<div class="auto-color-picker">
+  <div class="auto-color-picker__header" *ngIf="label">
+    <span class="auto-color-picker__label">{{ label }}</span>
+    <span class="auto-color-picker__swatch" [style.background]="color"></span>
+  </div>
+  <div class="auto-color-picker__body">
+    <hex-color-picker
+      class="auto-color-picker__widget"
+      [attr.color]="color"
+      (color-changed)="onColorChanged($event)"
+    ></hex-color-picker>
+  </div>
+</div>
