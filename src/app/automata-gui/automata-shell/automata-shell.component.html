@@ -34,50 +34,39 @@
         ></app-automata-transport-bar>
       </div>
 
-      <div *ngIf="isImmersive" class="immersive-handle-wrapper immersive-handle-wrapper--right">
-        <button
-          class="immersive-handle immersive-handle--right"
-          type="button"
-          aria-label="Show control panel"
-          [attr.aria-pressed]="panelOpen ? 'true' : 'false'"
-          (click)="onAnyHandleClicked(); toggleControls()"
-          (mouseenter)="onImmersiveHandleHover($event, true, 'control')"
-          (mouseleave)="onImmersiveHandleHover($event, false, 'control')"
-          (focusin)="onImmersiveHandleHover($event, true, 'control')"
-          (focusout)="onImmersiveHandleHover($event, false, 'control')"
-        >
-          <span class="immersive-handle__icon-stack" aria-hidden="true">
-            <lucide-icon name="settings" size="16"></lucide-icon>
-          </span>
-        </button>
-        <div *ngIf="showImmersiveHints" #rightHint class="immersive-hint immersive-hint--right">
-          Controls
-        </div>
-      </div>
-
-      <div
-        *ngIf="isImmersive && !transportVisible"
-        class="immersive-handle-wrapper immersive-handle-wrapper--bottom"
+      <button
+        *ngIf="isImmersive"
+        class="immersive-handle immersive-handle--right"
+        type="button"
+        aria-label="Show control panel"
+        [attr.aria-pressed]="panelOpen ? 'true' : 'false'"
+        (click)="toggleControls()"
+        (mouseenter)="onImmersiveHandleHover($event, true, 'control')"
+        (mouseleave)="onImmersiveHandleHover($event, false, 'control')"
+        (focusin)="onImmersiveHandleHover($event, true, 'control')"
+        (focusout)="onImmersiveHandleHover($event, false, 'control')"
       >
-        <button
-          #bottomHandle
-          class="immersive-handle immersive-handle--bottom"
-          type="button"
-          aria-label="Show transport controls"
-          (click)="onAnyHandleClicked(); showTransport()"
-          (mouseenter)="onImmersiveHandleHover($event, true, 'transport')"
-          (mouseleave)="onImmersiveHandleHover($event, false, 'transport')"
-          (focusin)="onImmersiveHandleHover($event, true, 'transport')"
-          (focusout)="onImmersiveHandleHover($event, false, 'transport')"
-        >
-          <span class="immersive-handle__icon-row" aria-hidden="true">
-            <lucide-icon name="play" size="16"></lucide-icon>
-          </span>
-        </button>
-        <div *ngIf="showImmersiveHints" #bottomHint class="immersive-hint immersive-hint--bottom">
-          Playback
-        </div>
-      </div>
+        <span class="immersive-handle__icon-stack" aria-hidden="true">
+          <lucide-icon name="settings" size="16"></lucide-icon>
+        </span>
+      </button>
+
+      <button
+        #bottomHandle
+        *ngIf="isImmersive && !transportVisible"
+        class="immersive-handle immersive-handle--bottom"
+        type="button"
+        aria-label="Show transport controls"
+        (click)="showTransport()"
+        (mouseenter)="onImmersiveHandleHover($event, true, 'transport')"
+        (mouseleave)="onImmersiveHandleHover($event, false, 'transport')"
+        (focusin)="onImmersiveHandleHover($event, true, 'transport')"
+        (focusout)="onImmersiveHandleHover($event, false, 'transport')"
+      >
+        <span class="immersive-handle__icon-row" aria-hidden="true">
+          <lucide-icon name="play" size="16"></lucide-icon>
+        </span>
+      </button>
     </section>
 
     <aside #controlPanel class="automata-shell__panel" *ngIf="panelOpen && !isImmersive">
