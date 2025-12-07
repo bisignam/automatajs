@@ -1,5 +1,55 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.automata-canvas-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
 #automataCanvasContainer {
   width: 100% !important;
   height: 100% !important;
   display: block;
+}
+
+.canvas-screenshot-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(7, 9, 14, 0.9);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: border-color 120ms ease-out, opacity 120ms ease-out;
+  outline: none;
+  line-height: 0;
+}
+
+.canvas-screenshot-btn lucide-icon,
+.canvas-screenshot-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.6;
+  color: rgba(235, 240, 255, 0.75);
+}
+
+.canvas-screenshot-btn:hover,
+.canvas-screenshot-btn:focus-visible {
+  opacity: 1;
+  border-color: rgba(104, 167, 255, 0.9);
+}
+
+.canvas-screenshot-btn:hover lucide-icon,
+.canvas-screenshot-btn:focus-visible lucide-icon {
+  color: #68a7ff;
 }

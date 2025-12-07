@@ -1,1 +1,16 @@
-<canvas #automataCanvasContainer id="automataCanvasContainer"></canvas>
+<div class="automata-canvas-wrapper">
+  <button
+    #screenshotButton
+    type="button"
+    class="canvas-screenshot-btn"
+    aria-label="Export image"
+    (click)="onExportImage()"
+    (mouseenter)="onScreenshotHover(true, screenshotButton)"
+    (mouseleave)="onScreenshotHover(false, screenshotButton)"
+    (focusin)="onScreenshotHover(true, screenshotButton)"
+    (focusout)="onScreenshotHover(false, screenshotButton)"
+  >
+    <lucide-icon name="camera" size="16"></lucide-icon>
+  </button>
+  <canvas #automataCanvasContainer id="automataCanvasContainer"></canvas>
+</div>
