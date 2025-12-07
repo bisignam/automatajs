@@ -43,6 +43,7 @@
   color: var(--text-main);
   border-color: rgba(255, 255, 255, 0.22);
   background: rgba(7, 11, 27, 0.6);
+  transition: border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
 }
 
 .transport-button:disabled {
@@ -57,20 +58,27 @@
 }
 
 .transport-button--primary.play-btn--paused {
-  border-color: rgba(61, 135, 200, 0.8);
-  background: rgba(61, 135, 200, 0.18);
-  color: var(--text-main);
+  border-color: rgba(61, 135, 200, 0.9);
+  background: rgba(32, 62, 102, 0.65);
+  box-shadow: 0 0 12px rgba(61, 135, 200, 0.3);
+}
+
+.transport-button--primary.play-btn--paused mat-icon {
+  color: var(--brand-blue-bright);
 }
 
 .transport-button--primary.play-btn--running {
-  border-color: rgba(255, 179, 91, 0.85);
-  background: rgba(255, 179, 91, 0.2);
-  color: var(--text-main);
+  border-color: rgba(255, 179, 91, 0.9);
+  background: rgba(109, 70, 30, 0.6);
+  box-shadow: 0 0 12px rgba(255, 179, 91, 0.3);
+}
+
+.transport-button--primary.play-btn--running mat-icon {
+  color: var(--accent-warm);
 }
 
 .transport-button--primary.play-btn--idle {
-  border-color: rgba(255, 255, 255, 0.22);
-  background: rgba(7, 11, 27, 0.6);
+  box-shadow: none;
 }
 
 .transport-bar__speed {
