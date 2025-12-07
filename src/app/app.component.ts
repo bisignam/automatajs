@@ -9,6 +9,7 @@ import { DefaultSettings } from './automata-engine/defaultSettings';
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
+  standalone: false,
 })
 export class AppComponent {
   title = 'AutomataJS';
@@ -18,17 +19,17 @@ export class AppComponent {
   constructor(
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
-    private threeService: ThreeService
+    private threeService: ThreeService,
   ) {
     this.matIconRegistry.addSvgIcon(
       'automatajs',
       this.domSanitizer.bypassSecurityTrustResourceUrl(
-        '../assets/automatajs.svg'
-      )
+        '../assets/automatajs.svg',
+      ),
     );
     this.matIconRegistry.addSvgIcon(
       'github',
-      this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/github.svg')
+      this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/github.svg'),
     );
     this.threeService = threeService;
     this.threeService.activeColor = this.activationColor;

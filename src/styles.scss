@@ -1,12 +1,12 @@
 /* You can add global styles to this file, and also import other style files */
 
-@import "material-theme.scss";
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
 
 /* Importing Bootstrap SCSS file. */
-@import "~bootstrap/scss/bootstrap";
+@import 'bootstrap/scss/bootstrap';
 
 /* Overwrite some styles from bootstrap that conflicts with Material */
-@import "reset.scss";
+@import './reset.scss';
 
 body {
   font-family: Roboto, Arial, sans-serif;

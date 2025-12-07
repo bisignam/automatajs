@@ -4,6 +4,7 @@ import { ThreeService } from 'src/app/automata-engine/three-service';
 @Component({
   selector: 'app-automata-control',
   templateUrl: './automata-control.component.html',
+  standalone: false,
 })
 export class AutomataControlComponent {
   private threeService: ThreeService;

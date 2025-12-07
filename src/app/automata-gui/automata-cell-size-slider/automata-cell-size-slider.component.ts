@@ -6,6 +6,7 @@ import { ThreeService } from 'src/app/automata-engine/three-service';
   selector: 'app-automata-cell-size-slider',
   templateUrl: './automata-cell-size-slider.component.html',
   styleUrls: ['./automata-cell-size-slider.component.scss'],
+  standalone: false,
 })
 export class AutomataCellSizeSliderComponent {
   private _automataSize: number = DefaultSettings.pixelSize;

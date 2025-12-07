@@ -6,6 +6,7 @@ import { ThreeService } from 'src/app/automata-engine/three-service';
   selector: 'app-automata-fps-cap-slider',
   templateUrl: './automata-fps-cap-slider.component.html',
   styleUrls: ['./automata-fps-cap-slider.component.scss'],
+  standalone: false,
 })
 export class AutomataFPSSliderComponent {
   private _fpsCap: number = DefaultSettings.fpsCap;

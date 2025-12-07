@@ -1,11 +1,9 @@
-<mat-slider
+<input
+  type="range"
   class="cellSizeSlider"
-  [max]="40"
-  [min]="1"
-  [step]="1"
-  [thumbLabel]="true"
-  [tickInterval]="10"
-  [(ngModel)]="automataSize"
-  [vertical]="true"
->
-</mat-slider>
+  min="1"
+  max="40"
+  step="1"
+  [value]="automataSize"
+  (input)="automataSize = $any($event.target).valueAsNumber"
+/>

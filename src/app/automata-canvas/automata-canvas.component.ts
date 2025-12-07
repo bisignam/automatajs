@@ -5,6 +5,7 @@ import { ThreeService } from '../automata-engine/three-service';
   selector: 'app-automata-canvas',
   templateUrl: './automata-canvas.component.html',
   styleUrls: ['./automata-canvas.component.scss'],
+  standalone: false,
 })
 export class AutomataCanvasComponent implements AfterViewInit {
   @ViewChild('automataCanvasContainer')

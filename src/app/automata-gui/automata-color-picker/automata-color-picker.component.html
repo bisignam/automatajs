@@ -1,1 +1,6 @@
-<input [(colorPicker)]="color"  [cpOutputFormat]="'hex'" [cpAlphaChannel]="'disabled'" [style.background]="color"/>
+<input
+  type="color"
+  class="color-picker-input"
+  [value]="color"
+  (input)="onColorPickerChange($any($event.target).value)"
+/>

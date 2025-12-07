@@ -15,6 +15,7 @@ interface Rule {
   selector: 'app-rules-selector',
   templateUrl: './rules-selector.component.html',
   styleUrls: ['./rules-selector.component.scss'],
+  standalone: false,
 })
 export class RulesSelectorComponent {
   @Output()
@@ -29,7 +30,7 @@ export class RulesSelectorComponent {
   ];
   private threeService: ThreeService;
   private _selectedRule: CellularAutomaton = this.rules.find(
-    (e) => e.viewValue === 'Game Of Life'
+    (e) => e.viewValue === 'Game Of Life',
   ).value;
 
   constructor(p5Service: ThreeService) {

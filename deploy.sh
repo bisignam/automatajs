@@ -2,7 +2,7 @@
 
 set -e 
 
-ng build --prod
+ng build --configuration production
 
 ssh mbisignani@linode "rm -rf ~/AutomataJS"
 
