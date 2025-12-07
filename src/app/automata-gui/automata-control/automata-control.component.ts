@@ -243,9 +243,10 @@ export class AutomataControlComponent implements OnChanges {
 
   private applyPreset(preset: RulePreset, emitReset: boolean): void {
     this.selectedPreset = preset;
+    const shouldResume = this.isRunning;
     void this.three.setAutomataAndStopCurrent(preset.automaton);
     if (emitReset) {
-      this.statusChange.emit('idle');
+      this.statusChange.emit(shouldResume ? 'running' : 'idle');
     }
   }
 
