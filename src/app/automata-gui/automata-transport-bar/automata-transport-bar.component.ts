@@ -26,6 +26,17 @@ export class AutomataTransportBarComponent {
     return this.status === 'running';
   }
 
+  get transportAccentClass(): string {
+    switch (this.status) {
+      case 'running':
+        return 'transport-bar--running';
+      case 'paused':
+        return 'transport-bar--paused';
+      default:
+        return 'transport-bar--idle';
+    }
+  }
+
   onTogglePlay(): void {
     if (this.isRunning) {
       this.pause.emit();

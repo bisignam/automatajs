@@ -1,4 +1,4 @@
-<div class="transport-bar" [class.transport-bar--running]="isRunning">
+<div class="transport-bar" [ngClass]="transportAccentClass">
   <div class="transport-bar__controls">
     <button type="button" class="transport-button transport-button--primary" (click)="onTogglePlay()">
       <mat-icon>{{ isRunning ? 'pause' : 'play_arrow' }}</mat-icon>
