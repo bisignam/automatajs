@@ -321,6 +321,10 @@
     width: 100%;
     max-width: none;
   }
+
+  .automata-shell__canvas {
+    min-height: 50vh; // or 60vh, tweak to taste
+  }
 }
 
 .automata-app.immersive .automata-header {
