@@ -167,9 +167,9 @@
 
 .rule-carousel__track {
   display: inline-flex;
-  gap: 0.45rem;
+  gap: 0.35rem;
   min-width: 100%;
-  padding: 0.2rem 0.1rem;
+  padding: 0.2rem 0;
 }
 
 .rule-carousel__nav {
@@ -200,8 +200,8 @@
   padding: 0.65rem 0.9rem;
   text-align: left;
   cursor: pointer;
-  min-width: clamp(180px, 38vw, 220px);
-  max-width: clamp(180px, 38vw, 220px);
+  min-width: clamp(160px, 34vw, 200px);
+  max-width: clamp(160px, 34vw, 200px);
   min-height: 68px;
   display: flex;
   align-items: center;
