@@ -115,34 +115,28 @@
 
 .immersive-handle {
   position: absolute;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(5, 8, 20, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(5, 8, 20, 0.82);
   color: var(--text-main);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.85;
+  opacity: 0.92;
   cursor: pointer;
-  box-shadow:
-    0 6px 18px rgba(0, 0, 0, 0.55),
-    0 0 12px rgba(61, 135, 200, 0.35);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
   transition:
     opacity 150ms ease-out,
-    transform 150ms ease-out,
-    box-shadow 150ms ease-out,
-    background 150ms ease-out;
+    background 150ms ease-out,
+    box-shadow 150ms ease-out;
 }
 
 .immersive-handle:hover {
   opacity: 1;
-  transform: translateY(-2px);
-  background: rgba(12, 16, 32, 0.96);
-  box-shadow:
-    0 10px 26px rgba(0, 0, 0, 0.6),
-    0 0 18px rgba(61, 135, 200, 0.5);
+  background: rgba(12, 16, 32, 0.94);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
 }
 
 .immersive-handle--right {
@@ -158,11 +152,11 @@
 }
 
 .handle-arrow {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   display: inline-block;
-  border-top: 1.5px solid rgba(255, 255, 255, 0.9);
-  border-right: 1.5px solid rgba(255, 255, 255, 0.9);
+  border-top: 2px solid rgba(255, 255, 255, 0.95);
+  border-right: 2px solid rgba(255, 255, 255, 0.95);
 }
 
 .handle-arrow--left {
