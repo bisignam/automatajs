@@ -1,3 +1,14 @@
+:host {
+  display: block;
+}
+
 #automataRulesSelect {
-    width: 120px;
+  width: 100%;
+  background: rgba(15, 23, 42, 0.04);
+  border-radius: 14px;
+  padding: 0.25rem 0.75rem;
+}
+
+::ng-deep .mat-mdc-select-trigger {
+  min-height: 44px;
 }

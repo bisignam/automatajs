@@ -1,11 +1,17 @@
-<div id="headerContainerContainer" class="row p-0">
-  <div class="col-sm-2 p-0">
-    <mat-icon class="automataIcon" svgIcon="automatajs"></mat-icon>
+<header class="header">
+  <div class="header__logo" aria-label="AutomataJS">
+    <mat-icon class="header__logo-icon" svgIcon="automatajs"></mat-icon>
+    <small class="header__subtitle">Shader-driven automata sketches</small>
+    <span class="sr-only">AutomataJS</span>
   </div>
-  <div class="col-sm-9 p-0"></div>
-  <div class="col-sm-1 p-0">
-    <a href="https://github.com/bisignam/automatajs">
-      <mat-icon class="text-right githubIcon" svgIcon="github"></mat-icon>
-    </a>
-  </div>
-</div>
+  <a
+    class="header__github"
+    href="https://github.com/bisignam/automatajs"
+    target="_blank"
+    rel="noopener"
+    aria-label="Open AutomataJS on GitHub"
+  >
+    <mat-icon svgIcon="github"></mat-icon>
+    <span>GitHub</span>
+  </a>
+</header>

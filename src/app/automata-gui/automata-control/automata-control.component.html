@@ -1,32 +1,51 @@
-<div class="row row-fluid">
-  <div class="col-sm-4"></div>
-  <div class="col-sm-4 text-center">
-    <app-rules-selector></app-rules-selector>
-    <div class="row mt-4">
-      <div class="col-sm-6 text-center">
-        <button
-          class="controlButton"
-          mat-fab
-          color="primary"
-          aria-label="Clear values"
-          (click)="clearGrid()"
-        >
-          <mat-icon>clear_presentation</mat-icon>
-        </button>
+<div class="control-layout">
+  <section class="step">
+    <div class="step__heading">
+      <span class="step__badge">1</span>
+      <div>
+        <p class="step__title">Pick a rule</p>
+        <p class="step__hint">Every preset changes how cells spark, survive, and fade.</p>
       </div>
-      <div class="col-sm-6 text-center">
-        <button
-          class="controlButton"
-          mat-fab
-          color="primary"
-          aria-label="Start/Stop the automata"
-          (click)="started ? stopAutomata() : playAutomata()"
-        >
-          <mat-icon>{{ started ? 'stop' : 'play_arrow' }}</mat-icon>
-        </button>
-      </div>
-      <div class="col-md-4"></div>
     </div>
-  </div>
-  <div class="col-sm-4"></div>
+    <app-rules-selector (ruleChanged)="onRuleChanged($event)"></app-rules-selector>
+    <div class="rule-summary">
+      <p class="rule-summary__name">{{ currentRuleLabel }}</p>
+      <p class="rule-summary__text">{{ currentRuleSummary }}</p>
+    </div>
+  </section>
+
+  <section class="step">
+    <div class="step__heading">
+      <span class="step__badge">2</span>
+      <div>
+        <p class="step__title">Play &amp; fine-tune</p>
+        <p class="step__hint">Start the sim, tweak sliders, then reset when you want a blank canvas.</p>
+      </div>
+    </div>
+
+    <div class="cta-panel">
+      <button
+        type="button"
+        class="cta-button cta-button--primary"
+        (click)="started ? stopAutomata() : playAutomata()"
+        aria-label="Toggle simulation"
+      >
+        <mat-icon class="cta-button__icon">{{ started ? 'pause_circle' : 'play_circle' }}</mat-icon>
+        <span>{{ started ? 'Pause simulation' : 'Play simulation' }}</span>
+      </button>
+
+      <button
+        type="button"
+        class="cta-button cta-button--ghost"
+        (click)="clearGrid()"
+        aria-label="Reset the board"
+      >
+        <mat-icon class="cta-button__icon">refresh</mat-icon>
+        <span>Reset grid</span>
+      </button>
+    </div>
+    <p class="helper-text">
+      Reset simply clears the board &mdash; it doesn&rsquo;t reseed a pattern, so you decide what to draw next.
+    </p>
+  </section>
 </div>
