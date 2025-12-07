@@ -29,6 +29,10 @@
         (requestMobileFullScreen)="onRequestMobileFullScreen()"
         (exitMobileFullScreen)="onExitMobileFullScreen()"
       ></app-automata-canvas>
+      <div class="mobile-rule-label" *ngIf="isMobileLayout && uiState.ruleName">
+        {{ uiState.ruleName }}
+      </div>
+
       <div class="idle-countdown" *ngIf="idleCountdownVisible">
         Switching to immersive mode in {{ idleCountdownRemaining }}s
       </div>
@@ -90,83 +94,55 @@
         </div>
       </ng-container>
 
-      <div class="mobile-dock" *ngIf="isMobileLayout" [class.mobile-dock--collapsed]="mobileDockCollapsed">
-        <button
-          type="button"
-          class="mobile-dock__rule"
-          (click)="openMobileRulePicker()"
-          aria-label="Change rule"
-        >
-          <span class="mobile-dock__rule-name" *ngIf="!mobileDockCollapsed">
-            {{ uiState.ruleName || 'Select rule' }}
-          </span>
-          <lucide-icon *ngIf="mobileDockCollapsed" name="sliders-horizontal" size="18"></lucide-icon>
-          <lucide-icon name="chevron-down" class="mobile-dock__rule-chevron" size="16"></lucide-icon>
-        </button>
-
-        <div class="mobile-dock__palette" *ngIf="mobilePaletteSwatches.length">
+      <div class="mobile-dock-shell" *ngIf="isMobileLayout">
+        <div class="mobile-dock" [class.mobile-dock--collapsed]="mobileDockCollapsed">
           <button
             type="button"
-            class="mobile-dock__swatch"
-            *ngFor="let swatch of mobilePaletteSwatches"
-            [style.background-color]="swatch.color"
-            (click)="openMobileColorPicker(swatch)"
-            [attr.aria-label]="swatch.label + ' color'"
-          ></button>
+            class="mobile-dock__rule"
+            (click)="openMobileRulePicker()"
+            aria-label="Change rule"
+          >
+            <lucide-icon name="sparkles" size="18"></lucide-icon>
+          </button>
+
+          <div class="mobile-dock__palette" *ngIf="mobilePaletteSwatches.length">
+            <button
+              type="button"
+              class="mobile-dock__swatch"
+              *ngFor="let swatch of mobilePaletteSwatches"
+              [style.background-color]="swatch.color"
+              (click)="openMobileColorPicker(swatch)"
+              [attr.aria-label]="swatch.label + ' color'"
+            ></button>
+          </div>
+
+          <button
+            type="button"
+            class="mobile-dock__cell"
+            (click)="openMobileCellSizeOverlay()"
+            aria-label="Adjust cell size"
+          >
+            <lucide-icon name="grid-3x3" size="20"></lucide-icon>
+          </button>
+
+          <div class="mobile-dock__separator" aria-hidden="true"></div>
+
+          <div class="mobile-dock__transport">
+            <button
+              type="button"
+              class="mobile-dock__icon-button mobile-dock__icon-button--danger"
+              (click)="onClearGrid()"
+              aria-label="Clear grid"
+            >
+              <lucide-icon name="trash-2"></lucide-icon>
+            </button>
+          </div>
         </div>
-
         <button
           type="button"
-          class="mobile-dock__cell"
-          (click)="openMobileCellSizeOverlay()"
-          aria-label="Adjust cell size"
-        >
-          <lucide-icon name="sliders-horizontal" size="20"></lucide-icon>
-        </button>
-
-        <div class="mobile-dock__separator" aria-hidden="true"></div>
-
-        <div class="mobile-dock__transport">
-          <button
-            type="button"
-            class="mobile-dock__icon-button mobile-dock__icon-button--primary"
-            (click)="toggleMobilePlay()"
-            [attr.aria-label]="uiState.status === 'running' ? 'Pause' : 'Play'"
-          >
-            <lucide-icon [name]="uiState.status === 'running' ? 'pause' : 'play'"></lucide-icon>
-          </button>
-          <button
-            type="button"
-            class="mobile-dock__icon-button"
-            (click)="onStep()"
-            [disabled]="uiState.status === 'running'"
-            aria-label="Step once"
-          >
-            <lucide-icon name="step-forward"></lucide-icon>
-          </button>
-          <button
-            type="button"
-            class="mobile-dock__icon-button"
-            (click)="onReset()"
-            aria-label="Reset simulation"
-          >
-            <lucide-icon name="rotate-ccw"></lucide-icon>
-          </button>
-          <button
-            type="button"
-            class="mobile-dock__icon-button"
-            (click)="onClearGrid()"
-            aria-label="Clear grid"
-          >
-            <lucide-icon name="trash-2"></lucide-icon>
-          </button>
-        </div>
-
-        <button
-          type="button"
-          class="mobile-dock__collapse"
+          class="mobile-dock-toggle"
           (click)="toggleMobileDockCollapsed()"
-          aria-label="Collapse dock"
+          [attr.aria-label]="mobileDockCollapsed ? 'Expand controls' : 'Collapse controls'"
         >
           <lucide-icon [name]="mobileDockCollapsed ? 'chevron-left' : 'chevron-right'" size="16"></lucide-icon>
         </button>
@@ -244,20 +220,30 @@
       </button>
 
       <div class="mobile-speed-strip" *ngIf="isMobileLayout">
-        <div class="mobile-speed-strip__label">
-          <lucide-icon name="gauge" size="16"></lucide-icon>
-          <span>Speed</span>
+        <button
+          type="button"
+          class="mobile-speed-strip__play"
+          (click)="toggleMobilePlay()"
+          [attr.aria-label]="uiState.status === 'running' ? 'Pause' : 'Play'"
+        >
+          <lucide-icon [name]="uiState.status === 'running' ? 'pause' : 'play'" size="18"></lucide-icon>
+        </button>
+        <div class="mobile-speed-strip__slider">
+          <div class="mobile-speed-strip__label">
+            <lucide-icon name="gauge" size="16"></lucide-icon>
+            <span>Speed</span>
+          </div>
+          <input
+            type="range"
+            min="5"
+            max="120"
+            step="5"
+            [value]="simulationConfig.speed"
+            (input)="onMobileSpeedInput($event)"
+            aria-label="Adjust playback speed"
+          />
         </div>
-        <input
-          type="range"
-          min="5"
-          max="120"
-          step="5"
-          [value]="simulationConfig.speed"
-          (input)="onMobileSpeedInput($event)"
-          aria-label="Adjust playback speed"
-        />
-        <span class="mobile-speed-strip__value">{{ simulationConfig.speed }} fps</span>
+        <span class="mobile-speed-strip__value">{{ simulationConfig.speed }} FPS</span>
       </div>
     </section>
 
