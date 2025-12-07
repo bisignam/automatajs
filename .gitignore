@@ -47,6 +47,7 @@ testem.log
 .DS_Store
 Thumbs.db
 
-# Dump files
+# Files for agents / LLMs
 /automata_dump_*.txt
+/plans_for_agents
 
