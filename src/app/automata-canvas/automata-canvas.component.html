@@ -4,7 +4,7 @@
 >
   <div class="canvas-frame-top">
     <button
-      *ngIf="!isImmersive"
+      *ngIf="!isImmersive && !showIdleCountdown"
       #enterImmersiveBtn
       type="button"
       class="canvas-mode-handle canvas-mode-handle--enter"

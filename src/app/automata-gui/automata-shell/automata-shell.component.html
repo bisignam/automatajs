@@ -12,6 +12,7 @@
     <section #canvasSection class="automata-shell__canvas">
       <app-automata-canvas
         [isImmersive]="isImmersive"
+        [showIdleCountdown]="idleCountdownVisible"
         (enterImmersiveMode)="enterImmersive()"
       ></app-automata-canvas>
       <div class="idle-countdown" *ngIf="idleCountdownVisible">

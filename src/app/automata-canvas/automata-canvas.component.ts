@@ -37,6 +37,7 @@ export class AutomataCanvasComponent implements AfterViewInit {
   isPainting = false;
   isCursorOverCanvas = false;
   @Input() isImmersive = false;
+  @Input() showIdleCountdown = false;
   @Output() enterImmersiveMode = new EventEmitter<void>();
 
   constructor(threeService: ThreeService) {
