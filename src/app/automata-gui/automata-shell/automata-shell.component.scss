@@ -115,8 +115,8 @@
 
 .immersive-handle {
   position: absolute;
-  width: clamp(26px, 3vw, 36px);
-  height: clamp(26px, 3vw, 36px);
+  width: clamp(30px, 4vw, 44px);
+  height: clamp(30px, 4vw, 44px);
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.22);
   background: rgba(5, 8, 20, 0.78);
@@ -152,19 +152,20 @@
 }
 
 .handle-arrow {
-  width: clamp(8px, 1vw, 13px);
-  height: clamp(8px, 1vw, 13px);
+  width: clamp(10px, 1.2vw, 16px);
+  height: clamp(10px, 1.2vw, 16px);
   display: inline-block;
   border-top: 2px solid rgba(255, 255, 255, 0.95);
   border-right: 2px solid rgba(255, 255, 255, 0.95);
+  transform-origin: center;
 }
 
 .handle-arrow--left {
-  transform: rotate(-135deg);
+  transform: rotate(-135deg) translate(-0.5px, -0.5px);
 }
 
 .handle-arrow--up {
-  transform: rotate(-45deg);
+  transform: rotate(-45deg) translate(0.5px, -0.5px);
 }
 
 .automata-shell__panel {
