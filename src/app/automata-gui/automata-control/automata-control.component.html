@@ -19,6 +19,20 @@
         <small>Clear grid &amp; reseed rule</small>
       </div>
     </button>
+    <label class="auto-immersive-toggle">
+      <div class="auto-immersive-toggle__switch">
+        <input
+          type="checkbox"
+          [checked]="autoImmersivePreference === 'enabled'"
+          (change)="onAutoImmersiveToggle($event)"
+        />
+        <span class="auto-immersive-toggle__thumb"></span>
+      </div>
+      <div class="auto-immersive-toggle__content">
+        <div class="auto-immersive-toggle__label">Auto immersive mode</div>
+        <div class="auto-immersive-toggle__sublabel">Enter immersive view automatically when idle</div>
+      </div>
+    </label>
   </div>
 
   <nav class="control-tabs" aria-label="Control sections">

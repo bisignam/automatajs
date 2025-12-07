@@ -113,9 +113,11 @@
           [config]="simulationConfig"
           [status]="uiState.status"
           [uiState]="uiState"
+          [autoImmersivePreference]="autoImmersivePreference"
           (configChange)="onConfigChange($event)"
           (statusChange)="onStatusChange($event)"
           (uiStateChange)="onUiStateChange($event)"
+          (autoImmersivePreferenceChange)="onAutoImmersivePreferenceChange($event)"
         ></app-automata-control>
       </div>
     </aside>

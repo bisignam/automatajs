@@ -34,6 +34,8 @@ export class AutomataControlComponent implements OnChanges {
 
   @Input() status: SimulationStatus = 'idle';
   @Output() statusChange = new EventEmitter<SimulationStatus>();
+  @Input() autoImmersivePreference: 'unknown' | 'enabled' | 'disabled' = 'unknown';
+  @Output() autoImmersivePreferenceChange = new EventEmitter<'enabled' | 'disabled'>();
 
   @Input() uiState?: UiState;
   @Output() uiStateChange = new EventEmitter<Partial<UiState>>();
@@ -140,6 +142,11 @@ export class AutomataControlComponent implements OnChanges {
   handleStepRequest(): void {
     this.three.forwardAndDisplay();
     this.statusChange.emit('paused');
+  }
+
+  onAutoImmersiveToggle(event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.autoImmersivePreferenceChange.emit(checked ? 'enabled' : 'disabled');
   }
 
   togglePlay(): void {

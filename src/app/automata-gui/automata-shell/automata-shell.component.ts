@@ -43,7 +43,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   exitPillVisible = false;
   showAutoImmersiveOptIn = false;
   private readonly autoImmersivePreferenceKey = 'automatajs_autoImmersivePreference';
-  private autoImmersivePreference: 'unknown' | 'enabled' | 'disabled' = 'unknown';
+  autoImmersivePreference: 'unknown' | 'enabled' | 'disabled' = 'unknown';
 
   @ViewChild('appHeader') private headerRef?: ElementRef<HTMLElement>;
   @ViewChild('shellMain') private shellRef?: ElementRef<HTMLElement>;
@@ -639,6 +639,10 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
 
   onAutoImmersiveOptIn(accepted: boolean): void {
     this.hideAutoImmersiveOptIn(accepted ? 'enabled' : 'disabled');
+  }
+
+  onAutoImmersivePreferenceChange(value: 'enabled' | 'disabled'): void {
+    this.hideAutoImmersiveOptIn(value);
   }
 
   private loadAutoImmersivePreference(): void {
