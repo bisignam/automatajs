@@ -18,6 +18,7 @@ import { DayAndNight } from 'src/app/automata-rules/dayandnight';
 import { GameOfLife } from 'src/app/automata-rules/gameoflife';
 import { Maze } from 'src/app/automata-rules/maze';
 import { Seeds } from 'src/app/automata-rules/seeds';
+import { LifeWithoutDeath } from 'src/app/automata-rules/life-without-death';
 import { SimulationConfig, SimulationStatus, UiState, UiTab } from '../ui-state';
 
 interface RulePreset {
@@ -65,6 +66,13 @@ export class AutomataControlComponent implements OnChanges, OnInit {
       summary: 'Conway’s playground of gliders, blinkers, and glider guns.',
       createAutomaton: () => new GameOfLife(),
       matches: (automaton) => automaton instanceof GameOfLife,
+    },
+    {
+      id: 'life-without-death',
+      label: 'Life without Death',
+      summary: 'Cells are born like Life but never die, growing crystal blooms.',
+      createAutomaton: () => new LifeWithoutDeath(),
+      matches: (automaton) => automaton instanceof LifeWithoutDeath,
     },
     {
       id: 'brians-brain',
