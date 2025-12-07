@@ -95,7 +95,12 @@
       </ng-container>
 
       <div class="mobile-dock-shell" *ngIf="isMobileLayout">
-        <div class="mobile-dock" [class.mobile-dock--collapsed]="mobileDockCollapsed">
+        <div
+          #mobileDock
+          *ngIf="!mobileDockCollapsed || mobileDockAnimating"
+          class="mobile-dock"
+          [class.mobile-dock--collapsed]="mobileDockCollapsed"
+        >
           <div class="mobile-dock__content">
             <button
               type="button"
@@ -143,11 +148,20 @@
             type="button"
             class="mobile-dock__toggle"
             (click)="toggleMobileDockCollapsed()"
-            [attr.aria-label]="mobileDockCollapsed ? 'Expand controls' : 'Collapse controls'"
+            aria-label="Collapse controls"
           >
-            <lucide-icon [name]="mobileDockCollapsed ? 'chevron-left' : 'chevron-right'" size="14"></lucide-icon>
+            <lucide-icon name="chevron-right" size="14"></lucide-icon>
           </button>
         </div>
+        <button
+          type="button"
+          class="mobile-dock-toggle"
+          *ngIf="mobileDockCollapsed"
+          (click)="toggleMobileDockCollapsed()"
+          aria-label="Expand controls"
+        >
+          <lucide-icon name="chevron-left" size="16"></lucide-icon>
+        </button>
       </div>
 
       <div

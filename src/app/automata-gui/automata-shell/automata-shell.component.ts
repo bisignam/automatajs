@@ -100,6 +100,13 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       this.animateAutoImmersiveBannerEnter(this.autoImmersiveBannerEl);
     }
   }
+  @ViewChild('mobileDock') set mobileDockRef(ref: ElementRef<HTMLElement> | undefined) {
+    this.mobileDockEl = ref?.nativeElement;
+    if (this.pendingMobileDockEnter && this.mobileDockEl) {
+      this.pendingMobileDockEnter = false;
+      requestAnimationFrame(() => this.animateMobileDock(false));
+    }
+  }
 
   private controlPanelEl?: HTMLElement;
   private transportBarEl?: HTMLElement;
@@ -111,6 +118,9 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   private exitPillHoverAnimations = new WeakMap<HTMLElement, ReturnType<typeof animate>>();
   private exitPillEl?: HTMLElement;
   private autoImmersiveBannerEl?: HTMLElement;
+  private mobileDockEl?: HTMLElement;
+  private mobileDockAnimation?: ReturnType<typeof animate>;
+  private pendingMobileDockEnter = false;
   private autoImmersiveOptInDismissTimerId?: number;
   private autoImmersiveIdleTimerId?: number;
   private idleCountdownIntervalId?: number;
@@ -126,6 +136,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   isMobileLayout = false;
   isMobileFullScreen = false;
   mobileDockCollapsed = false;
+  mobileDockAnimating = false;
   isMobileRulePickerOpen = false;
   rulePickerIndex = 0;
   mobilePaletteSwatches: MobilePaletteSwatch[] = [];
@@ -394,7 +405,51 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     if (!this.isMobileLayout) {
       return;
     }
-    this.mobileDockCollapsed = !this.mobileDockCollapsed;
+    const nextCollapsed = !this.mobileDockCollapsed;
+    this.mobileDockAnimating = true;
+    if (nextCollapsed) {
+      this.mobileDockCollapsed = true;
+      this.pendingMobileDockEnter = false;
+      if (this.mobileDockEl) {
+        this.animateMobileDock(true);
+      } else {
+        this.mobileDockAnimating = false;
+      }
+      return;
+    }
+    this.mobileDockCollapsed = false;
+    if (!this.mobileDockEl) {
+      this.pendingMobileDockEnter = true;
+      return;
+    }
+    this.pendingMobileDockEnter = false;
+    this.animateMobileDock(false);
+  }
+
+  private animateMobileDock(collapsing: boolean): void {
+    const dock = this.mobileDockEl;
+    if (!dock) {
+      this.mobileDockAnimating = false;
+      return;
+    }
+    this.mobileDockAnimation?.cancel();
+    const animation = animate(
+      dock,
+      collapsing
+        ? { transform: ['translateX(0)', 'translateX(28px)'], opacity: [1, 0] }
+        : { transform: ['translateX(28px)', 'translateX(0)'], opacity: [0, 1] },
+      { duration: 0.24, easing: this.immersiveEase },
+    );
+    this.mobileDockAnimation = animation;
+    animation.finished.finally(() => {
+      if (this.mobileDockAnimation !== animation) {
+        return;
+      }
+      dock.style.transform = '';
+      dock.style.opacity = '';
+      this.mobileDockAnimation = undefined;
+      this.mobileDockAnimating = false;
+    });
   }
 
   openMobileRulePicker(): void {
@@ -655,6 +710,10 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
         this.ruleOverlayDockOpen = true;
       }
       this.mobileDockCollapsed = false;
+      this.mobileDockAnimating = false;
+      this.pendingMobileDockEnter = false;
+      this.mobileDockAnimation?.cancel();
+      this.mobileDockAnimation = undefined;
       this.isMobileRulePickerOpen = false;
       this.isMobileColorPickerOpen = false;
       this.isMobileCellSizeOverlayOpen = false;
