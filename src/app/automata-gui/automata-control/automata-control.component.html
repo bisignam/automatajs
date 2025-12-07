@@ -194,31 +194,75 @@
           <p>Dead cells</p>
           <small>Background</small>
         </div>
+        <button
+          type="button"
+          class="quick-color-chip"
+          (click)="toggleQuickColorPopover('background')"
+          [class.quick-color-chip--active]="isQuickColorPopoverOpen('background')"
+          aria-label="Adjust background color"
+        >
+          <span class="quick-color-chip__swatch" [style.background]="colorToHex(backgroundColor)"></span>
+          <span class="quick-color-chip__value">{{ colorToHex(backgroundColor) | uppercase }}</span>
+        </button>
+      </div>
+      <div class="quick-color-popover" *ngIf="isQuickColorPopoverOpen('background')">
         <app-color-picker
-          [color]="backgroundColor.getHexString()"
+          [label]="''"
+          [color]="colorToHex(backgroundColor)"
           (chosenColor)="onBackgroundColorChosen($event)"
         ></app-color-picker>
+        <button type="button" class="quick-color-popover__close" (click)="closeQuickColorPopover()">Done</button>
       </div>
+
       <div class="quick-color-row">
         <div class="quick-color-row__meta">
           <p>Alive cells</p>
           <small>Activation</small>
         </div>
+        <button
+          type="button"
+          class="quick-color-chip"
+          (click)="toggleQuickColorPopover('activation')"
+          [class.quick-color-chip--active]="isQuickColorPopoverOpen('activation')"
+          aria-label="Adjust activation color"
+        >
+          <span class="quick-color-chip__swatch" [style.background]="colorToHex(activationColor)"></span>
+          <span class="quick-color-chip__value">{{ colorToHex(activationColor) | uppercase }}</span>
+        </button>
+      </div>
+      <div class="quick-color-popover" *ngIf="isQuickColorPopoverOpen('activation')">
         <app-color-picker
-          [color]="activationColor.getHexString()"
+          [label]="''"
+          [color]="colorToHex(activationColor)"
           (chosenColor)="onActivationColorChosen($event)"
         ></app-color-picker>
+        <button type="button" class="quick-color-popover__close" (click)="closeQuickColorPopover()">Done</button>
       </div>
+
       <ng-container *ngFor="let extra of additionalColors">
         <div class="quick-color-row">
           <div class="quick-color-row__meta">
             <p>{{ extra.displayName }}</p>
             <small>Accent</small>
           </div>
+          <button
+            type="button"
+            class="quick-color-chip"
+            (click)="toggleQuickColorPopover('extra:' + extra.displayName)"
+            [class.quick-color-chip--active]="isQuickColorPopoverOpen('extra:' + extra.displayName)"
+            [attr.aria-label]="'Adjust ' + extra.displayName + ' color'"
+          >
+            <span class="quick-color-chip__swatch" [style.background]="colorToHex(extra.color)"></span>
+            <span class="quick-color-chip__value">{{ colorToHex(extra.color) | uppercase }}</span>
+          </button>
+        </div>
+        <div class="quick-color-popover" *ngIf="isQuickColorPopoverOpen('extra:' + extra.displayName)">
           <app-color-picker
-            [color]="extra.color.getHexString()"
+            [label]="''"
+            [color]="colorToHex(extra.color)"
             (chosenColor)="onAdditionalColorChosen(extra.displayName, $event)"
           ></app-color-picker>
+          <button type="button" class="quick-color-popover__close" (click)="closeQuickColorPopover()">Done</button>
         </div>
       </ng-container>
     </div>

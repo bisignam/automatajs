@@ -94,7 +94,7 @@
         </div>
       </ng-container>
 
-      <div class="mobile-dock-shell" *ngIf="isMobileLayout">
+      <div class="mobile-dock-shell" *ngIf="isMobileLayout && !mobileLiveControlActive">
         <div
           #mobileDock
           *ngIf="!mobileDockCollapsed || mobileDockAnimating"
@@ -235,7 +235,7 @@
         </span>
       </button>
 
-      <div class="mobile-speed-strip" *ngIf="isMobileLayout">
+      <div class="mobile-speed-strip" *ngIf="isMobileLayout && !mobileLiveControlActive">
         <button
           type="button"
           class="mobile-speed-strip__play"
@@ -297,63 +297,86 @@
     </div>
   </ng-template>
 
-  <div class="mobile-overlay mobile-overlay--rule" *ngIf="isMobileRulePickerOpen" (click)="closeMobileRulePicker()">
-    <div class="mobile-overlay__panel mobile-overlay__panel--rule" (click)="$event.stopPropagation()">
-      <button
-        type="button"
-        class="rule-picker__nav"
-        aria-label="Previous rule"
-        (click)="cycleMobileRulePicker(-1)"
-      >
-        <lucide-icon name="chevron-up"></lucide-icon>
-      </button>
-      <div
-        class="rule-picker__stack"
-        (touchstart)="onRulePickerTouchStart($event)"
-        (touchend)="onRulePickerTouchEnd($event)"
-        (pointerdown)="onRulePickerTouchStart($event)"
-        (pointerup)="onRulePickerTouchEnd($event)"
-        (pointercancel)="onRulePickerTouchCancel()"
-      >
-        <div
-          class="rule-picker__item"
-          *ngFor="let offset of rulePickerOffsets"
-          [class.rule-picker__item--active]="offset === 0"
-        >
-          {{ getRulePreview(offset)?.label }}
-        </div>
-        <p class="rule-picker__summary" *ngIf="getRulePreview(0)?.summary">
-          {{ getRulePreview(0)?.summary }}
-        </p>
+  <div
+    class="mobile-live-overlay mobile-live-overlay--rule"
+    *ngIf="isMobileLayout && isMobileRulePickerOpen"
+    (click)="closeMobileRulePicker()"
+  >
+    <div class="mobile-live-overlay__panel mobile-live-overlay__panel--rule" (click)="$event.stopPropagation()">
+      <div class="mobile-live-overlay__header">
+        <span class="mobile-live-overlay__eyebrow">Rule</span>
+        <button type="button" class="mobile-live-overlay__close" (click)="closeMobileRulePicker()">Done</button>
       </div>
-      <button
-        type="button"
-        class="rule-picker__nav"
-        aria-label="Next rule"
-        (click)="cycleMobileRulePicker(1)"
-      >
-        <lucide-icon name="chevron-down"></lucide-icon>
-      </button>
-      <button type="button" class="mobile-overlay__close" (click)="closeMobileRulePicker()">Done</button>
+      <div class="rule-picker__rail">
+        <button
+          type="button"
+          class="rule-picker__nav"
+          aria-label="Previous rule"
+          (click)="cycleMobileRulePicker(-1)"
+        >
+          <lucide-icon name="chevron-up"></lucide-icon>
+        </button>
+        <div
+          class="rule-picker__stack"
+          (touchstart)="onRulePickerTouchStart($event)"
+          (touchend)="onRulePickerTouchEnd($event)"
+          (pointerdown)="onRulePickerTouchStart($event)"
+          (pointerup)="onRulePickerTouchEnd($event)"
+          (pointercancel)="onRulePickerTouchCancel()"
+        >
+          <div
+            class="rule-picker__item"
+            *ngFor="let offset of rulePickerOffsets"
+            [class.rule-picker__item--active]="offset === 0"
+          >
+            {{ getRulePreview(offset)?.label }}
+          </div>
+          <p class="rule-picker__summary" *ngIf="getRulePreview(0)?.summary">
+            {{ getRulePreview(0)?.summary }}
+          </p>
+        </div>
+        <button
+          type="button"
+          class="rule-picker__nav"
+          aria-label="Next rule"
+          (click)="cycleMobileRulePicker(1)"
+        >
+          <lucide-icon name="chevron-down"></lucide-icon>
+        </button>
+      </div>
     </div>
   </div>
 
-  <div class="mobile-overlay" *ngIf="isMobileColorPickerOpen" (click)="closeMobileColorPicker()">
-    <div class="mobile-overlay__panel" (click)="$event.stopPropagation()">
-      <p class="mobile-overlay__title">{{ activeColorLabel }}</p>
+  <div
+    class="mobile-live-overlay mobile-live-overlay--color"
+    *ngIf="isMobileLayout && isMobileColorPickerOpen"
+    (click)="closeMobileColorPicker()"
+  >
+    <div class="mobile-live-overlay__panel" (click)="$event.stopPropagation()">
+      <div class="mobile-live-overlay__header">
+        <span class="mobile-live-overlay__eyebrow">{{ activeColorLabel || 'Color' }}</span>
+        <button type="button" class="mobile-live-overlay__close" (click)="closeMobileColorPicker()">Done</button>
+      </div>
       <app-color-picker
-        [label]="activeColorLabel || ''"
+        class="mobile-live-overlay__picker"
+        [label]="''"
         [color]="activeColorValue"
         (chosenColor)="onMobileColorChosen($event)"
       ></app-color-picker>
-      <button type="button" class="mobile-overlay__close" (click)="closeMobileColorPicker()">Done</button>
     </div>
   </div>
 
-  <div class="mobile-overlay" *ngIf="isMobileCellSizeOverlayOpen" (click)="closeMobileCellSizeOverlay()">
-    <div class="mobile-overlay__panel" (click)="$event.stopPropagation()">
-      <p class="mobile-overlay__title">Cell size</p>
-      <div class="mobile-overlay__slider">
+  <div
+    class="mobile-live-overlay mobile-live-overlay--cell"
+    *ngIf="isMobileLayout && isMobileCellSizeOverlayOpen"
+    (click)="closeMobileCellSizeOverlay()"
+  >
+    <div class="mobile-live-overlay__panel" (click)="$event.stopPropagation()">
+      <div class="mobile-live-overlay__header">
+        <span class="mobile-live-overlay__eyebrow">Cell size</span>
+        <button type="button" class="mobile-live-overlay__close" (click)="closeMobileCellSizeOverlay()">Done</button>
+      </div>
+      <div class="mobile-live-overlay__slider">
         <input
           type="range"
           min="1"
@@ -363,9 +386,8 @@
           (input)="onMobileCellSizeInput($event)"
           aria-label="Cell size"
         />
-        <span>{{ simulationConfig.cellSize }} px</span>
+        <span class="mobile-live-overlay__value">{{ simulationConfig.cellSize }} px</span>
       </div>
-      <button type="button" class="mobile-overlay__close" (click)="closeMobileCellSizeOverlay()">Done</button>
     </div>
   </div>
 

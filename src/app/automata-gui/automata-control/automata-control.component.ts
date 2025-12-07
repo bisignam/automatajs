@@ -57,6 +57,7 @@ export class AutomataControlComponent implements OnChanges, OnInit, OnDestroy, A
   selectedPreset: RulePreset = this.rulePresets[0];
   backgroundColor: THREE.Color = DefaultSettings.backgroundColor.clone();
   activationColor: THREE.Color = DefaultSettings.activationColor.clone();
+  quickColorPopoverTarget: string | null = null;
   private automataSizeSub?: Subscription;
   private quickPresetNudgePlayed = false;
 
@@ -241,6 +242,28 @@ export class AutomataControlComponent implements OnChanges, OnInit, OnDestroy, A
     if (this.three.cellularAutomaton) {
       this.three.changeColor(label, color);
     }
+  }
+
+  toggleQuickColorPopover(target: string): void {
+    if (!this.isQuickVariant) {
+      return;
+    }
+    this.quickColorPopoverTarget = this.quickColorPopoverTarget === target ? null : target;
+  }
+
+  isQuickColorPopoverOpen(target: string): boolean {
+    return this.quickColorPopoverTarget === target;
+  }
+
+  closeQuickColorPopover(): void {
+    this.quickColorPopoverTarget = null;
+  }
+
+  colorToHex(color?: THREE.Color): string {
+    if (!color) {
+      return '#ffffff';
+    }
+    return `#${color.getHexString()}`;
   }
 
   private applyPreset(

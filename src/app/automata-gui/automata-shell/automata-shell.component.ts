@@ -179,6 +179,13 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     return this.isMobileLayout ? true : this.isImmersive;
   }
 
+  get mobileLiveControlActive(): boolean {
+    if (!this.isMobileLayout) {
+      return false;
+    }
+    return this.isMobileRulePickerOpen || this.isMobileColorPickerOpen || this.isMobileCellSizeOverlayOpen;
+  }
+
   get panelOpen(): boolean {
     return this.uiState.isControlPanelOpen;
   }
