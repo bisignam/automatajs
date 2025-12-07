@@ -13,6 +13,8 @@
       <app-automata-canvas
         [isImmersive]="isImmersive"
         [showIdleCountdown]="idleCountdownVisible"
+        [ruleName]="uiState.ruleName || ''"
+        [ruleDescription]="uiState.ruleDescription || ''"
         (enterImmersiveMode)="enterImmersive()"
       ></app-automata-canvas>
       <div class="idle-countdown" *ngIf="idleCountdownVisible">

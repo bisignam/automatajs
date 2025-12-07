@@ -19,19 +19,39 @@
       <span class="canvas-mode-handle__label">Immersive mode</span>
     </button>
   </div>
-  <button
-    #screenshotButton
-    type="button"
-    class="canvas-screenshot-btn"
-    aria-label="Export image"
-    (click)="onExportImage()"
-    (mouseenter)="onScreenshotHover(true, screenshotButton)"
-    (mouseleave)="onScreenshotHover(false, screenshotButton)"
-    (focusin)="onScreenshotHover(true, screenshotButton)"
-    (focusout)="onScreenshotHover(false, screenshotButton)"
-  >
-    <lucide-icon name="camera" size="16"></lucide-icon>
-  </button>
+  <div class="canvas-top-controls">
+    <button
+      #screenshotButton
+      type="button"
+      class="canvas-icon-button"
+      aria-label="Export image"
+      (click)="onExportImage()"
+      (mouseenter)="onScreenshotHover(true, screenshotButton)"
+      (mouseleave)="onScreenshotHover(false, screenshotButton)"
+      (focusin)="onScreenshotHover(true, screenshotButton)"
+      (focusout)="onScreenshotHover(false, screenshotButton)"
+    >
+      <lucide-icon name="camera" size="16"></lucide-icon>
+    </button>
+    <button
+      type="button"
+      class="canvas-icon-button"
+      [class.canvas-icon-button--active]="lensEnabled"
+      aria-label="Inspector lens (Alt + scroll to zoom)"
+      (click)="toggleLens()"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <circle cx="10.5" cy="10.5" r="5.5"></circle>
+        <line x1="15" y1="15" x2="21" y2="21"></line>
+      </svg>
+    </button>
+  </div>
+  <canvas
+    *ngIf="lensEnabled"
+    #lensCanvas
+    class="automata-lens"
+    aria-hidden="true"
+  ></canvas>
   <canvas
     #automataCanvasContainer
     id="automataCanvasContainer"
@@ -40,6 +60,44 @@
     (mouseup)="onCanvasMouseUp($event)"
     (mouseleave)="onCanvasMouseLeave($event)"
     (mouseenter)="onCanvasMouseEnter()"
-    (mousemove)="onCanvasMouseMove()"
+    (mousemove)="onCanvasMouseMove($event)"
+    (wheel)="onCanvasWheel($event)"
   ></canvas>
+
+  <button
+    *ngIf="isImmersive && ruleName"
+    type="button"
+    class="rule-badge"
+    (click)="openRuleOverlay()"
+  >
+    {{ ruleName }}
+  </button>
+
+  <div
+    *ngIf="ruleOverlayOpen"
+    class="rule-overlay-backdrop"
+    (click)="closeRuleOverlay()"
+  >
+    <div class="rule-overlay-panel" (click)="$event.stopPropagation()">
+      <div class="rule-overlay-header">
+        <span class="rule-overlay-title">{{ ruleName }}</span>
+        <button
+          type="button"
+          class="rule-overlay-close"
+          aria-label="Close rule details"
+          (click)="closeRuleOverlay()"
+        >
+          ×
+        </button>
+      </div>
+      <div class="rule-overlay-body">
+        <p *ngIf="ruleDescription; else noDescription">
+          {{ ruleDescription }}
+        </p>
+        <ng-template #noDescription>
+          <p class="rule-overlay-description-muted">No description available for this rule yet.</p>
+        </ng-template>
+      </div>
+    </div>
+  </div>
 </div>

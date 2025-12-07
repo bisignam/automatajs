@@ -19,10 +19,17 @@
   cursor: crosshair;
 }
 
-.canvas-screenshot-btn {
+.canvas-top-controls {
   position: absolute;
   top: 16px;
   right: 16px;
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+
+.canvas-icon-button {
+  position: relative;
   width: 32px;
   height: 32px;
   border-radius: 999px;
@@ -34,26 +41,161 @@
   padding: 0;
   cursor: pointer;
   opacity: 0.6;
-  transition: border-color 120ms ease-out, opacity 120ms ease-out;
+  transition: border-color 120ms ease-out, opacity 120ms ease-out, background 120ms ease-out;
   outline: none;
   line-height: 0;
 }
 
-.canvas-screenshot-btn lucide-icon,
-.canvas-screenshot-btn svg {
+.canvas-icon-button lucide-icon,
+.canvas-icon-button svg {
   width: 16px;
   height: 16px;
   stroke-width: 1.6;
   color: rgba(235, 240, 255, 0.75);
 }
 
-.canvas-screenshot-btn:hover,
-.canvas-screenshot-btn:focus-visible {
+.canvas-icon-button svg {
+  fill: none;
+  stroke: currentColor;
+}
+
+.canvas-icon-button:hover,
+.canvas-icon-button:focus-visible {
   opacity: 1;
   border-color: rgba(104, 167, 255, 0.9);
 }
 
-.canvas-screenshot-btn:hover lucide-icon,
-.canvas-screenshot-btn:focus-visible lucide-icon {
+.canvas-icon-button:hover lucide-icon,
+.canvas-icon-button:focus-visible lucide-icon {
   color: #68a7ff;
+}
+.canvas-icon-button:hover svg,
+.canvas-icon-button:focus-visible svg {
+  color: #68a7ff;
+}
+
+.canvas-icon-button--active {
+  background: rgba(148, 163, 184, 0.14);
+  outline: 1px solid rgba(148, 163, 184, 0.55);
+}
+
+.automata-lens {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  width: 180px;
+  height: 180px;
+  border-radius: 16px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(5, 8, 20, 0.95);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.7);
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.rule-badge {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  max-width: 40%;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  background: rgba(15, 23, 42, 0.92);
+  color: #e5e7eb;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(8px);
+  z-index: 3;
+}
+
+.rule-badge:hover {
+  border-color: rgba(191, 219, 254, 0.9);
+  background: rgba(15, 23, 42, 0.98);
+}
+
+.rule-overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at bottom right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0) 60%);
+  pointer-events: auto;
+  z-index: 4;
+}
+
+.rule-overlay-panel {
+  position: absolute;
+  right: 16px;
+  bottom: 56px;
+  max-width: min(420px, 70%);
+  padding: 14px 16px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  background: rgba(15, 23, 42, 0.96);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.85);
+  color: #e5e7eb;
+  font-size: 13px;
+  line-height: 1.4;
+  backdrop-filter: blur(10px);
+}
+
+.rule-overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.rule-overlay-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #bfdbfe;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.rule-overlay-close {
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 14px;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.rule-overlay-close:hover {
+  background: rgba(31, 41, 55, 0.9);
+  color: #e5e7eb;
+}
+
+.rule-overlay-body {
+  max-height: 40vh;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.rule-overlay-body p {
+  margin: 4px 0 0;
+}
+
+.rule-overlay-description-muted {
+  color: #6b7280;
+  font-style: italic;
 }

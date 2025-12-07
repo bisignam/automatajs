@@ -14,4 +14,6 @@ export interface UiState {
   isMobile: boolean;
   activeTab: UiTab;
   lastUserInteractionAt: number;
+  ruleName?: string;
+  ruleDescription?: string;
 }

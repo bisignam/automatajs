@@ -34,6 +34,8 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     isMobile: false,
     activeTab: 'presets',
     lastUserInteractionAt: Date.now(),
+    ruleName: '',
+    ruleDescription: '',
   };
 
   isAboutOpen = false;

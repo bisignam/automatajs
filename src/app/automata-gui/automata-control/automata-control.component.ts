@@ -275,6 +275,7 @@ export class AutomataControlComponent implements OnChanges, OnInit {
     options?: { preserveRunningState?: boolean; preserveState?: boolean },
   ): void {
     this.selectedPreset = preset;
+    this.emitSelectedRuleInfo();
     const shouldResume = this.isRunning && !!options?.preserveRunningState;
     const automaton = preset.createAutomaton();
     const preserveState = options?.preserveState ?? true;
@@ -298,9 +299,19 @@ export class AutomataControlComponent implements OnChanges, OnInit {
     const existingPreset = this.rulePresets.find((preset) => preset.matches(currentAutomaton));
     if (existingPreset) {
       this.selectedPreset = existingPreset;
+      this.emitSelectedRuleInfo();
       return;
     }
     this.applyPreset(this.selectedPreset, false);
+  }
+
+  private emitSelectedRuleInfo(): void {
+    if (this.selectedPreset) {
+      this.uiStateChange.emit({
+        ruleName: this.selectedPreset.label,
+        ruleDescription: this.selectedPreset.summary,
+      });
+    }
   }
 
   private syncColorsWithEngine(): void {
