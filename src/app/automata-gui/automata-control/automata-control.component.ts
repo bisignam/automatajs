@@ -102,6 +102,17 @@ export class AutomataControlComponent implements OnChanges {
     return this.status === 'running';
   }
 
+  get playIconClass(): string {
+    switch (this.status) {
+      case 'running':
+        return 'play-icon--running';
+      case 'paused':
+        return 'play-icon--paused';
+      default:
+        return 'play-icon--idle';
+    }
+  }
+
   get additionalColors(): Iterable<AdditionalColorType> {
     if (this.three.cellularAutomaton) {
       return this.three.cellularAutomaton.additionalColorsArray;

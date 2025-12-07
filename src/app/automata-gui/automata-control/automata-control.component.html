@@ -1,12 +1,12 @@
 <div class="control-shell">
   <div class="status-pill" [class.status-pill--running]="isRunning">
     <span class="status-pill__dot"></span>
-    <span>{{ status | titlecase }} mode</span>
+    <span>{{ status | titlecase }}</span>
   </div>
 
   <div class="primary-actions">
     <button type="button" class="primary-actions__cta" (click)="togglePlay()">
-      <mat-icon>{{ isRunning ? 'pause_circle' : 'play_circle' }}</mat-icon>
+      <mat-icon [ngClass]="playIconClass">{{ isRunning ? 'pause_circle' : 'play_circle' }}</mat-icon>
       <div>
         <p>{{ isRunning ? 'Pause' : 'Play' }} simulation</p>
         <small>Apply current rule and color palette</small>

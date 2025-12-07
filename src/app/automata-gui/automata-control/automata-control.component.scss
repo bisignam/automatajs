@@ -81,10 +81,23 @@
   width: 28px;
   height: 28px;
   color: var(--brand-blue-bright);
+  transition: color var(--transition-fast);
 }
 
 .primary-actions__cta mat-icon {
-  color: var(--text-invert);
+  color: #fff;
+}
+
+.primary-actions__cta .play-icon--running {
+  color: var(--accent-warm);
+}
+
+.primary-actions__cta .play-icon--paused {
+  color: var(--brand-blue-bright);
+}
+
+.primary-actions__cta .play-icon--idle {
+  color: #fff;
 }
 
 .primary-actions__cta p,
