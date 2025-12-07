@@ -14,7 +14,7 @@ interface RulePreset {
   id: string;
   label: string;
   summary: string;
-  automaton: CellularAutomaton;
+  createAutomaton: () => CellularAutomaton;
 }
 
 @Component({
@@ -52,31 +52,31 @@ export class AutomataControlComponent implements OnChanges {
       id: 'life',
       label: 'Game of Life',
       summary: 'Conway’s playground of gliders, blinkers, and glider guns.',
-      automaton: new GameOfLife(),
+      createAutomaton: () => new GameOfLife(),
     },
     {
       id: 'brians-brain',
       label: "Brian's Brain",
       summary: 'Neurons fire once, then fade like neon trails.',
-      automaton: new BriansBrain(),
+      createAutomaton: () => new BriansBrain(),
     },
     {
       id: 'seeds',
       label: 'Seeds',
       summary: 'Hyper-reactive cells ignite and disappear every tick.',
-      automaton: new Seeds(),
+      createAutomaton: () => new Seeds(),
     },
     {
       id: 'maze',
       label: 'Maze',
       summary: 'Birth rules carve angular corridors until a maze appears.',
-      automaton: new Maze(),
+      createAutomaton: () => new Maze(),
     },
     {
       id: 'day-night',
       label: 'Day & Night',
       summary: 'Symmetric births keep yin-yang ripples balanced.',
-      automaton: new DayAndNight(),
+      createAutomaton: () => new DayAndNight(),
     },
   ];
 
@@ -135,8 +135,7 @@ export class AutomataControlComponent implements OnChanges {
 
   handleResetRequest(): void {
     this.three.stopAutomata();
-    void this.three.reset();
-    this.statusChange.emit('idle');
+    this.applyPreset(this.selectedPreset, true, { preserveRunningState: false });
   }
 
   handleStepRequest(): void {
@@ -165,7 +164,7 @@ export class AutomataControlComponent implements OnChanges {
   }
 
   selectPreset(preset: RulePreset): void {
-    this.applyPreset(preset, true);
+    this.applyPreset(preset, true, { preserveRunningState: true });
     const presetIndex = this.rulePresets.findIndex((rule) => rule.id === preset.id);
     if (presetIndex >= 0) {
       this.ruleCarouselIndex = presetIndex;
@@ -241,10 +240,15 @@ export class AutomataControlComponent implements OnChanges {
     }
   }
 
-  private applyPreset(preset: RulePreset, emitReset: boolean): void {
+  private applyPreset(
+    preset: RulePreset,
+    emitReset: boolean,
+    options?: { preserveRunningState?: boolean },
+  ): void {
     this.selectedPreset = preset;
-    const shouldResume = this.isRunning;
-    void this.three.setAutomataAndStopCurrent(preset.automaton);
+    const shouldResume = this.isRunning && !!options?.preserveRunningState;
+    const automaton = preset.createAutomaton();
+    void this.three.setAutomataAndStopCurrent(automaton);
     if (emitReset) {
       this.statusChange.emit(shouldResume ? 'running' : 'idle');
     }
