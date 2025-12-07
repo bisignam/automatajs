@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   Component,
   ElementRef,
   EventEmitter,
@@ -22,6 +23,7 @@ import { Maze } from 'src/app/automata-rules/maze';
 import { Seeds } from 'src/app/automata-rules/seeds';
 import { LifeWithoutDeath } from 'src/app/automata-rules/life-without-death';
 import { SimulationConfig, SimulationStatus, UiState, UiTab } from '../ui-state';
+import { animate } from '@motionone/dom';
 
 interface RulePreset {
   id: string;
@@ -37,8 +39,9 @@ interface RulePreset {
   styleUrls: ['./automata-control.component.scss'],
   standalone: false,
 })
-export class AutomataControlComponent implements OnChanges, OnInit, OnDestroy {
+export class AutomataControlComponent implements OnChanges, OnInit, OnDestroy, AfterViewInit {
   @ViewChild('ruleCarousel') private ruleCarousel?: ElementRef<HTMLDivElement>;
+  @ViewChild('quickPresetRow') private quickPresetRow?: ElementRef<HTMLDivElement>;
   private ruleCarouselIndex = 0;
   @Input() config: SimulationConfig = {
     speed: DefaultSettings.fpsCap,
@@ -111,6 +114,7 @@ export class AutomataControlComponent implements OnChanges, OnInit, OnDestroy {
   backgroundColor: THREE.Color = DefaultSettings.backgroundColor.clone();
   activationColor: THREE.Color = DefaultSettings.activationColor.clone();
   private automataSizeSub?: Subscription;
+  private quickPresetNudgePlayed = false;
 
   constructor(private readonly three: ThreeService) {}
 
@@ -125,6 +129,9 @@ export class AutomataControlComponent implements OnChanges, OnInit, OnDestroy {
       this.config = { ...this.config, cellSize: size };
       this.configChange.emit(this.config);
     });
+  }
+  ngAfterViewInit(): void {
+    this.playQuickPresetNudge();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -348,5 +355,21 @@ export class AutomataControlComponent implements OnChanges, OnInit, OnDestroy {
     } else {
       this.three.activeColor = this.activationColor;
     }
+  }
+
+  private playQuickPresetNudge(): void {
+    if (!this.isQuickVariant || this.quickPresetNudgePlayed) {
+      return;
+    }
+    const row = this.quickPresetRow?.nativeElement;
+    if (!row) {
+      return;
+    }
+    this.quickPresetNudgePlayed = true;
+    animate(
+      row,
+      { transform: ['translateX(0)', 'translateX(-4px)', 'translateX(0)'] },
+      { duration: 0.4, easing: 'ease-in-out' },
+    );
   }
 }

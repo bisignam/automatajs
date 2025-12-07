@@ -171,36 +171,17 @@
 
 <ng-template #quickVariant>
   <div class="control-quick">
-    <div class="control-quick__header">
-      <p class="control-quick__eyebrow">Rule &amp; look</p>
-      <div class="control-quick__active">
-        <span class="control-quick__rule-name">{{ selectedPreset.label }}</span>
-        <small class="control-quick__rule-summary">{{ selectedPreset.summary }}</small>
-      </div>
-    </div>
-
-    <div class="control-quick__section">
-      <div class="rule-carousel control-quick__carousel" aria-label="Automata rules">
-        <button type="button" class="rule-carousel__nav rule-carousel__nav--prev" (click)="scrollCarousel(-1)">
-          <mat-icon>chevron_left</mat-icon>
-        </button>
-        <div class="rule-carousel__viewport" #ruleCarousel>
-          <div class="rule-carousel__track">
-            <button
-              type="button"
-              class="rule-pill"
-              *ngFor="let preset of rulePresets"
-              [class.rule-pill--active]="preset.id === selectedPreset.id"
-              (click)="selectPreset(preset)"
-            >
-              <div class="rule-pill__title">{{ preset.label }}</div>
-            </button>
-          </div>
-        </div>
-        <button type="button" class="rule-carousel__nav rule-carousel__nav--next" (click)="scrollCarousel(1)">
-          <mat-icon>chevron_right</mat-icon>
-        </button>
-      </div>
+    <p class="control-quick__eyebrow">Rule &amp; look</p>
+    <div class="quick-presets" #quickPresetRow aria-label="Rule presets">
+      <button
+        type="button"
+        class="quick-presets__pill"
+        *ngFor="let preset of rulePresets"
+        [class.quick-presets__pill--active]="preset.id === selectedPreset.id"
+        (click)="selectPreset(preset)"
+      >
+        {{ preset.label }}
+      </button>
     </div>
 
     <div class="control-quick__section control-quick__colors">

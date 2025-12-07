@@ -10,6 +10,7 @@ import { AutomataColorPickerComponent } from './automata-color-picker/automata-c
 import { AutomataCellSizeSliderComponent } from './automata-cell-size-slider/automata-cell-size-slider.component';
 import { MatButtonModule } from '@angular/material/button';
 import { AutomataFPSSliderComponent } from './automata-fps-slider/automata-fps-cap-slider.component';
+import { LucideAngularModule, Gauge } from 'lucide-angular';
 
 @NgModule({
   exports: [
@@ -34,6 +35,7 @@ import { AutomataFPSSliderComponent } from './automata-fps-slider/automata-fps-c
     MatFormFieldModule,
     MatIconModule,
     MatButtonModule,
+    LucideAngularModule.pick({ Gauge }),
   ],
 })
 export class AutomataGuiModule {}

@@ -12,8 +12,9 @@
   font-weight: 600;
 }
 
-.slider-field__label mat-icon {
+.slider-field__label lucide-icon {
   color: var(--accent, #2563eb);
+  stroke-width: 1.8;
 }
 
 .slider-field__label small {

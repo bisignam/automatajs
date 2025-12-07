@@ -105,7 +105,9 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   isMobileFullScreen = false;
   mobileControlsOpen = false;
   mobileSettingsBarCollapsed = false;
-  ruleOverlayOpen = true;
+  ruleOverlayDockOpen = true;
+  ruleOverlayImmersiveOpen = false;
+  ruleOverlayMobileOpen = true;
   private readonly updateIsMobileLayoutBound = () => this.updateIsMobileLayout();
 
   ngOnInit(): void {
@@ -142,12 +144,27 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     return this.uiState.isControlPanelOpen;
   }
 
-  get shouldShowRuleOverlayDock(): boolean {
-    return !this.isMobileLayout;
+  get hasActiveRule(): boolean {
+    return !!this.uiState.ruleName;
   }
 
-  get isRuleOverlayExpanded(): boolean {
-    return this.shouldShowRuleOverlayDock && this.ruleOverlayOpen;
+  get shouldShowRuleOverlayDock(): boolean {
+    return !this.isMobileLayout && this.hasActiveRule;
+  }
+
+  get shouldShowMobileRuleOverlay(): boolean {
+    return this.isMobileLayout && this.hasActiveRule;
+  }
+
+  get isDesktopRuleOverlayExpanded(): boolean {
+    if (!this.shouldShowRuleOverlayDock) {
+      return false;
+    }
+    return this.isImmersive ? this.ruleOverlayImmersiveOpen : this.ruleOverlayDockOpen;
+  }
+
+  get isMobileRuleOverlayExpanded(): boolean {
+    return this.shouldShowMobileRuleOverlay && this.ruleOverlayMobileOpen;
   }
 
   toggleControls(): void {
@@ -158,18 +175,22 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.patchUiState({ isControlPanelOpen: !this.panelOpen, lastUserInteractionAt: Date.now() });
   }
 
-  toggleRuleOverlay(): void {
+  toggleDesktopRuleOverlay(): void {
     if (!this.shouldShowRuleOverlayDock) {
       return;
     }
-    this.ruleOverlayOpen = !this.ruleOverlayOpen;
+    if (this.isImmersive) {
+      this.ruleOverlayImmersiveOpen = !this.ruleOverlayImmersiveOpen;
+      return;
+    }
+    this.ruleOverlayDockOpen = !this.ruleOverlayDockOpen;
   }
 
-  closeRuleOverlay(): void {
-    if (!this.shouldShowRuleOverlayDock) {
+  toggleMobileRuleOverlay(): void {
+    if (!this.shouldShowMobileRuleOverlay) {
       return;
     }
-    this.ruleOverlayOpen = false;
+    this.ruleOverlayMobileOpen = !this.ruleOverlayMobileOpen;
   }
 
   onImmersiveHandleHover(event: MouseEvent | FocusEvent, entering: boolean, variant: 'control' | 'transport'): void {
@@ -213,7 +234,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.clearIdleDelayTimeout();
     this.cancelIdleCountdown();
     this.clearTransportAutoHide();
-    this.ruleOverlayOpen = false;
+    this.ruleOverlayImmersiveOpen = false;
     this.setTransportVisibility(false, { animate: true });
     this.patchUiState({
       isImmersive: true,
@@ -232,7 +253,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.setTransportVisibility(true, { animate: true });
     this.clearTransportAutoHide();
     this.pendingPanelEnterAnimation = true;
-    this.ruleOverlayOpen = true;
+    this.ruleOverlayImmersiveOpen = false;
     this.patchUiState({
       isImmersive: false,
       isControlPanelOpen: true,
@@ -450,10 +471,10 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       this.mobileControlsOpen = false;
       this.mobileSettingsBarCollapsed = false;
       if (nextIsMobileLayout) {
-        this.ruleOverlayOpen = false;
+        this.ruleOverlayMobileOpen = true;
         this.isMobileFullScreen = false;
-      } else if (!this.isImmersive) {
-        this.ruleOverlayOpen = true;
+      } else {
+        this.ruleOverlayDockOpen = true;
       }
     }
     this.updateResponsiveState(width);

@@ -60,32 +60,22 @@
         <div class="rule-dock" [class.rule-dock--immersive]="isImmersive">
           <button
             type="button"
-            class="rule-dock__badge"
-            (click)="toggleRuleOverlay()"
-            [attr.aria-pressed]="isRuleOverlayExpanded ? 'true' : 'false'"
-            aria-label="Toggle rule and visual controls"
+            class="rule-badge"
+            (click)="toggleDesktopRuleOverlay()"
+            [attr.aria-pressed]="isDesktopRuleOverlayExpanded ? 'true' : 'false'"
+            aria-label="Toggle rule controls"
+            [class.rule-badge--expanded]="isDesktopRuleOverlayExpanded"
+            [class.rule-badge--collapsed]="!isDesktopRuleOverlayExpanded"
           >
-            <span class="rule-dock__badge-label">Rule</span>
-            <span class="rule-dock__badge-name">{{ uiState.ruleName || 'Rule settings' }}</span>
+            <span class="rule-badge__name">{{ uiState.ruleName }}</span>
+            <lucide-icon
+              name="chevron-down"
+              class="rule-badge__chevron"
+              [class.rule-badge__chevron--collapsed]="!isDesktopRuleOverlayExpanded"
+              size="16"
+            ></lucide-icon>
           </button>
-          <div class="rule-dock__panel" *ngIf="isRuleOverlayExpanded">
-            <div class="rule-dock__panel-header">
-              <div>
-                <p class="rule-dock__panel-eyebrow">Rule &amp; look</p>
-                <h4 class="rule-dock__panel-title">{{ uiState.ruleName || 'Current rule' }}</h4>
-                <p class="rule-dock__panel-summary" *ngIf="uiState.ruleDescription">
-                  {{ uiState.ruleDescription }}
-                </p>
-              </div>
-              <button
-                type="button"
-                class="rule-dock__panel-close"
-                aria-label="Collapse rule overlay"
-                (click)="closeRuleOverlay()"
-              >
-                <mat-icon>{{ isImmersive ? 'close' : 'expand_more' }}</mat-icon>
-              </button>
-            </div>
+          <div class="rule-dock__panel" *ngIf="isDesktopRuleOverlayExpanded">
             <div class="rule-dock__panel-body">
               <app-automata-control
                 variant="quick-rule"
@@ -102,6 +92,39 @@
           </div>
         </div>
       </ng-container>
+
+      <div *ngIf="shouldShowMobileRuleOverlay" class="mobile-rule-dock">
+        <button
+          type="button"
+          class="rule-badge rule-badge--mobile"
+          (click)="toggleMobileRuleOverlay()"
+          [attr.aria-pressed]="isMobileRuleOverlayExpanded ? 'true' : 'false'"
+          aria-label="Toggle rule controls"
+          [class.rule-badge--expanded]="isMobileRuleOverlayExpanded"
+          [class.rule-badge--collapsed]="!isMobileRuleOverlayExpanded"
+        >
+          <span class="rule-badge__name">{{ uiState.ruleName }}</span>
+          <lucide-icon
+            name="chevron-down"
+            class="rule-badge__chevron"
+            [class.rule-badge__chevron--collapsed]="!isMobileRuleOverlayExpanded"
+            size="16"
+          ></lucide-icon>
+        </button>
+        <div class="mobile-rule-dock__panel" *ngIf="isMobileRuleOverlayExpanded">
+          <app-automata-control
+            variant="quick-rule"
+            [config]="simulationConfig"
+            [status]="uiState.status"
+            [uiState]="uiState"
+            [autoImmersivePreference]="autoImmersivePreference"
+            (configChange)="onConfigChange($event)"
+            (statusChange)="onStatusChange($event)"
+            (uiStateChange)="onUiStateChange($event)"
+            (autoImmersivePreferenceChange)="onAutoImmersivePreferenceChange($event)"
+          ></app-automata-control>
+        </div>
+      </div>
 
       <div
         *ngIf="showAutoImmersiveOptIn"
@@ -209,11 +232,10 @@
         (click)="$event.stopPropagation()"
       >
         <div class="panel__header">
-          <p class="panel__eyebrow">Settings</p>
+          <p class="panel__eyebrow">Advanced controls</p>
         </div>
         <div class="panel__body">
           <app-automata-control
-            variant="quick-rule"
             [config]="simulationConfig"
             [status]="uiState.status"
             [uiState]="uiState"
