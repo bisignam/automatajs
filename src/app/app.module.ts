@@ -18,9 +18,16 @@ import { AutomataCanvasComponent } from './automata-canvas/automata-canvas.compo
 import { AutomataGuiModule } from './automata-gui/automata-gui.module';
 import { AutomataControlComponent } from './automata-gui/automata-control/automata-control.component';
 import { HeaderComponent } from './header/header.component';
+import { AutomataShellComponent } from './automata-gui/automata-shell/automata-shell.component';
+import { AutomataTransportBarComponent } from './automata-gui/automata-transport-bar/automata-transport-bar.component';
 
 @NgModule({
-  declarations: [AppComponent, AutomataCanvasComponent, HeaderComponent],
+  declarations: [
+    AppComponent,
+    AutomataCanvasComponent,
+    HeaderComponent,
+    AutomataShellComponent,
+  ],
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -34,6 +41,7 @@ import { HeaderComponent } from './header/header.component';
     AutomataGuiModule,
     BrowserAnimationsModule,
     NgbModule,
+    AutomataTransportBarComponent,
   ],
   providers: [provideHttpClient(withInterceptorsFromDi())],
   bootstrap: [AppComponent],

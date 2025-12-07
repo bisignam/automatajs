@@ -1,20 +1,72 @@
-/* You can add global styles to this file, and also import other style files */
-
+@use 'bootstrap/scss/bootstrap';
+@use './reset';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
 
-/* Importing Bootstrap SCSS file. */
-@import 'bootstrap/scss/bootstrap';
+:root {
+  /* DARK THEME (default) */
+  --bg-page: #050814;
+  --bg-canvas: #070b1b;
+  --bg-panel: #0c1022;
+  --bg-panel-elevated: #141a30;
 
-/* Overwrite some styles from bootstrap that conflicts with Material */
-@import './reset.scss';
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --border-strong: rgba(255, 255, 255, 0.12);
+
+  /* Brand blues (from logo) */
+  --brand-blue: #2b6a9c;
+  --brand-blue-soft: #204c70;
+  --brand-blue-bright: #3d87c8;
+
+  /* Warm accent (for highlights) */
+  --accent-warm: #ffb35b;
+  --accent-warm-soft: rgba(255, 179, 91, 0.2);
+
+  /* Text */
+  --text-main: #f4f7ff;
+  --text-muted: #a3acc6;
+  --text-subtle: #6d748a;
+  --text-invert: #050814;
+
+  /* Controls */
+  --control-bg: rgba(10, 14, 30, 0.9);
+  --control-bg-hover: rgba(16, 22, 46, 0.95);
+  --control-bg-active: #1b2240;
+  --control-radius-sm: 6px;
+  --control-radius-md: 10px;
+  --control-radius-lg: 14px;
+
+  /* Shadows (very subtle) */
+  --shadow-soft: 0 12px 30px rgba(0, 0, 0, 0.35);
+  --shadow-none: none;
+
+  /* Transitions */
+  --transition-fast: 120ms ease-out;
+  --transition-med: 180ms ease-out;
+}
+
+html,
+body {
+  height: 100%;
+}
 
 body {
-  font-family: Roboto, Arial, sans-serif;
-  min-height: 100% !important;
-  height: 100%;
-  min-width: 100% !important;
-  width: 100%;
-  position: absolute;
+  font-family: 'Inter', 'Roboto', Arial, sans-serif;
+  margin: 0;
+  background: var(--bg-page);
+  color: var(--text-main);
+  overflow: hidden;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+app-root {
+  display: block;
+  min-height: 100vh;
 }
 
 .basic-container {
@@ -30,4 +82,59 @@ body {
 .container-fluid,
 .row-fluid {
   height: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+}
+
+button {
+  border: none;
+  cursor: pointer;
+}
+
+input[type='range'] {
+  -webkit-appearance: none;
+  background: transparent;
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+  height: 4px;
+  background: var(--border-strong);
+  border-radius: 999px;
+}
+
+input[type='range']::-moz-range-track {
+  height: 4px;
+  background: var(--border-strong);
+  border-radius: 999px;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--brand-blue-bright);
+  margin-top: -6px;
+  box-shadow: 0 0 0 4px rgba(61, 135, 200, 0.2);
+  transition: transform var(--transition-fast);
+}
+
+input[type='range']:active::-webkit-slider-thumb {
+  transform: scale(1.1);
+}
+
+input[type='range']::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--brand-blue-bright);
+  box-shadow: 0 0 0 4px rgba(61, 135, 200, 0.2);
 }

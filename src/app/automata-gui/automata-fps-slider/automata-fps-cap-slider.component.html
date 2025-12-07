@@ -1,16 +1,18 @@
-<div class="row">
-  <div class="icon col-sm-2">
+<div class="slider-field">
+  <div class="slider-field__label">
     <mat-icon>speed</mat-icon>
+    <div class="label-text">
+      <span>Frame cap</span>
+      <small>{{ fpsCap }} fps</small>
+    </div>
   </div>
-  <div class="col-sm-10">
-    <input
-      type="range"
-      class="fpsCapSlider"
-      min="10"
-      max="120"
-      step="5"
-      [value]="fpsCap"
-      (input)="fpsCap = $any($event.target).valueAsNumber"
-    />
-  </div>
+  <input
+    type="range"
+    class="fpsCapSlider"
+    min="10"
+    max="120"
+    step="5"
+    [value]="fpsCap"
+    (input)="fpsCap = $any($event.target).valueAsNumber"
+  />
 </div>

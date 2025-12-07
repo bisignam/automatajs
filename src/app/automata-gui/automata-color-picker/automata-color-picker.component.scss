@@ -1,8 +1,10 @@
 input.color-picker-input {
-  width: 48px;
+  width: 52px;
   height: 32px;
   padding: 0;
-  border: none;
-  background: transparent;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 10px;
   cursor: pointer;
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
 }

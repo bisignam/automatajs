@@ -449,10 +449,16 @@ export class ThreeService implements OnDestroy {
     source: THREE.WebGLRenderTarget,
     target?: THREE.WebGLRenderTarget
   ) {
-    this.displayPassShader.uniforms.u_resolution.value.set(
-      this.canvas.clientWidth,
-      this.canvas.clientHeight
-    );
+    if (target) {
+      // Internal blits honor the destination render target dimensions
+      this.displayPassShader.uniforms.u_resolution.value.set(
+        target.width,
+        target.height
+      );
+    } else {
+      const size = this.renderer.getSize(new THREE.Vector2());
+      this.displayPassShader.uniforms.u_resolution.value.set(size.x, size.y);
+    }
     this.displayPassShader.uniforms.u_texture.value = source.texture;
     this.renderer.setRenderTarget(!target ? null : target);
     this.renderer.render(this.displayScene, this.camera);

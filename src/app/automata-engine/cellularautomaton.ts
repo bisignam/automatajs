@@ -103,12 +103,10 @@ export abstract class CellularAutomaton implements Shader {
     camera: THREE.Camera,
     copyStep?: Boolean
   ): void {
-    this.uniforms.u_resolution.value.set(
-      canvas.clientWidth,
-      canvas.clientHeight
-    );
+    // Simulation uses render target resolution, not DOM canvas size
+    this.uniforms.u_resolution.value.set(target.width, target.height);
     this.uniforms.u_texture.value = source.texture;
-    this.uniforms.u_copy_step.value = copyStep ? true : false;
+    this.uniforms.u_copy_step.value = !!copyStep;
     renderer.setRenderTarget(target);
     renderer.render(scene, camera);
   }

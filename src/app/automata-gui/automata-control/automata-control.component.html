@@ -1,51 +1,154 @@
-<div class="control-layout">
-  <section class="step">
-    <div class="step__heading">
-      <span class="step__badge">1</span>
+<div class="control-shell">
+  <div class="status-pill" [class.status-pill--running]="isRunning">
+    <span class="status-pill__dot"></span>
+    <span>{{ status | titlecase }} mode</span>
+  </div>
+
+  <div class="primary-actions">
+    <button type="button" class="primary-actions__cta" (click)="togglePlay()">
+      <mat-icon>{{ isRunning ? 'pause_circle' : 'play_circle' }}</mat-icon>
       <div>
-        <p class="step__title">Pick a rule</p>
-        <p class="step__hint">Every preset changes how cells spark, survive, and fade.</p>
+        <p>{{ isRunning ? 'Pause' : 'Play' }} simulation</p>
+        <small>Apply current rule and color palette</small>
       </div>
+    </button>
+    <button type="button" class="primary-actions__ghost" (click)="handleResetRequest()">
+      <mat-icon>restart_alt</mat-icon>
+      <div>
+        <p>Reset</p>
+        <small>Clear grid &amp; reseed rule</small>
+      </div>
+    </button>
+  </div>
+
+  <nav class="control-tabs" aria-label="Control sections">
+    <button
+      type="button"
+      *ngFor="let tab of tabs"
+      (click)="setActiveTab(tab.id)"
+      [class.is-active]="activeTab === tab.id"
+    >
+      {{ tab.label }}
+    </button>
+  </nav>
+
+  <section class="control-section" *ngIf="activeTab === 'presets'">
+    <div class="rule-carousel" aria-label="Automata rules">
+      <button type="button" class="rule-carousel__nav rule-carousel__nav--prev" (click)="scrollCarousel(-1)">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+      <div class="rule-carousel__viewport" #ruleCarousel>
+        <div class="rule-carousel__track">
+          <button
+            type="button"
+            class="rule-pill"
+            *ngFor="let preset of rulePresets"
+            [class.rule-pill--active]="preset.id === selectedPreset.id"
+            (click)="selectPreset(preset)"
+          >
+            <div class="rule-pill__title">{{ preset.label }}</div>
+          </button>
+        </div>
+      </div>
+      <button type="button" class="rule-carousel__nav rule-carousel__nav--next" (click)="scrollCarousel(1)">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
     </div>
-    <app-rules-selector (ruleChanged)="onRuleChanged($event)"></app-rules-selector>
-    <div class="rule-summary">
-      <p class="rule-summary__name">{{ currentRuleLabel }}</p>
-      <p class="rule-summary__text">{{ currentRuleSummary }}</p>
+
+    <div class="rule-details">
+      <div>
+        <p class="rule-details__eyebrow">Selected rule</p>
+        <h4>{{ selectedPreset.label }}</h4>
+      </div>
+      <p class="rule-details__summary">
+        {{ selectedPreset.summary }}
+      </p>
     </div>
   </section>
 
-  <section class="step">
-    <div class="step__heading">
-      <span class="step__badge">2</span>
-      <div>
-        <p class="step__title">Play &amp; fine-tune</p>
-        <p class="step__hint">Start the sim, tweak sliders, then reset when you want a blank canvas.</p>
+  <section class="control-section" *ngIf="activeTab === 'rule'">
+    <div class="rule-panel">
+      <h4>Active rule</h4>
+      <p class="rule-panel__name">{{ selectedPreset.label }}</p>
+      <p class="rule-panel__summary">{{ selectedPreset.summary }}</p>
+      <div class="slider-field">
+        <label>
+          <span>Speed</span>
+          <small>{{ config.speed }} fps</small>
+        </label>
+        <input
+          type="range"
+          min="10"
+          max="120"
+          step="5"
+          [value]="config.speed"
+          (input)="onSpeedChange($event)"
+        />
       </div>
     </div>
+  </section>
 
-    <div class="cta-panel">
-      <button
-        type="button"
-        class="cta-button cta-button--primary"
-        (click)="started ? stopAutomata() : playAutomata()"
-        aria-label="Toggle simulation"
-      >
-        <mat-icon class="cta-button__icon">{{ started ? 'pause_circle' : 'play_circle' }}</mat-icon>
-        <span>{{ started ? 'Pause simulation' : 'Play simulation' }}</span>
+  <section class="control-section" *ngIf="activeTab === 'visual'">
+    <div class="color-grid">
+      <div class="color-row">
+        <div>
+          <p>Background</p>
+          <small>Dead cells &amp; canvas clear color</small>
+        </div>
+        <app-color-picker
+          [color]="backgroundColor.getHexString()"
+          (chosenColor)="onBackgroundColorChosen($event)"
+        ></app-color-picker>
+      </div>
+      <div class="color-row">
+        <div>
+          <p>Active</p>
+          <small>Living cells highlight</small>
+        </div>
+        <app-color-picker
+          [color]="activationColor.getHexString()"
+          (chosenColor)="onActivationColorChosen($event)"
+        ></app-color-picker>
+      </div>
+      <ng-container *ngFor="let extra of additionalColors">
+        <div class="color-row">
+          <div>
+            <p>{{ extra.displayName }}</p>
+            <small>Rule-specific accent</small>
+          </div>
+          <app-color-picker
+            [color]="extra.color.getHexString()"
+            (chosenColor)="onAdditionalColorChosen(extra.displayName, $event)"
+          ></app-color-picker>
+        </div>
+      </ng-container>
+    </div>
+  </section>
+
+  <section class="control-section" *ngIf="activeTab === 'grid'">
+    <div class="slider-field">
+      <label>
+        <span>Cell size</span>
+        <small>{{ config.cellSize }} px</small>
+      </label>
+      <input
+        type="range"
+        min="1"
+        max="40"
+        step="1"
+        [value]="config.cellSize"
+        (input)="onCellSizeChange($event)"
+      />
+    </div>
+    <div class="grid-actions">
+      <button type="button" (click)="handleStepRequest()" [disabled]="status === 'running'">
+        <mat-icon>skip_next</mat-icon>
+        Step once
       </button>
-
-      <button
-        type="button"
-        class="cta-button cta-button--ghost"
-        (click)="clearGrid()"
-        aria-label="Reset the board"
-      >
-        <mat-icon class="cta-button__icon">refresh</mat-icon>
-        <span>Reset grid</span>
+      <button type="button" (click)="clearGrid()">
+        <mat-icon>grid_off</mat-icon>
+        Clear grid
       </button>
     </div>
-    <p class="helper-text">
-      Reset simply clears the board &mdash; it doesn&rsquo;t reseed a pattern, so you decide what to draw next.
-    </p>
   </section>
 </div>
