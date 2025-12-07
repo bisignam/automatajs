@@ -144,54 +144,62 @@ export class ThreeService implements OnDestroy {
 
   private changeAutomaton(
     previousStateIndex: number,
-    automaton: CellularAutomaton
-  ): Promise<Texture> {
-    let self = this;
-    return new Promise(function (resolve, reject) {
-      self.textureLoader.load(self.canvas.toDataURL(), (texture) => {
-        self.renderer.dispose();
-        self.renderer = new THREE.WebGLRenderer({ canvas: self.canvas });
-        self.renderer.setSize(
-          self.canvas.clientWidth,
-          self.canvas.clientHeight,
-          false
-        );
-        self.renderer.autoClearColor = false;
-        self.buffers[previousStateIndex].dispose();
-        self.buffers[previousStateIndex] = new THREE.WebGLRenderTarget(
-          self.canvas.clientWidth,
-          self.canvas.clientHeight
-        );
-        self.buffers[self.nextStateIndex].dispose();
-        self.buffers[self.nextStateIndex] = new THREE.WebGLRenderTarget(
-          self.canvas.clientWidth,
-          self.canvas.clientHeight
-        );
-        texture.minFilter = THREE.LinearFilter;
-        self.buffers[previousStateIndex].texture = texture;
-        self.buffers[previousStateIndex].texture.needsUpdate = true;
-        self.automatonPlane.dispose();
-        self.automatonPlane = new THREE.PlaneGeometry(
-          self.canvas.clientWidth,
-          self.canvas.clientHeight
-        );
-        self._cellularAutomaton = automaton;
-        self.automatonMaterial.dispose();
-        self.automatonMaterial = self.createShaderMaterial(
-          self._cellularAutomaton
-        );
-        self.automatonMesh.clear();
-        self.automatonMesh = new THREE.Mesh(
-          self.automatonPlane,
-          self.automatonMaterial
-        );
-        self.setupAutomataParameters(automaton);
-        self.stepperScene.clear();
-        self.stepperScene = new THREE.Scene();
-        self.stepperScene.add(self.automatonMesh);
-        resolve(texture);
+    automaton: CellularAutomaton,
+    preserveState: boolean
+  ): Promise<void> {
+    if (preserveState) {
+      return new Promise((resolve) => {
+        this.textureLoader.load(this.canvas.toDataURL(), (texture) => {
+          this.rebuildAutomaton(previousStateIndex, automaton, texture);
+          resolve();
+        });
       });
-    });
+    }
+    this.rebuildAutomaton(previousStateIndex, automaton);
+    return Promise.resolve();
+  }
+
+  private rebuildAutomaton(
+    previousStateIndex: number,
+    automaton: CellularAutomaton,
+    preservedTexture?: THREE.Texture
+  ): void {
+    this.renderer.dispose();
+    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
+    this.renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight, false);
+    this.renderer.autoClearColor = false;
+    this.buffers[previousStateIndex].dispose();
+    this.buffers[previousStateIndex] = new THREE.WebGLRenderTarget(
+      this.canvas.clientWidth,
+      this.canvas.clientHeight
+    );
+    this.buffers[this.nextStateIndex].dispose();
+    this.buffers[this.nextStateIndex] = new THREE.WebGLRenderTarget(
+      this.canvas.clientWidth,
+      this.canvas.clientHeight
+    );
+    if (preservedTexture) {
+      preservedTexture.minFilter = THREE.LinearFilter;
+      this.buffers[previousStateIndex].texture = preservedTexture;
+      this.buffers[previousStateIndex].texture.needsUpdate = true;
+    }
+    this.automatonPlane.dispose();
+    this.automatonPlane = new THREE.PlaneGeometry(
+      this.canvas.clientWidth,
+      this.canvas.clientHeight
+    );
+    this._cellularAutomaton = automaton;
+    this.automatonMaterial.dispose();
+    this.automatonMaterial = this.createShaderMaterial(this._cellularAutomaton);
+    this.automatonMesh.clear();
+    this.automatonMesh = new THREE.Mesh(
+      this.automatonPlane,
+      this.automatonMaterial
+    );
+    this.setupAutomataParameters(automaton);
+    this.stepperScene.clear();
+    this.stepperScene = new THREE.Scene();
+    this.stepperScene.add(this.automatonMesh);
   }
 
   private copyStep(previousStateIndex: number) {
@@ -203,11 +211,15 @@ export class ThreeService implements OnDestroy {
     this.nextStateIndex = previousStateIndex;
   }
 
-  public async reset(automaton?: CellularAutomaton): Promise<void> {
+  public async reset(
+    automaton?: CellularAutomaton,
+    options?: { preserveState?: boolean }
+  ): Promise<void> {
+    const preserveState = options?.preserveState !== false;
     let previousStateIndex = this.computePreviouStateIndex();
     //If we pass the automaton it means we want to reset the scene with the new one
     if (automaton) {
-      await this.changeAutomaton(previousStateIndex, automaton);
+      await this.changeAutomaton(previousStateIndex, automaton, preserveState);
       this.copyStep(previousStateIndex);
     } else {
       this.copyStep(previousStateIndex);
@@ -491,14 +503,18 @@ export class ThreeService implements OnDestroy {
   }
 
   public async setAutomataAndStopCurrent(
-    automaton: CellularAutomaton
+    automaton: CellularAutomaton,
+    options?: { preserveState?: boolean }
   ): Promise<void> {
     let wasPlaying = false;
     if (this.play) {
       wasPlaying = true;
       this.play = false;
     }
-    await this.reset(automaton);
+    await this.reset(automaton, { preserveState: options?.preserveState });
+    if (options?.preserveState === false) {
+      this.clear();
+    }
     if (wasPlaying) {
       this.play = true;
     }

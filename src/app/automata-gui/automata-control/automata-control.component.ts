@@ -135,7 +135,10 @@ export class AutomataControlComponent implements OnChanges {
 
   handleResetRequest(): void {
     this.three.stopAutomata();
-    this.applyPreset(this.selectedPreset, true, { preserveRunningState: false });
+    this.applyPreset(this.selectedPreset, true, {
+      preserveRunningState: false,
+      preserveState: false,
+    });
   }
 
   handleStepRequest(): void {
@@ -243,12 +246,13 @@ export class AutomataControlComponent implements OnChanges {
   private applyPreset(
     preset: RulePreset,
     emitReset: boolean,
-    options?: { preserveRunningState?: boolean },
+    options?: { preserveRunningState?: boolean; preserveState?: boolean },
   ): void {
     this.selectedPreset = preset;
     const shouldResume = this.isRunning && !!options?.preserveRunningState;
     const automaton = preset.createAutomaton();
-    void this.three.setAutomataAndStopCurrent(automaton);
+    const preserveState = options?.preserveState ?? true;
+    void this.three.setAutomataAndStopCurrent(automaton, { preserveState });
     if (emitReset) {
       this.statusChange.emit(shouldResume ? 'running' : 'idle');
     }
