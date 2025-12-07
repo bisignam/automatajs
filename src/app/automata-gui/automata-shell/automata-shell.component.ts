@@ -5,6 +5,7 @@ import { SimulationConfig, SimulationStatus, UiState } from '../ui-state';
 import { animate } from '@motionone/dom';
 import type { Easing } from '@motionone/types';
 import * as THREE from 'three';
+import 'vanilla-colorful/hex-color-picker.js';
 import { RULE_PRESETS, RulePreset } from '../rule-presets';
 
 interface MobilePaletteSwatch {
@@ -107,12 +108,22 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       requestAnimationFrame(() => this.animateMobileDock(false));
     }
   }
+  @ViewChild('mobileTransport') set mobileTransportRef(ref: ElementRef<HTMLElement> | undefined) {
+    this.mobileTransportEl = ref?.nativeElement;
+    if (this.pendingMobileTransportEnter && this.mobileTransportEl) {
+      this.pendingMobileTransportEnter = false;
+      requestAnimationFrame(() => this.animateMobileTransport(false));
+    }
+  }
 
   private controlPanelEl?: HTMLElement;
   private transportBarEl?: HTMLElement;
   private pendingPanelEnterAnimation = false;
   private panelAnimation?: ReturnType<typeof animate>;
   private transportAnimation?: ReturnType<typeof animate>;
+  private mobileTransportEl?: HTMLElement;
+  private mobileTransportAnimation?: ReturnType<typeof animate>;
+  private pendingMobileTransportEnter = false;
   private immersiveHandleAnimations = new WeakMap<HTMLElement, ReturnType<typeof animate>>();
   private immersiveHandleIconAnimations = new WeakMap<HTMLElement, ReturnType<typeof animate>>();
   private exitPillHoverAnimations = new WeakMap<HTMLElement, ReturnType<typeof animate>>();
@@ -121,6 +132,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   private mobileDockEl?: HTMLElement;
   private mobileDockAnimation?: ReturnType<typeof animate>;
   private pendingMobileDockEnter = false;
+  private suppressNextMobileColorEvent = false;
   private autoImmersiveOptInDismissTimerId?: number;
   private autoImmersiveIdleTimerId?: number;
   private idleCountdownIntervalId?: number;
@@ -143,10 +155,12 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   isMobileColorPickerOpen = false;
   activeColorSwatchId: string | null = null;
   activeColorLabel: string | null = null;
-  activeColorValue = '';
+  activeColorValue = '#ffffff';
   isMobileCellSizeOverlayOpen = false;
   ruleOverlayDockOpen = true;
   ruleOverlayImmersiveOpen = false;
+  mobileTransportCollapsed = false;
+  mobileTransportAnimating = false;
   private readonly updateIsMobileLayoutBound = () => this.updateIsMobileLayout();
 
   ngOnInit(): void {
@@ -433,6 +447,31 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.animateMobileDock(false);
   }
 
+  toggleMobileTransportCollapsed(): void {
+    if (!this.isMobileLayout) {
+      return;
+    }
+    const nextCollapsed = !this.mobileTransportCollapsed;
+    this.mobileTransportAnimating = true;
+    if (nextCollapsed) {
+      this.mobileTransportCollapsed = true;
+      this.pendingMobileTransportEnter = false;
+      if (this.mobileTransportEl) {
+        this.animateMobileTransport(true);
+      } else {
+        this.mobileTransportAnimating = false;
+      }
+      return;
+    }
+    this.mobileTransportCollapsed = false;
+    if (!this.mobileTransportEl) {
+      this.pendingMobileTransportEnter = true;
+      return;
+    }
+    this.pendingMobileTransportEnter = false;
+    this.animateMobileTransport(false);
+  }
+
   private animateMobileDock(collapsing: boolean): void {
     const dock = this.mobileDockEl;
     if (!dock) {
@@ -456,6 +495,32 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       dock.style.opacity = '';
       this.mobileDockAnimation = undefined;
       this.mobileDockAnimating = false;
+    });
+  }
+
+  private animateMobileTransport(collapsing: boolean): void {
+    const strip = this.mobileTransportEl;
+    if (!strip) {
+      this.mobileTransportAnimating = false;
+      return;
+    }
+    this.mobileTransportAnimation?.cancel();
+    const animation = animate(
+      strip,
+      collapsing
+        ? { transform: ['translateY(0)', 'translateY(40px)'], opacity: [1, 0] }
+        : { transform: ['translateY(40px)', 'translateY(0)'], opacity: [0, 1] },
+      { duration: 0.24, easing: this.immersiveEase },
+    );
+    this.mobileTransportAnimation = animation;
+    animation.finished.finally(() => {
+      if (this.mobileTransportAnimation !== animation) {
+        return;
+      }
+      strip.style.transform = '';
+      strip.style.opacity = '';
+      this.mobileTransportAnimation = undefined;
+      this.mobileTransportAnimating = false;
     });
   }
 
@@ -520,7 +585,8 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     }
     this.activeColorSwatchId = swatch.id;
     this.activeColorLabel = swatch.label;
-    this.activeColorValue = swatch.color;
+    this.activeColorValue = this.normalizeHexColor(swatch.color);
+    this.suppressNextMobileColorEvent = true;
     this.isMobileColorPickerOpen = true;
   }
 
@@ -530,22 +596,19 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.activeColorLabel = null;
   }
 
-  onMobileColorChosen(color: THREE.Color): void {
-    if (!this.activeColorSwatchId) {
+  onMobileColorHexInput(event: Event): void {
+    const detail = (event as CustomEvent<{ value: string }>).detail;
+    const nextHex = this.normalizeHexColor(detail?.value);
+    if (!nextHex) {
       return;
     }
-    if (this.activeColorSwatchId === 'dead') {
-      this.controlComponent?.onBackgroundColorChosen(color);
-    } else if (this.activeColorSwatchId === 'alive') {
-      this.controlComponent?.onActivationColorChosen(color);
-    } else if (this.activeColorSwatchId.startsWith('extra:')) {
-      const label = this.activeColorSwatchId.slice(6);
-      if (label) {
-        this.controlComponent?.onAdditionalColorChosen(label, color);
-      }
+    if (this.suppressNextMobileColorEvent && nextHex === this.activeColorValue) {
+      this.suppressNextMobileColorEvent = false;
+      return;
     }
-    this.updateMobilePaletteSwatches();
-    this.closeMobileColorPicker();
+    this.suppressNextMobileColorEvent = false;
+    this.activeColorValue = nextHex;
+    this.applyActiveColor(new THREE.Color(nextHex));
   }
 
   openMobileCellSizeOverlay(): void {
@@ -724,6 +787,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       this.isMobileRulePickerOpen = false;
       this.isMobileColorPickerOpen = false;
       this.isMobileCellSizeOverlayOpen = false;
+      this.mobileTransportCollapsed = false;
     }
     this.updateResponsiveState(width);
   }
@@ -804,6 +868,35 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       window.clearTimeout(this.transportAutoHideTimeoutId);
       this.transportAutoHideTimeoutId = undefined;
     }
+  }
+
+  private applyActiveColor(color: THREE.Color): void {
+    if (!this.activeColorSwatchId) {
+      return;
+    }
+    if (this.activeColorSwatchId === 'dead') {
+      this.controlComponent?.onBackgroundColorChosen(color);
+    } else if (this.activeColorSwatchId === 'alive') {
+      this.controlComponent?.onActivationColorChosen(color);
+    } else if (this.activeColorSwatchId.startsWith('extra:')) {
+      const label = this.activeColorSwatchId.slice(6);
+      if (label) {
+        this.controlComponent?.onAdditionalColorChosen(label, color);
+      }
+    }
+    this.updateMobilePaletteSwatches();
+  }
+
+  private normalizeHexColor(value?: string | null): string {
+    const fallback = '#ffffff';
+    if (!value) {
+      return fallback;
+    }
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return fallback;
+    }
+    return trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
   }
 
   private playImmersiveSceneTransition(entering: boolean): void {

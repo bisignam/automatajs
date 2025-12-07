@@ -115,7 +115,7 @@
             <small>Dead cells &amp; canvas clear color</small>
           </div>
           <app-color-picker
-            [color]="backgroundColor.getHexString()"
+            [color]="colorToHex(backgroundColor)"
             (chosenColor)="onBackgroundColorChosen($event)"
           ></app-color-picker>
         </div>
@@ -125,7 +125,7 @@
             <small>Living cells highlight</small>
           </div>
           <app-color-picker
-            [color]="activationColor.getHexString()"
+            [color]="colorToHex(activationColor)"
             (chosenColor)="onActivationColorChosen($event)"
           ></app-color-picker>
         </div>
@@ -136,7 +136,7 @@
               <small>Rule-specific accent</small>
             </div>
             <app-color-picker
-              [color]="extra.color.getHexString()"
+              [color]="colorToHex(extra.color)"
               (chosenColor)="onAdditionalColorChosen(extra.displayName, $event)"
             ></app-color-picker>
           </div>
@@ -203,6 +203,12 @@
         >
           <span class="quick-color-chip__swatch" [style.background]="colorToHex(backgroundColor)"></span>
           <span class="quick-color-chip__value">{{ colorToHex(backgroundColor) | uppercase }}</span>
+          <lucide-icon
+            name="chevron-down"
+            class="quick-color-chip__chevron"
+            [class.quick-color-chip__chevron--open]="isQuickColorPopoverOpen('background')"
+            size="14"
+          ></lucide-icon>
         </button>
       </div>
       <div class="quick-color-popover" *ngIf="isQuickColorPopoverOpen('background')">
@@ -211,7 +217,6 @@
           [color]="colorToHex(backgroundColor)"
           (chosenColor)="onBackgroundColorChosen($event)"
         ></app-color-picker>
-        <button type="button" class="quick-color-popover__close" (click)="closeQuickColorPopover()">Done</button>
       </div>
 
       <div class="quick-color-row">
@@ -228,6 +233,12 @@
         >
           <span class="quick-color-chip__swatch" [style.background]="colorToHex(activationColor)"></span>
           <span class="quick-color-chip__value">{{ colorToHex(activationColor) | uppercase }}</span>
+          <lucide-icon
+            name="chevron-down"
+            class="quick-color-chip__chevron"
+            [class.quick-color-chip__chevron--open]="isQuickColorPopoverOpen('activation')"
+            size="14"
+          ></lucide-icon>
         </button>
       </div>
       <div class="quick-color-popover" *ngIf="isQuickColorPopoverOpen('activation')">
@@ -236,7 +247,6 @@
           [color]="colorToHex(activationColor)"
           (chosenColor)="onActivationColorChosen($event)"
         ></app-color-picker>
-        <button type="button" class="quick-color-popover__close" (click)="closeQuickColorPopover()">Done</button>
       </div>
 
       <ng-container *ngFor="let extra of additionalColors">
@@ -254,6 +264,12 @@
           >
             <span class="quick-color-chip__swatch" [style.background]="colorToHex(extra.color)"></span>
             <span class="quick-color-chip__value">{{ colorToHex(extra.color) | uppercase }}</span>
+            <lucide-icon
+              name="chevron-down"
+              class="quick-color-chip__chevron"
+              [class.quick-color-chip__chevron--open]="isQuickColorPopoverOpen('extra:' + extra.displayName)"
+              size="14"
+            ></lucide-icon>
           </button>
         </div>
         <div class="quick-color-popover" *ngIf="isQuickColorPopoverOpen('extra:' + extra.displayName)">
@@ -262,7 +278,6 @@
             [color]="colorToHex(extra.color)"
             (chosenColor)="onAdditionalColorChosen(extra.displayName, $event)"
           ></app-color-picker>
-          <button type="button" class="quick-color-popover__close" (click)="closeQuickColorPopover()">Done</button>
         </div>
       </ng-container>
     </div>

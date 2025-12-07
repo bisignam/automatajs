@@ -235,7 +235,11 @@
         </span>
       </button>
 
-      <div class="mobile-speed-strip" *ngIf="isMobileLayout && !mobileLiveControlActive">
+      <div
+        #mobileTransport
+        class="mobile-speed-strip"
+        *ngIf="isMobileLayout && !mobileLiveControlActive && (!mobileTransportCollapsed || mobileTransportAnimating)"
+      >
         <button
           type="button"
           class="mobile-speed-strip__play"
@@ -256,7 +260,26 @@
           />
         </div>
         <span class="mobile-speed-strip__value">{{ simulationConfig.speed }} FPS</span>
+        <button
+          type="button"
+          class="mobile-speed-strip__collapse"
+          (click)="toggleMobileTransportCollapsed()"
+          aria-label="Collapse transport controls"
+        >
+          <lucide-icon name="chevron-down" size="14"></lucide-icon>
+        </button>
       </div>
+      <button
+        *ngIf="isMobileLayout && mobileTransportCollapsed && !mobileLiveControlActive && !mobileTransportAnimating"
+        type="button"
+        class="immersive-handle immersive-handle--bottom mobile-transport-handle"
+        (click)="toggleMobileTransportCollapsed()"
+        aria-label="Expand transport controls"
+      >
+        <span class="immersive-handle__icon-row" aria-hidden="true">
+          <lucide-icon name="chevron-up" size="16"></lucide-icon>
+        </span>
+      </button>
     </section>
 
     <ng-container *ngIf="!isMobileLayout && panelOpen && !effectiveImmersive; else controlBridgeFallback">
@@ -305,7 +328,14 @@
     <div class="mobile-live-overlay__panel mobile-live-overlay__panel--rule" (click)="$event.stopPropagation()">
       <div class="mobile-live-overlay__header">
         <span class="mobile-live-overlay__eyebrow">Rule</span>
-        <button type="button" class="mobile-live-overlay__close" (click)="closeMobileRulePicker()">Done</button>
+        <button
+          type="button"
+          class="mobile-live-overlay__close"
+          (click)="closeMobileRulePicker()"
+          aria-label="Close rule picker"
+        >
+          <lucide-icon name="x" size="16"></lucide-icon>
+        </button>
       </div>
       <div class="rule-picker__rail">
         <button
@@ -331,9 +361,6 @@
           >
             {{ getRulePreview(offset)?.label }}
           </div>
-          <p class="rule-picker__summary" *ngIf="getRulePreview(0)?.summary">
-            {{ getRulePreview(0)?.summary }}
-          </p>
         </div>
         <button
           type="button"
@@ -355,14 +382,27 @@
     <div class="mobile-live-overlay__panel" (click)="$event.stopPropagation()">
       <div class="mobile-live-overlay__header">
         <span class="mobile-live-overlay__eyebrow">{{ activeColorLabel || 'Color' }}</span>
-        <button type="button" class="mobile-live-overlay__close" (click)="closeMobileColorPicker()">Done</button>
+        <button
+          type="button"
+          class="mobile-live-overlay__close"
+          (click)="closeMobileColorPicker()"
+          aria-label="Close color picker"
+        >
+          <lucide-icon name="x" size="16"></lucide-icon>
+        </button>
       </div>
-      <app-color-picker
-        class="mobile-live-overlay__picker"
-        [label]="''"
-        [color]="activeColorValue"
-        (chosenColor)="onMobileColorChosen($event)"
-      ></app-color-picker>
+      <div class="mobile-color-picker">
+        <hex-color-picker
+          class="mobile-color-picker__wheel"
+          [attr.color]="activeColorValue"
+          [color]="activeColorValue"
+          (color-changed)="onMobileColorHexInput($event)"
+        ></hex-color-picker>
+        <div class="mobile-color-picker__meta">
+          <span class="mobile-color-picker__swatch" [style.background]="activeColorValue"></span>
+          <span class="mobile-color-picker__value">{{ activeColorValue | uppercase }}</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -374,7 +414,14 @@
     <div class="mobile-live-overlay__panel" (click)="$event.stopPropagation()">
       <div class="mobile-live-overlay__header">
         <span class="mobile-live-overlay__eyebrow">Cell size</span>
-        <button type="button" class="mobile-live-overlay__close" (click)="closeMobileCellSizeOverlay()">Done</button>
+        <button
+          type="button"
+          class="mobile-live-overlay__close"
+          (click)="closeMobileCellSizeOverlay()"
+          aria-label="Close cell size controls"
+        >
+          <lucide-icon name="x" size="16"></lucide-icon>
+        </button>
       </div>
       <div class="mobile-live-overlay__slider">
         <input

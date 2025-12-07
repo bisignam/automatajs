@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import * as THREE from 'three';
-import '../../shared/hex-color-picker.element';
+import 'vanilla-colorful/hex-color-picker.js';
 
 @Component({
   selector: 'app-color-picker',
@@ -28,6 +28,9 @@ export class AutomataColorPickerComponent {
   onColorChanged(event: Event): void {
     const detail = (event as CustomEvent<{ value: string }>).detail;
     const next = this.normalizeHex(detail?.value);
+    if (next === this._color) {
+      return;
+    }
     this._color = next;
     this.colorChange.emit(new THREE.Color(next));
   }
