@@ -26,14 +26,14 @@ export class AutomataTransportBarComponent {
     return this.status === 'running';
   }
 
-  get transportAccentClass(): string {
+  get playButtonClass(): string {
     switch (this.status) {
       case 'running':
-        return 'transport-bar--running';
+        return 'play-btn--running';
       case 'paused':
-        return 'transport-bar--paused';
+        return 'play-btn--paused';
       default:
-        return 'transport-bar--idle';
+        return 'play-btn--idle';
     }
   }
 

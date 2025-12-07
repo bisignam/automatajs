@@ -10,20 +10,6 @@
   color: var(--text-main);
 }
 
-.transport-bar--idle {
-  border-color: rgba(255, 255, 255, 0.18);
-}
-
-.transport-bar--paused {
-  border-color: rgba(61, 135, 200, 0.6);
-  box-shadow: 0 0 0 1px rgba(61, 135, 200, 0.22);
-}
-
-.transport-bar--running {
-  border-color: rgba(255, 179, 91, 0.7);
-  box-shadow: 0 0 0 1px rgba(255, 179, 91, 0.28);
-}
-
 .transport-bar__controls {
   display: inline-flex;
   flex-wrap: wrap;
@@ -55,8 +41,8 @@
 
 .transport-button--primary {
   color: var(--text-main);
-  border-color: var(--brand-blue);
-  background: rgba(43, 106, 156, 0.2);
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(7, 11, 27, 0.6);
 }
 
 .transport-button:disabled {
@@ -68,6 +54,23 @@
   font-size: 18px;
   width: 18px;
   height: 18px;
+}
+
+.transport-button--primary.play-btn--paused {
+  border-color: rgba(61, 135, 200, 0.8);
+  background: rgba(61, 135, 200, 0.18);
+  color: var(--text-main);
+}
+
+.transport-button--primary.play-btn--running {
+  border-color: rgba(255, 179, 91, 0.85);
+  background: rgba(255, 179, 91, 0.2);
+  color: var(--text-main);
+}
+
+.transport-button--primary.play-btn--idle {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(7, 11, 27, 0.6);
 }
 
 .transport-bar__speed {
