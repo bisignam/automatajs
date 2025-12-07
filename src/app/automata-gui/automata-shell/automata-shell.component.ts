@@ -157,9 +157,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     const animation = animate(
       pill,
       {
-        transform: entering
-          ? ['translate(-50%, 0) scale(1)', 'translate(-50%, 0) scale(1.05)']
-          : ['translate(-50%, 0) scale(1.05)', 'translate(-50%, 0) scale(1)'],
+        transform: entering ? ['scale(1)', 'scale(1.05)'] : ['scale(1.05)', 'scale(1)'],
       },
       { duration: 0.16, easing: 'ease-out' },
     );
@@ -604,7 +602,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       pill,
       {
         opacity: [0, 1],
-        transform: ['translate(-50%, -8px) scale(0.96)', 'translate(-50%, 0) scale(1)'],
+        transform: ['translateY(-8px) scale(0.96)', 'translateY(0) scale(1)'],
       },
       { duration: 0.22, easing: 'ease-out' },
     ).finished.finally(() => {
@@ -628,7 +626,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       pill,
       {
         opacity: [1, 0],
-        transform: ['translate(-50%, 0) scale(1)', 'translate(-50%, -6px) scale(0.96)'],
+        transform: ['translateY(0) scale(1)', 'translateY(-6px) scale(0.96)'],
       },
       { duration: 0.18, easing: 'ease-in' },
     ).finished.finally(() => {

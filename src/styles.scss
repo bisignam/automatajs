@@ -140,6 +140,68 @@ button {
   cursor: pointer;
 }
 
+.canvas-frame-top {
+  position: absolute;
+  top: 16px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.canvas-mode-handle {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(235, 240, 255, 0.16);
+  background: rgba(8, 12, 20, 0.92);
+  color: rgba(235, 240, 255, 0.9);
+  font-size: 13px;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  box-shadow: 0 12px 30px rgba(3, 8, 23, 0.35);
+  transition: border-color 160ms ease-out, background 160ms ease-out, color 160ms ease-out;
+}
+
+.canvas-mode-handle__icon {
+  width: 16px;
+  height: 16px;
+  color: #9cc7ff;
+  stroke-width: 1.8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  stroke: currentColor;
+  fill: none;
+}
+
+.canvas-mode-handle__label {
+  white-space: nowrap;
+}
+
+.canvas-mode-handle--exit .canvas-mode-handle__icon {
+  color: #ff9c9c;
+}
+
+.canvas-mode-handle:hover,
+.canvas-mode-handle:focus-visible {
+  border-color: rgba(132, 176, 253, 0.95);
+  background: rgba(22, 34, 56, 0.96);
+  color: #fff;
+  outline: none;
+}
+
+.canvas-mode-handle--exit:hover,
+.canvas-mode-handle--exit:focus-visible {
+  border-color: rgba(255, 155, 155, 0.8);
+}
+
 input[type='range'] {
   -webkit-appearance: none;
   background: transparent;

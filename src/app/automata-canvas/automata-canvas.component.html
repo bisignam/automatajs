@@ -2,6 +2,23 @@
   class="automata-canvas-wrapper"
   [class.automata-canvas-wrapper--painting]="isPainting || isCursorOverCanvas"
 >
+  <div class="canvas-frame-top">
+    <button
+      *ngIf="!isImmersive"
+      #enterImmersiveBtn
+      type="button"
+      class="canvas-mode-handle canvas-mode-handle--enter"
+      aria-label="Enter immersive mode"
+      (click)="onEnterImmersiveClick()"
+      (mouseenter)="onEnterImmersiveHover(true, enterImmersiveBtn)"
+      (mouseleave)="onEnterImmersiveHover(false, enterImmersiveBtn)"
+      (focusin)="onEnterImmersiveHover(true, enterImmersiveBtn)"
+      (focusout)="onEnterImmersiveHover(false, enterImmersiveBtn)"
+    >
+      <lucide-icon name="eye" class="canvas-mode-handle__icon" size="16"></lucide-icon>
+      <span class="canvas-mode-handle__label">Immersive mode</span>
+    </button>
+  </div>
   <button
     #screenshotButton
     type="button"

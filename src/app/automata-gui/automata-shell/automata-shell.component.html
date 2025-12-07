@@ -5,13 +5,15 @@
     </div>
     <div class="automata-header__right">
       <button type="button" class="ghost-button" (click)="openAbout()">ABOUT</button>
-      <button type="button" class="ghost-button" (click)="enterImmersive()">HIDE CONTROLS</button>
     </div>
   </header>
 
   <main #shellMain class="automata-shell">
     <section #canvasSection class="automata-shell__canvas">
-      <app-automata-canvas></app-automata-canvas>
+      <app-automata-canvas
+        [isImmersive]="isImmersive"
+        (enterImmersiveMode)="enterImmersive()"
+      ></app-automata-canvas>
       <div class="idle-countdown" *ngIf="idleCountdownVisible">
         Switching to immersive mode in {{ idleCountdownRemaining }}s
       </div>
@@ -54,20 +56,22 @@
         </div>
       </div>
 
-      <button
-        *ngIf="exitPillVisible"
-        #exitPillButton
-        class="immersive-exit-pill"
-        type="button"
-        aria-label="Exit immersive mode"
-        (click)="exitImmersiveMode()"
-        (mouseenter)="onExitPillHover($event, true)"
-        (mouseleave)="onExitPillHover($event, false)"
-        (focusin)="onExitPillHover($event, true)"
-        (focusout)="onExitPillHover($event, false)"
-      >
-        Exit immersive mode
-      </button>
+      <div class="canvas-frame-top" *ngIf="exitPillVisible">
+        <button
+          #exitPillButton
+          class="canvas-mode-handle canvas-mode-handle--exit"
+          type="button"
+          aria-label="Exit immersive mode"
+          (click)="exitImmersiveMode()"
+          (mouseenter)="onExitPillHover($event, true)"
+          (mouseleave)="onExitPillHover($event, false)"
+          (focusin)="onExitPillHover($event, true)"
+          (focusout)="onExitPillHover($event, false)"
+        >
+          <lucide-icon name="x" class="canvas-mode-handle__icon" size="16"></lucide-icon>
+          <span class="canvas-mode-handle__label">Exit immersive mode</span>
+        </button>
+      </div>
 
       <button
         *ngIf="isImmersive"

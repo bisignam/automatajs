@@ -1,4 +1,12 @@
-import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { animate } from '@motionone/dom';
 import { ThreeService } from '../automata-engine/three-service';
 
@@ -11,10 +19,25 @@ import { ThreeService } from '../automata-engine/three-service';
 export class AutomataCanvasComponent implements AfterViewInit {
   @ViewChild('automataCanvasContainer')
   automataCanvasContainer?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('enterImmersiveBtn')
+  set enterImmersiveBtnRef(value: ElementRef<HTMLButtonElement> | undefined) {
+    if (value) {
+      queueMicrotask(() => {
+        this.playImmersiveHandleIntro(value.nativeElement);
+      });
+    }
+  }
   threeService: ThreeService;
   private screenshotAnimations = new WeakMap<HTMLElement, ReturnType<typeof animate>>();
+  private immersiveHandleEntranceAnimations = new WeakMap<
+    HTMLElement,
+    ReturnType<typeof animate>
+  >();
+  private immersiveHandleHoverAnimations = new WeakMap<HTMLElement, ReturnType<typeof animate>>();
   isPainting = false;
   isCursorOverCanvas = false;
+  @Input() isImmersive = false;
+  @Output() enterImmersiveMode = new EventEmitter<void>();
 
   constructor(threeService: ThreeService) {
     this.threeService = threeService;
@@ -104,5 +127,49 @@ export class AutomataCanvasComponent implements AfterViewInit {
   onCanvasMouseLeave(_event: MouseEvent): void {
     this.isPainting = false;
     this.isCursorOverCanvas = false;
+  }
+
+  onEnterImmersiveClick(): void {
+    this.enterImmersiveMode.emit();
+  }
+
+  onEnterImmersiveHover(entering: boolean, element?: HTMLElement): void {
+    if (!element) {
+      return;
+    }
+    this.immersiveHandleHoverAnimations.get(element)?.cancel();
+    const animation = animate(
+      element,
+      {
+        transform: entering ? ['scale(1)', 'scale(1.04)'] : ['scale(1.04)', 'scale(1)'],
+      },
+      { duration: 0.18, easing: 'ease-out' },
+    );
+    this.immersiveHandleHoverAnimations.set(element, animation);
+    animation.finished.finally(() => {
+      if (this.immersiveHandleHoverAnimations.get(element) === animation && !entering) {
+        element.style.transform = '';
+        this.immersiveHandleHoverAnimations.delete(element);
+      }
+    });
+  }
+
+  private playImmersiveHandleIntro(element: HTMLElement): void {
+    element.style.opacity = '0';
+    element.style.transform = 'translateY(-8px)';
+    this.immersiveHandleEntranceAnimations.get(element)?.cancel();
+    const animation = animate(
+      element,
+      { opacity: [0, 1], transform: ['translateY(-8px)', 'translateY(0)'] },
+      { duration: 0.4, easing: 'ease-out' },
+    );
+    this.immersiveHandleEntranceAnimations.set(element, animation);
+    animation.finished.finally(() => {
+      if (this.immersiveHandleEntranceAnimations.get(element) === animation) {
+        element.style.opacity = '';
+        element.style.transform = '';
+        this.immersiveHandleEntranceAnimations.delete(element);
+      }
+    });
   }
 }

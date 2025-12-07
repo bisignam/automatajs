@@ -12,7 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { LucideAngularModule, Camera, Play, Settings } from 'lucide-angular';
+import { LucideAngularModule, Camera, Eye, Play, Settings, X } from 'lucide-angular';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AutomataCanvasComponent } from './automata-canvas/automata-canvas.component';
@@ -42,7 +42,7 @@ import { AutomataTransportBarComponent } from './automata-gui/automata-transport
     AutomataGuiModule,
     BrowserAnimationsModule,
     NgbModule,
-    LucideAngularModule.pick({ Camera, Play, Settings }),
+    LucideAngularModule.pick({ Camera, Eye, Play, Settings, X }),
     AutomataTransportBarComponent,
   ],
   providers: [provideHttpClient(withInterceptorsFromDi())],
