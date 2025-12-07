@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatIconModule } from '@angular/material/icon';
 import { DefaultSettings } from '../../automata-engine/defaultSettings';
 import { SimulationStatus } from '../ui-state';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-automata-transport-bar',
@@ -10,7 +10,7 @@ import { SimulationStatus } from '../ui-state';
   styleUrls: ['./automata-transport-bar.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, MatIconModule],
+  imports: [CommonModule, LucideAngularModule],
 })
 export class AutomataTransportBarComponent {
   @Input() status: SimulationStatus = 'idle';

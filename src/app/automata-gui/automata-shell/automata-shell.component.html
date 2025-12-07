@@ -33,28 +33,25 @@
         Switching to immersive mode in {{ idleCountdownRemaining }}s
       </div>
 
-      <div
-        #transportBar
-        class="transport-tray"
-        [class.transport-tray--hidden]="isImmersive && !transportVisible"
-        [class.transport-tray--collapsed]="isMobileLayout && mobileSettingsBarCollapsed"
-      >
-        <app-automata-transport-bar
-          [status]="uiState.status"
-          [speed]="simulationConfig.speed"
-          [isMobileLayout]="isMobileLayout"
-          [mobileCollapsed]="mobileSettingsBarCollapsed"
-          (mouseenter)="onImmersiveTransportInteraction()"
-          (focusin)="onImmersiveTransportInteraction()"
-          (play)="onPlay()"
-          (pause)="onPause()"
-          (reset)="onReset()"
-          (step)="onStep()"
-          (speedChange)="onSpeedChange($event)"
-          (settingsToggle)="onMobileSettingsToggle()"
-          (collapseToggle)="onMobileSettingsCollapseToggle()"
-        ></app-automata-transport-bar>
-      </div>
+      <ng-container *ngIf="!isMobileLayout">
+        <div
+          #transportBar
+          class="transport-tray"
+          [class.transport-tray--hidden]="isImmersive && !transportVisible"
+        >
+          <app-automata-transport-bar
+            [status]="uiState.status"
+            [speed]="simulationConfig.speed"
+            (mouseenter)="onImmersiveTransportInteraction()"
+            (focusin)="onImmersiveTransportInteraction()"
+            (play)="onPlay()"
+            (pause)="onPause()"
+            (reset)="onReset()"
+            (step)="onStep()"
+            (speedChange)="onSpeedChange($event)"
+          ></app-automata-transport-bar>
+        </div>
+      </ng-container>
 
       <ng-container *ngIf="shouldShowRuleOverlayDock">
         <div class="rule-dock" [class.rule-dock--immersive]="isImmersive">
@@ -93,37 +90,86 @@
         </div>
       </ng-container>
 
-      <div *ngIf="shouldShowMobileRuleOverlay" class="mobile-rule-dock">
+      <div class="mobile-dock" *ngIf="isMobileLayout" [class.mobile-dock--collapsed]="mobileDockCollapsed">
         <button
           type="button"
-          class="rule-badge rule-badge--mobile"
-          (click)="toggleMobileRuleOverlay()"
-          [attr.aria-pressed]="isMobileRuleOverlayExpanded ? 'true' : 'false'"
-          aria-label="Toggle rule controls"
-          [class.rule-badge--expanded]="isMobileRuleOverlayExpanded"
-          [class.rule-badge--collapsed]="!isMobileRuleOverlayExpanded"
+          class="mobile-dock__rule"
+          (click)="openMobileRulePicker()"
+          aria-label="Change rule"
         >
-          <span class="rule-badge__name">{{ uiState.ruleName }}</span>
-          <lucide-icon
-            name="chevron-down"
-            class="rule-badge__chevron"
-            [class.rule-badge__chevron--collapsed]="!isMobileRuleOverlayExpanded"
-            size="16"
-          ></lucide-icon>
+          <span class="mobile-dock__rule-name" *ngIf="!mobileDockCollapsed">
+            {{ uiState.ruleName || 'Select rule' }}
+          </span>
+          <lucide-icon *ngIf="mobileDockCollapsed" name="sliders-horizontal" size="18"></lucide-icon>
+          <lucide-icon name="chevron-down" class="mobile-dock__rule-chevron" size="16"></lucide-icon>
         </button>
-        <div class="mobile-rule-dock__panel" *ngIf="isMobileRuleOverlayExpanded">
-          <app-automata-control
-            variant="quick-rule"
-            [config]="simulationConfig"
-            [status]="uiState.status"
-            [uiState]="uiState"
-            [autoImmersivePreference]="autoImmersivePreference"
-            (configChange)="onConfigChange($event)"
-            (statusChange)="onStatusChange($event)"
-            (uiStateChange)="onUiStateChange($event)"
-            (autoImmersivePreferenceChange)="onAutoImmersivePreferenceChange($event)"
-          ></app-automata-control>
+
+        <div class="mobile-dock__palette" *ngIf="mobilePaletteSwatches.length">
+          <button
+            type="button"
+            class="mobile-dock__swatch"
+            *ngFor="let swatch of mobilePaletteSwatches"
+            [style.background-color]="swatch.color"
+            (click)="openMobileColorPicker(swatch)"
+            [attr.aria-label]="swatch.label + ' color'"
+          ></button>
         </div>
+
+        <button
+          type="button"
+          class="mobile-dock__cell"
+          (click)="openMobileCellSizeOverlay()"
+          aria-label="Adjust cell size"
+        >
+          <lucide-icon name="sliders-horizontal" size="20"></lucide-icon>
+        </button>
+
+        <div class="mobile-dock__separator" aria-hidden="true"></div>
+
+        <div class="mobile-dock__transport">
+          <button
+            type="button"
+            class="mobile-dock__icon-button mobile-dock__icon-button--primary"
+            (click)="toggleMobilePlay()"
+            [attr.aria-label]="uiState.status === 'running' ? 'Pause' : 'Play'"
+          >
+            <lucide-icon [name]="uiState.status === 'running' ? 'pause' : 'play'"></lucide-icon>
+          </button>
+          <button
+            type="button"
+            class="mobile-dock__icon-button"
+            (click)="onStep()"
+            [disabled]="uiState.status === 'running'"
+            aria-label="Step once"
+          >
+            <lucide-icon name="step-forward"></lucide-icon>
+          </button>
+          <button
+            type="button"
+            class="mobile-dock__icon-button"
+            (click)="onReset()"
+            aria-label="Reset simulation"
+          >
+            <lucide-icon name="rotate-ccw"></lucide-icon>
+          </button>
+          <button
+            type="button"
+            class="mobile-dock__icon-button"
+            (click)="onClearGrid()"
+            aria-label="Clear grid"
+          >
+            <lucide-icon name="trash-2"></lucide-icon>
+          </button>
+        </div>
+
+        <button
+          type="button"
+          class="mobile-dock__collapse"
+          (click)="toggleMobileDockCollapsed()"
+          aria-label="Collapse dock"
+        >
+          <lucide-icon [name]="mobileDockCollapsed ? 'chevron-left' : 'chevron-right'" size="16"></lucide-icon>
+        </button>
       </div>
 
       <div
@@ -196,46 +242,33 @@
           <lucide-icon name="play" size="16"></lucide-icon>
         </span>
       </button>
+
+      <div class="mobile-speed-strip" *ngIf="isMobileLayout">
+        <div class="mobile-speed-strip__label">
+          <lucide-icon name="gauge" size="16"></lucide-icon>
+          <span>Speed</span>
+        </div>
+        <input
+          type="range"
+          min="5"
+          max="120"
+          step="5"
+          [value]="simulationConfig.speed"
+          (input)="onMobileSpeedInput($event)"
+          aria-label="Adjust playback speed"
+        />
+        <span class="mobile-speed-strip__value">{{ simulationConfig.speed }} fps</span>
+      </div>
     </section>
 
-    <aside
-      #controlPanel
-      class="automata-shell__panel"
-      *ngIf="!isMobileLayout && panelOpen && !effectiveImmersive"
-    >
-      <div class="panel__header">
-        <p class="panel__eyebrow">Control center</p>
-      </div>
-      <div class="panel__body">
-        <app-automata-control
-          [config]="simulationConfig"
-          [status]="uiState.status"
-          [uiState]="uiState"
-          [autoImmersivePreference]="autoImmersivePreference"
-          (configChange)="onConfigChange($event)"
-          (statusChange)="onStatusChange($event)"
-          (uiStateChange)="onUiStateChange($event)"
-          (autoImmersivePreferenceChange)="onAutoImmersivePreferenceChange($event)"
-        ></app-automata-control>
-      </div>
-    </aside>
-    <div
-      *ngIf="isMobileLayout"
-      class="automata-shell__mobile-controls-backdrop"
-      [class.automata-shell__mobile-controls-backdrop--open]="mobileControlsOpen"
-      [attr.aria-hidden]="mobileControlsOpen ? 'false' : 'true'"
-      (click)="closeMobileControlsOverlay()"
-    >
-      <div
-        class="automata-shell__mobile-controls-panel"
-        [class.automata-shell__mobile-controls-panel--open]="mobileControlsOpen"
-        (click)="$event.stopPropagation()"
-      >
+    <ng-container *ngIf="!isMobileLayout && panelOpen && !effectiveImmersive; else controlBridgeFallback">
+      <aside #controlPanel class="automata-shell__panel">
         <div class="panel__header">
-          <p class="panel__eyebrow">Advanced controls</p>
+          <p class="panel__eyebrow">Control center</p>
         </div>
         <div class="panel__body">
           <app-automata-control
+            #controlBridge
             [config]="simulationConfig"
             [status]="uiState.status"
             [uiState]="uiState"
@@ -246,14 +279,94 @@
             (autoImmersivePreferenceChange)="onAutoImmersivePreferenceChange($event)"
           ></app-automata-control>
         </div>
-      </div>
-    </div>
+      </aside>
+    </ng-container>
   </main>
+
+  <ng-template #controlBridgeFallback>
+    <div class="control-logic-bridge" aria-hidden="true">
+      <app-automata-control
+        #controlBridge
+        [config]="simulationConfig"
+        [status]="uiState.status"
+        [uiState]="uiState"
+        [autoImmersivePreference]="autoImmersivePreference"
+        (configChange)="onConfigChange($event)"
+        (statusChange)="onStatusChange($event)"
+        (uiStateChange)="onUiStateChange($event)"
+        (autoImmersivePreferenceChange)="onAutoImmersivePreferenceChange($event)"
+      ></app-automata-control>
+    </div>
+  </ng-template>
+
+  <div class="mobile-overlay mobile-overlay--rule" *ngIf="isMobileRulePickerOpen" (click)="closeMobileRulePicker()">
+    <div class="mobile-overlay__panel mobile-overlay__panel--rule" (click)="$event.stopPropagation()">
+      <button
+        type="button"
+        class="rule-picker__nav"
+        aria-label="Previous rule"
+        (click)="cycleMobileRulePicker(-1)"
+      >
+        <lucide-icon name="chevron-up"></lucide-icon>
+      </button>
+      <div class="rule-picker__stack">
+        <div
+          class="rule-picker__item"
+          *ngFor="let offset of rulePickerOffsets"
+          [class.rule-picker__item--active]="offset === 0"
+        >
+          {{ getRulePreview(offset)?.label }}
+        </div>
+        <p class="rule-picker__summary" *ngIf="getRulePreview(0)?.summary">
+          {{ getRulePreview(0)?.summary }}
+        </p>
+      </div>
+      <button
+        type="button"
+        class="rule-picker__nav"
+        aria-label="Next rule"
+        (click)="cycleMobileRulePicker(1)"
+      >
+        <lucide-icon name="chevron-down"></lucide-icon>
+      </button>
+      <button type="button" class="mobile-overlay__close" (click)="closeMobileRulePicker()">Done</button>
+    </div>
+  </div>
+
+  <div class="mobile-overlay" *ngIf="isMobileColorPickerOpen" (click)="closeMobileColorPicker()">
+    <div class="mobile-overlay__panel" (click)="$event.stopPropagation()">
+      <p class="mobile-overlay__title">{{ activeColorLabel }}</p>
+      <app-color-picker
+        [color]="activeColorValue"
+        (chosenColor)="onMobileColorChosen($event)"
+      ></app-color-picker>
+      <button type="button" class="mobile-overlay__close" (click)="closeMobileColorPicker()">Done</button>
+    </div>
+  </div>
+
+  <div class="mobile-overlay" *ngIf="isMobileCellSizeOverlayOpen" (click)="closeMobileCellSizeOverlay()">
+    <div class="mobile-overlay__panel" (click)="$event.stopPropagation()">
+      <p class="mobile-overlay__title">Cell size</p>
+      <div class="mobile-overlay__slider">
+        <input
+          type="range"
+          min="1"
+          max="40"
+          step="1"
+          [value]="simulationConfig.cellSize"
+          (input)="onMobileCellSizeInput($event)"
+          aria-label="Cell size"
+        />
+        <span>{{ simulationConfig.cellSize }} px</span>
+      </div>
+      <button type="button" class="mobile-overlay__close" (click)="closeMobileCellSizeOverlay()">Done</button>
+    </div>
+  </div>
 
   <div class="automata-shell__about" *ngIf="isAboutOpen">
     <div class="about-card" role="dialog" aria-modal="true" aria-label="About AutomataJS">
       <button type="button" class="about-card__close" (click)="closeAbout()">
-        <mat-icon>close</mat-icon>
+        <lucide-icon name="x"></lucide-icon>
       </button>
       <h3>About AutomataJS</h3>
       <p>

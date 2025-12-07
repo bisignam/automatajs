@@ -174,7 +174,7 @@
   background: var(--control-bg);
 }
 
-.primary-actions mat-icon {
+.primary-actions lucide-icon {
   font-size: 28px;
   width: 28px;
   height: 28px;
@@ -182,7 +182,7 @@
   transition: color var(--transition-fast);
 }
 
-.primary-actions__cta mat-icon {
+.primary-actions__cta lucide-icon {
   color: #fff;
 }
 

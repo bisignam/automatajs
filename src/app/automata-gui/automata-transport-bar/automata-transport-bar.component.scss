@@ -82,7 +82,7 @@
   cursor: not-allowed;
 }
 
-.transport-button mat-icon {
+.transport-button lucide-icon {
   font-size: 18px;
   width: 18px;
   height: 18px;
@@ -99,7 +99,7 @@
   opacity: 1;
 }
 
-.transport-button--primary.play-btn--running mat-icon {
+.transport-button--primary.play-btn--running lucide-icon {
   color: var(--ui-accent);
 }
 
@@ -163,7 +163,7 @@
   cursor: not-allowed;
 }
 
-.transport-icon-button mat-icon {
+.transport-icon-button lucide-icon {
   font-size: 18px;
   width: 18px;
   height: 18px;

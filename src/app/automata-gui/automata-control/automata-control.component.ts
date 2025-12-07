@@ -16,22 +16,9 @@ import { Subscription } from 'rxjs';
 import { AdditionalColorType, CellularAutomaton } from 'src/app/automata-engine/cellularautomaton';
 import { DefaultSettings } from 'src/app/automata-engine/defaultSettings';
 import { ThreeService } from 'src/app/automata-engine/three-service';
-import { BriansBrain } from 'src/app/automata-rules/briansbrain';
-import { DayAndNight } from 'src/app/automata-rules/dayandnight';
-import { GameOfLife } from 'src/app/automata-rules/gameoflife';
-import { Maze } from 'src/app/automata-rules/maze';
-import { Seeds } from 'src/app/automata-rules/seeds';
-import { LifeWithoutDeath } from 'src/app/automata-rules/life-without-death';
 import { SimulationConfig, SimulationStatus, UiState, UiTab } from '../ui-state';
 import { animate } from '@motionone/dom';
-
-interface RulePreset {
-  id: string;
-  label: string;
-  summary: string;
-  createAutomaton: () => CellularAutomaton;
-  matches: (automaton: CellularAutomaton) => boolean;
-}
+import { RULE_PRESETS, RulePreset } from '../rule-presets';
 
 @Component({
   selector: 'app-automata-control',
@@ -65,50 +52,7 @@ export class AutomataControlComponent implements OnChanges, OnInit, OnDestroy, A
     { id: 'grid', label: 'Grid' },
   ];
 
-  readonly rulePresets: RulePreset[] = [
-    {
-      id: 'life',
-      label: 'Game of Life',
-      summary: 'Conway’s playground of gliders, blinkers, and glider guns.',
-      createAutomaton: () => new GameOfLife(),
-      matches: (automaton) => automaton instanceof GameOfLife,
-    },
-    {
-      id: 'life-without-death',
-      label: 'Life without Death',
-      summary: 'Cells are born like Life but never die, growing crystal blooms.',
-      createAutomaton: () => new LifeWithoutDeath(),
-      matches: (automaton) => automaton instanceof LifeWithoutDeath,
-    },
-    {
-      id: 'brians-brain',
-      label: "Brian's Brain",
-      summary: 'Neurons fire once, then fade like neon trails.',
-      createAutomaton: () => new BriansBrain(),
-      matches: (automaton) => automaton instanceof BriansBrain,
-    },
-    {
-      id: 'seeds',
-      label: 'Seeds',
-      summary: 'Hyper-reactive cells ignite and disappear every tick.',
-      createAutomaton: () => new Seeds(),
-      matches: (automaton) => automaton instanceof Seeds,
-    },
-    {
-      id: 'maze',
-      label: 'Maze',
-      summary: 'Birth rules carve angular corridors until a maze appears.',
-      createAutomaton: () => new Maze(),
-      matches: (automaton) => automaton instanceof Maze,
-    },
-    {
-      id: 'day-night',
-      label: 'Day & Night',
-      summary: 'Symmetric births keep yin-yang ripples balanced.',
-      createAutomaton: () => new DayAndNight(),
-      matches: (automaton) => automaton instanceof DayAndNight,
-    },
-  ];
+  readonly rulePresets: RulePreset[] = RULE_PRESETS;
 
   selectedPreset: RulePreset = this.rulePresets[0];
   backgroundColor: THREE.Color = DefaultSettings.backgroundColor.clone();

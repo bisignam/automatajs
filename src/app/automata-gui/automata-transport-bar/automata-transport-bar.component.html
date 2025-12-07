@@ -7,22 +7,22 @@
         [ngClass]="playButtonClass"
         (click)="onTogglePlay()"
       >
-        <mat-icon>{{ isRunning ? 'pause' : 'play_arrow' }}</mat-icon>
+        <lucide-icon [name]="isRunning ? 'pause' : 'play'"></lucide-icon>
         <span>{{ isRunning ? 'Pause' : 'Play' }}</span>
       </button>
       <button type="button" class="transport-button" (click)="step.emit()" [disabled]="status === 'running'">
-        <mat-icon>skip_next</mat-icon>
+        <lucide-icon name="step-forward"></lucide-icon>
         <span>Step</span>
       </button>
       <button type="button" class="transport-button" (click)="reset.emit()">
-        <mat-icon>restart_alt</mat-icon>
+        <lucide-icon name="rotate-ccw"></lucide-icon>
         <span>Reset</span>
       </button>
     </div>
 
     <div class="transport-bar__speed">
       <div class="transport-bar__speed-label">
-        <mat-icon>speed</mat-icon>
+        <lucide-icon name="gauge"></lucide-icon>
         <div class="transport-bar__speed-meta">
           <span>Speed</span>
           <small>{{ speed }} fps</small>
@@ -48,7 +48,7 @@
       aria-label="Expand transport controls"
       (click)="collapseToggle.emit()"
     >
-      <mat-icon>expand_less</mat-icon>
+      <lucide-icon name="chevron-up"></lucide-icon>
     </button>
     <button
       type="button"
@@ -56,7 +56,7 @@
       aria-label="Open advanced controls"
       (click)="settingsToggle.emit()"
     >
-      <mat-icon>settings</mat-icon>
+      <lucide-icon name="settings"></lucide-icon>
     </button>
   </div>
 </ng-template>
@@ -67,33 +67,33 @@
       <div class="transport-mobile__cluster">
         <button
           type="button"
-          class="transport-icon-button transport-icon-button--primary"
-          [ngClass]="playButtonClass"
-          (click)="onTogglePlay()"
-          [attr.aria-label]="isRunning ? 'Pause simulation' : 'Play simulation'"
-        >
-          <mat-icon>{{ isRunning ? 'pause' : 'play_arrow' }}</mat-icon>
-        </button>
+        class="transport-icon-button transport-icon-button--primary"
+        [ngClass]="playButtonClass"
+        (click)="onTogglePlay()"
+        [attr.aria-label]="isRunning ? 'Pause simulation' : 'Play simulation'"
+      >
+        <lucide-icon [name]="isRunning ? 'pause' : 'play'"></lucide-icon>
+      </button>
         <button
           type="button"
           class="transport-icon-button"
-          (click)="step.emit()"
-          [disabled]="status === 'running'"
-          aria-label="Step once"
-        >
-          <mat-icon>skip_next</mat-icon>
-        </button>
+        (click)="step.emit()"
+        [disabled]="status === 'running'"
+        aria-label="Step once"
+      >
+        <lucide-icon name="step-forward"></lucide-icon>
+      </button>
         <button
           type="button"
           class="transport-icon-button"
-          (click)="reset.emit()"
-          aria-label="Reset grid"
-        >
-          <mat-icon>restart_alt</mat-icon>
-        </button>
+        (click)="reset.emit()"
+        aria-label="Reset grid"
+      >
+        <lucide-icon name="rotate-ccw"></lucide-icon>
+      </button>
       </div>
       <div class="transport-mobile__speed">
-        <mat-icon>speed</mat-icon>
+        <lucide-icon name="gauge"></lucide-icon>
         <input
           type="range"
           min="5"
@@ -112,7 +112,7 @@
           aria-label="Open advanced controls"
           (click)="settingsToggle.emit()"
         >
-          <mat-icon>settings</mat-icon>
+          <lucide-icon name="settings"></lucide-icon>
         </button>
         <button
           type="button"
@@ -120,7 +120,7 @@
           aria-label="Collapse controls"
           (click)="collapseToggle.emit()"
         >
-          <mat-icon>expand_more</mat-icon>
+          <lucide-icon name="chevron-down"></lucide-icon>
         </button>
       </div>
     </div>

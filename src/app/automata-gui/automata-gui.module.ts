@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatSelectModule } from '@angular/material/select';
-import { MatIconModule } from '@angular/material/icon';
 import { RulesSelectorComponent } from './automata-rules-selector/rules-selector.component';
 import { AutomataControlComponent } from './automata-control/automata-control.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,7 +9,7 @@ import { AutomataColorPickerComponent } from './automata-color-picker/automata-c
 import { AutomataCellSizeSliderComponent } from './automata-cell-size-slider/automata-cell-size-slider.component';
 import { MatButtonModule } from '@angular/material/button';
 import { AutomataFPSSliderComponent } from './automata-fps-slider/automata-fps-cap-slider.component';
-import { LucideAngularModule, Gauge } from 'lucide-angular';
+import { LucideAngularModule } from 'lucide-angular';
 
 @NgModule({
   exports: [
@@ -33,9 +32,8 @@ import { LucideAngularModule, Gauge } from 'lucide-angular';
     FormsModule,
     ReactiveFormsModule,
     MatFormFieldModule,
-    MatIconModule,
     MatButtonModule,
-    LucideAngularModule.pick({ Gauge }),
+    LucideAngularModule,
   ],
 })
 export class AutomataGuiModule {}

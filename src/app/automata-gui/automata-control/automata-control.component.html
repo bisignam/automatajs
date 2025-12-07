@@ -7,14 +7,18 @@
 
     <div class="primary-actions">
       <button type="button" class="primary-actions__cta" (click)="togglePlay()">
-        <mat-icon [ngClass]="playIconClass">{{ isRunning ? 'pause_circle' : 'play_circle' }}</mat-icon>
+        <lucide-icon
+          [name]="isRunning ? 'pause' : 'play'"
+          [ngClass]="playIconClass"
+          size="28"
+        ></lucide-icon>
         <div>
           <p>{{ isRunning ? 'Pause' : 'Play' }} simulation</p>
           <small>Apply current rule and color palette</small>
         </div>
       </button>
       <button type="button" class="primary-actions__ghost" (click)="handleResetRequest()">
-        <mat-icon>restart_alt</mat-icon>
+        <lucide-icon name="rotate-ccw" size="24"></lucide-icon>
         <div>
           <p>Reset</p>
           <small>Clear grid &amp; reseed rule</small>
@@ -50,7 +54,7 @@
     <section class="control-section" *ngIf="activeTab === 'presets'">
       <div class="rule-carousel" aria-label="Automata rules">
         <button type="button" class="rule-carousel__nav rule-carousel__nav--prev" (click)="scrollCarousel(-1)">
-          <mat-icon>chevron_left</mat-icon>
+          <lucide-icon name="chevron-left"></lucide-icon>
         </button>
         <div class="rule-carousel__viewport" #ruleCarousel>
           <div class="rule-carousel__track">
@@ -66,7 +70,7 @@
           </div>
         </div>
         <button type="button" class="rule-carousel__nav rule-carousel__nav--next" (click)="scrollCarousel(1)">
-          <mat-icon>chevron_right</mat-icon>
+          <lucide-icon name="chevron-right"></lucide-icon>
         </button>
       </div>
 
@@ -157,11 +161,11 @@
       </div>
       <div class="grid-actions">
         <button type="button" (click)="handleStepRequest()" [disabled]="status === 'running'">
-          <mat-icon>skip_next</mat-icon>
+          <lucide-icon name="step-forward"></lucide-icon>
           Step once
         </button>
         <button type="button" (click)="clearGrid()">
-          <mat-icon>grid_off</mat-icon>
+          <lucide-icon name="trash-2"></lucide-icon>
           Clear grid
         </button>
       </div>

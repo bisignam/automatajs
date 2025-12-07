@@ -8,11 +8,10 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { LucideAngularModule, Camera, ChevronDown, Eye, Gauge, Play, Settings, X } from 'lucide-angular';
+import { LucideAngularModule } from 'lucide-angular';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AutomataCanvasComponent } from './automata-canvas/automata-canvas.component';
@@ -21,6 +20,7 @@ import { AutomataControlComponent } from './automata-gui/automata-control/automa
 import { HeaderComponent } from './header/header.component';
 import { AutomataShellComponent } from './automata-gui/automata-shell/automata-shell.component';
 import { AutomataTransportBarComponent } from './automata-gui/automata-transport-bar/automata-transport-bar.component';
+import { LUCIDE_ICONS } from './lucide-icons';
 
 @NgModule({
   declarations: [
@@ -36,13 +36,12 @@ import { AutomataTransportBarComponent } from './automata-gui/automata-transport
     AppRoutingModule,
     MatSelectModule,
     MatFormFieldModule,
-    MatIconModule,
     MatToolbarModule,
     MatButtonModule,
     AutomataGuiModule,
     BrowserAnimationsModule,
     NgbModule,
-    LucideAngularModule.pick({ Camera, Eye, Play, Settings, X, ChevronDown, Gauge }),
+    LucideAngularModule.pick(LUCIDE_ICONS),
     AutomataTransportBarComponent,
   ],
   providers: [provideHttpClient(withInterceptorsFromDi())],

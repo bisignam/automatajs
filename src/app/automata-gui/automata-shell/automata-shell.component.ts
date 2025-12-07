@@ -4,6 +4,14 @@ import { AutomataControlComponent } from '../automata-control/automata-control.c
 import { SimulationConfig, SimulationStatus, UiState } from '../ui-state';
 import { animate } from '@motionone/dom';
 import type { Easing } from '@motionone/types';
+import * as THREE from 'three';
+import { RULE_PRESETS, RulePreset } from '../rule-presets';
+
+interface MobilePaletteSwatch {
+  id: string;
+  label: string;
+  color: string;
+}
 
 @Component({
   selector: 'app-automata-shell',
@@ -12,7 +20,17 @@ import type { Easing } from '@motionone/types';
   standalone: false,
 })
 export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit {
-  @ViewChild(AutomataControlComponent) private controlComponent?: AutomataControlComponent;
+  private controlComponent?: AutomataControlComponent;
+
+  @ViewChild('controlBridge') set controlBridgeRef(component: AutomataControlComponent | undefined) {
+    this.controlComponent = component;
+    if (component) {
+      Promise.resolve().then(() => {
+        this.updateMobilePaletteSwatches();
+        this.syncRulePickerToCurrentRule();
+      });
+    }
+  }
 
   private readonly escapeKey = 'Escape';
   private readonly idleCountdownSeconds = 3;
@@ -37,6 +55,8 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     ruleName: '',
     ruleDescription: '',
   };
+  readonly rulePresets: RulePreset[] = RULE_PRESETS;
+  readonly rulePickerOffsets = [-2, -1, 0, 1, 2];
 
   isAboutOpen = false;
   transportVisible = true;
@@ -103,11 +123,17 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   private readonly canvasRadius = 18;
   isMobileLayout = false;
   isMobileFullScreen = false;
-  mobileControlsOpen = false;
-  mobileSettingsBarCollapsed = false;
+  mobileDockCollapsed = false;
+  isMobileRulePickerOpen = false;
+  rulePickerIndex = 0;
+  mobilePaletteSwatches: MobilePaletteSwatch[] = [];
+  isMobileColorPickerOpen = false;
+  activeColorSwatchId: string | null = null;
+  activeColorLabel: string | null = null;
+  activeColorValue = '';
+  isMobileCellSizeOverlayOpen = false;
   ruleOverlayDockOpen = true;
   ruleOverlayImmersiveOpen = false;
-  ruleOverlayMobileOpen = true;
   private readonly updateIsMobileLayoutBound = () => this.updateIsMobileLayout();
 
   ngOnInit(): void {
@@ -152,19 +178,11 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     return !this.isMobileLayout && this.hasActiveRule;
   }
 
-  get shouldShowMobileRuleOverlay(): boolean {
-    return this.isMobileLayout && this.hasActiveRule;
-  }
-
   get isDesktopRuleOverlayExpanded(): boolean {
     if (!this.shouldShowRuleOverlayDock) {
       return false;
     }
     return this.isImmersive ? this.ruleOverlayImmersiveOpen : this.ruleOverlayDockOpen;
-  }
-
-  get isMobileRuleOverlayExpanded(): boolean {
-    return this.shouldShowMobileRuleOverlay && this.ruleOverlayMobileOpen;
   }
 
   toggleControls(): void {
@@ -184,13 +202,6 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       return;
     }
     this.ruleOverlayDockOpen = !this.ruleOverlayDockOpen;
-  }
-
-  toggleMobileRuleOverlay(): void {
-    if (!this.shouldShowMobileRuleOverlay) {
-      return;
-    }
-    this.ruleOverlayMobileOpen = !this.ruleOverlayMobileOpen;
   }
 
   onImmersiveHandleHover(event: MouseEvent | FocusEvent, entering: boolean, variant: 'control' | 'transport'): void {
@@ -288,6 +299,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   onConfigChange(config: SimulationConfig): void {
     this.simulationConfig = { ...config };
     this.markInteraction(false);
+    this.updateMobilePaletteSwatches();
   }
 
   onStatusChange(status: SimulationStatus): void {
@@ -301,6 +313,10 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
 
   onUiStateChange(patch: Partial<UiState>): void {
     this.patchUiState(patch);
+    if (Object.prototype.hasOwnProperty.call(patch, 'ruleName')) {
+      this.syncRulePickerToCurrentRule();
+      this.updateMobilePaletteSwatches();
+    }
     this.markInteraction(false);
   }
 
@@ -361,48 +377,127 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.isAboutOpen = false;
   }
 
-  onMobileSettingsToggle(): void {
-    if (!this.isMobileLayout) {
-      return;
-    }
-    if (this.mobileControlsOpen) {
-      this.closeMobileControlsOverlay();
-      return;
-    }
-    this.openMobileControlsOverlay();
-  }
-
-  onMobileSettingsCollapseToggle(): void {
-    if (!this.isMobileLayout) {
-      return;
-    }
-    this.mobileSettingsBarCollapsed = !this.mobileSettingsBarCollapsed;
-  }
-
-  openMobileControlsOverlay(): void {
-    if (!this.isMobileLayout) {
-      return;
-    }
-    this.mobileControlsOpen = true;
-  }
-
-  closeMobileControlsOverlay(): void {
-    if (!this.isMobileLayout) {
-      return;
-    }
-    this.mobileControlsOpen = false;
-  }
-
   onRequestMobileFullScreen(): void {
     if (!this.isMobileLayout) {
       return;
     }
     this.isMobileFullScreen = true;
-    this.mobileControlsOpen = false;
   }
 
   onExitMobileFullScreen(): void {
     this.isMobileFullScreen = false;
+  }
+
+  toggleMobileDockCollapsed(): void {
+    if (!this.isMobileLayout) {
+      return;
+    }
+    this.mobileDockCollapsed = !this.mobileDockCollapsed;
+  }
+
+  openMobileRulePicker(): void {
+    if (!this.isMobileLayout) {
+      return;
+    }
+    this.rulePickerIndex = this.getRuleIndexByName(this.uiState.ruleName);
+    this.isMobileRulePickerOpen = true;
+  }
+
+  closeMobileRulePicker(): void {
+    this.isMobileRulePickerOpen = false;
+  }
+
+  cycleMobileRulePicker(direction: 1 | -1): void {
+    if (!this.isMobileRulePickerOpen || !this.rulePresets.length) {
+      return;
+    }
+    const length = this.rulePresets.length;
+    this.rulePickerIndex = (this.rulePickerIndex + direction + length) % length;
+    this.applyRulePickerSelection();
+  }
+
+  getRulePreview(offset: number): RulePreset | null {
+    if (!this.rulePresets.length) {
+      return null;
+    }
+    const length = this.rulePresets.length;
+    const index = (this.rulePickerIndex + offset + length) % length;
+    return this.rulePresets[index] ?? null;
+  }
+
+  openMobileColorPicker(swatch: MobilePaletteSwatch): void {
+    if (!this.isMobileLayout) {
+      return;
+    }
+    this.activeColorSwatchId = swatch.id;
+    this.activeColorLabel = swatch.label;
+    this.activeColorValue = swatch.color;
+    this.isMobileColorPickerOpen = true;
+  }
+
+  closeMobileColorPicker(): void {
+    this.isMobileColorPickerOpen = false;
+    this.activeColorSwatchId = null;
+    this.activeColorLabel = null;
+  }
+
+  onMobileColorChosen(color: THREE.Color): void {
+    if (!this.activeColorSwatchId) {
+      return;
+    }
+    if (this.activeColorSwatchId === 'dead') {
+      this.controlComponent?.onBackgroundColorChosen(color);
+    } else if (this.activeColorSwatchId === 'alive') {
+      this.controlComponent?.onActivationColorChosen(color);
+    } else if (this.activeColorSwatchId.startsWith('extra:')) {
+      const label = this.activeColorSwatchId.slice(6);
+      if (label) {
+        this.controlComponent?.onAdditionalColorChosen(label, color);
+      }
+    }
+    this.updateMobilePaletteSwatches();
+    this.closeMobileColorPicker();
+  }
+
+  openMobileCellSizeOverlay(): void {
+    if (!this.isMobileLayout) {
+      return;
+    }
+    this.isMobileCellSizeOverlayOpen = true;
+  }
+
+  closeMobileCellSizeOverlay(): void {
+    this.isMobileCellSizeOverlayOpen = false;
+  }
+
+  onMobileCellSizeInput(event: Event): void {
+    const value = (event.target as HTMLInputElement | null)?.valueAsNumber;
+    if (!Number.isFinite(value)) {
+      return;
+    }
+    this.simulationConfig = { ...this.simulationConfig, cellSize: value };
+    this.markInteraction(false);
+  }
+
+  onMobileSpeedInput(event: Event): void {
+    const value = (event.target as HTMLInputElement | null)?.valueAsNumber;
+    if (!Number.isFinite(value)) {
+      return;
+    }
+    this.onSpeedChange(value);
+  }
+
+  toggleMobilePlay(): void {
+    if (this.uiState.status === 'running') {
+      this.onPause();
+    } else {
+      this.onPlay();
+    }
+  }
+
+  onClearGrid(): void {
+    this.controlComponent?.clearGrid();
+    this.markInteraction(false);
   }
 
   showTransport(): void {
@@ -418,6 +513,57 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       return;
     }
     this.resetTransportAutoHideTimer();
+  }
+
+  private applyRulePickerSelection(): void {
+    const preset = this.rulePresets[this.rulePickerIndex];
+    if (!preset || !this.controlComponent) {
+      return;
+    }
+    this.controlComponent.selectPreset(preset);
+  }
+
+  private getRuleIndexByName(name?: string): number {
+    if (!name) {
+      return 0;
+    }
+    const index = this.rulePresets.findIndex((preset) => preset.label === name);
+    return index >= 0 ? index : 0;
+  }
+
+  private syncRulePickerToCurrentRule(): void {
+    this.rulePickerIndex = this.getRuleIndexByName(this.uiState.ruleName);
+  }
+
+  private updateMobilePaletteSwatches(): void {
+    const control = this.controlComponent;
+    if (!control) {
+      this.mobilePaletteSwatches = [];
+      return;
+    }
+    const swatches: MobilePaletteSwatch[] = [
+      {
+        id: 'dead',
+        label: 'Background',
+        color: `#${control.backgroundColor.getHexString()}`,
+      },
+      {
+        id: 'alive',
+        label: 'Alive',
+        color: `#${control.activationColor.getHexString()}`,
+      },
+    ];
+    for (const extra of Array.from(control.additionalColors)) {
+      if (swatches.length >= 3) {
+        break;
+      }
+      swatches.push({
+        id: `extra:${extra.displayName}`,
+        label: extra.displayName,
+        color: `#${extra.color.getHexString()}`,
+      });
+    }
+    this.mobilePaletteSwatches = swatches.slice(0, 3);
   }
 
   private updateAutoImmersiveState(): void {
@@ -468,14 +614,15 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       this.isMobileFullScreen = false;
     }
     if (previousIsMobileLayout !== nextIsMobileLayout) {
-      this.mobileControlsOpen = false;
-      this.mobileSettingsBarCollapsed = false;
       if (nextIsMobileLayout) {
-        this.ruleOverlayMobileOpen = true;
         this.isMobileFullScreen = false;
       } else {
         this.ruleOverlayDockOpen = true;
       }
+      this.mobileDockCollapsed = false;
+      this.isMobileRulePickerOpen = false;
+      this.isMobileColorPickerOpen = false;
+      this.isMobileCellSizeOverlayOpen = false;
     }
     this.updateResponsiveState(width);
   }
