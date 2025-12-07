@@ -105,12 +105,11 @@
   transform: translateX(-50%) translateY(0);
   opacity: 1;
   transition: opacity 160ms ease-out, transform 160ms ease-out;
-  padding: 8px 14px;
-  border-radius: 18px;
+  padding: 0;
   border: none;
-  background: rgba(5, 8, 20, 0.32);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.26);
-  backdrop-filter: blur(8px);
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .transport-tray--hidden {
