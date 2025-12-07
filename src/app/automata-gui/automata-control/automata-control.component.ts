@@ -1,4 +1,14 @@
-import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+  ViewChild,
+} from '@angular/core';
 import * as THREE from 'three';
 import { AdditionalColorType, CellularAutomaton } from 'src/app/automata-engine/cellularautomaton';
 import { DefaultSettings } from 'src/app/automata-engine/defaultSettings';
@@ -15,6 +25,7 @@ interface RulePreset {
   label: string;
   summary: string;
   createAutomaton: () => CellularAutomaton;
+  matches: (automaton: CellularAutomaton) => boolean;
 }
 
 @Component({
@@ -23,7 +34,7 @@ interface RulePreset {
   styleUrls: ['./automata-control.component.scss'],
   standalone: false,
 })
-export class AutomataControlComponent implements OnChanges {
+export class AutomataControlComponent implements OnChanges, OnInit {
   @ViewChild('ruleCarousel') private ruleCarousel?: ElementRef<HTMLDivElement>;
   private ruleCarouselIndex = 0;
   @Input() config: SimulationConfig = {
@@ -53,30 +64,35 @@ export class AutomataControlComponent implements OnChanges {
       label: 'Game of Life',
       summary: 'Conway’s playground of gliders, blinkers, and glider guns.',
       createAutomaton: () => new GameOfLife(),
+      matches: (automaton) => automaton instanceof GameOfLife,
     },
     {
       id: 'brians-brain',
       label: "Brian's Brain",
       summary: 'Neurons fire once, then fade like neon trails.',
       createAutomaton: () => new BriansBrain(),
+      matches: (automaton) => automaton instanceof BriansBrain,
     },
     {
       id: 'seeds',
       label: 'Seeds',
       summary: 'Hyper-reactive cells ignite and disappear every tick.',
       createAutomaton: () => new Seeds(),
+      matches: (automaton) => automaton instanceof Seeds,
     },
     {
       id: 'maze',
       label: 'Maze',
       summary: 'Birth rules carve angular corridors until a maze appears.',
       createAutomaton: () => new Maze(),
+      matches: (automaton) => automaton instanceof Maze,
     },
     {
       id: 'day-night',
       label: 'Day & Night',
       summary: 'Symmetric births keep yin-yang ripples balanced.',
       createAutomaton: () => new DayAndNight(),
+      matches: (automaton) => automaton instanceof DayAndNight,
     },
   ];
 
@@ -84,9 +100,11 @@ export class AutomataControlComponent implements OnChanges {
   backgroundColor: THREE.Color = DefaultSettings.backgroundColor.clone();
   activationColor: THREE.Color = DefaultSettings.activationColor.clone();
 
-  constructor(private readonly three: ThreeService) {
+  constructor(private readonly three: ThreeService) {}
+
+  ngOnInit(): void {
     this.syncConfigToEngine();
-    this.applyPreset(this.selectedPreset, false);
+    this.initializePresetFromEngine();
     this.syncColorsWithEngine();
   }
 
@@ -261,6 +279,20 @@ export class AutomataControlComponent implements OnChanges {
   private syncConfigToEngine(): void {
     this.three.fpsCap = this.config.speed;
     void this.three.resizeAutomata(this.config.cellSize);
+  }
+
+  private initializePresetFromEngine(): void {
+    const currentAutomaton = this.three.cellularAutomaton;
+    if (!currentAutomaton) {
+      this.applyPreset(this.selectedPreset, false);
+      return;
+    }
+    const existingPreset = this.rulePresets.find((preset) => preset.matches(currentAutomaton));
+    if (existingPreset) {
+      this.selectedPreset = existingPreset;
+      return;
+    }
+    this.applyPreset(this.selectedPreset, false);
   }
 
   private syncColorsWithEngine(): void {
