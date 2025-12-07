@@ -23,6 +23,10 @@
   transition: opacity 160ms ease-out, height 160ms ease-out, padding 160ms ease-out;
 }
 
+.automata-header--mobile-fullscreen {
+  display: none;
+}
+
 .automata-header__left {
   display: inline-flex;
   align-items: center;
@@ -312,19 +316,76 @@
 }
 
 @media (max-width: 960px) {
-  .automata-shell {
+  .automata-shell.automata-shell--mobile {
     flex-direction: column;
+    min-height: 100vh;
     height: auto;
   }
 
-  .automata-shell__panel {
+  .automata-shell--mobile .automata-shell__canvas {
+    order: 1;
     width: 100%;
-    max-width: none;
+    min-height: 60vh;
+    flex: 1 0 auto;
   }
 
-  .automata-shell__canvas {
-    min-height: 50vh; // or 60vh, tweak to taste
+  .automata-shell--mobile .automata-shell__panel {
+    display: none;
   }
+
+  .automata-shell__mobile-controls-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.7);
+    z-index: 40;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    transition: opacity 200ms ease-out, visibility 200ms ease-out;
+  }
+
+  .automata-shell__mobile-controls-backdrop--open {
+    opacity: 1;
+    pointer-events: auto;
+    visibility: visible;
+  }
+
+  .automata-shell__mobile-controls-panel {
+    width: 100%;
+    max-height: 70vh;
+    background: #020617;
+    border-radius: 16px 16px 0 0;
+    border-top: 1px solid rgba(148, 163, 184, 0.4);
+    box-shadow: 0 -18px 40px rgba(15, 23, 42, 0.9);
+    overflow: auto;
+    padding: 12px 12px 16px;
+    transform: translateY(12px);
+    opacity: 0;
+    transition: transform 220ms ease-out, opacity 220ms ease-out;
+  }
+
+  .automata-shell__mobile-controls-panel--open {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.automata-shell--mobile-fullscreen {
+  height: 100vh;
+  padding: 0;
+  gap: 0;
+}
+
+.automata-shell--mobile-fullscreen .automata-shell__canvas {
+  min-height: 100vh;
+  border-radius: 0;
+}
+
+.automata-shell--mobile-fullscreen .automata-shell__mobile-controls-backdrop {
+  display: none;
 }
 
 .automata-app.immersive .automata-header {

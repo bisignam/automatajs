@@ -1,5 +1,9 @@
 <div class="automata-app" [class.immersive]="isImmersive">
-  <header #appHeader class="automata-header">
+  <header
+    #appHeader
+    class="automata-header"
+    [class.automata-header--mobile-fullscreen]="isMobileLayout && isMobileFullScreen"
+  >
     <div class="automata-header__left" aria-label="AutomataJS">
       <img class="automata-logo" src="assets/automatajs.svg" alt="AutomataJS" />
     </div>
@@ -8,14 +12,25 @@
     </div>
   </header>
 
-  <main #shellMain class="automata-shell">
+  <main
+    #shellMain
+    class="automata-shell"
+    [class.automata-shell--mobile]="isMobileLayout"
+    [class.automata-shell--mobile-fullscreen]="isMobileLayout && isMobileFullScreen"
+    [class.automata-shell--immersive]="effectiveImmersive"
+  >
     <section #canvasSection class="automata-shell__canvas">
       <app-automata-canvas
-        [isImmersive]="isImmersive"
+        [isImmersive]="effectiveImmersive"
+        [isMobileLayout]="isMobileLayout"
+        [isMobileFullScreen]="isMobileFullScreen"
         [showIdleCountdown]="idleCountdownVisible"
         [ruleName]="uiState.ruleName || ''"
         [ruleDescription]="uiState.ruleDescription || ''"
         (enterImmersiveMode)="enterImmersive()"
+        (requestMobileFullScreen)="onRequestMobileFullScreen()"
+        (exitMobileFullScreen)="onExitMobileFullScreen()"
+        (requestOpenControls)="openMobileControlsOverlay()"
       ></app-automata-canvas>
       <div class="idle-countdown" *ngIf="idleCountdownVisible">
         Switching to immersive mode in {{ idleCountdownRemaining }}s
@@ -111,7 +126,11 @@
       </button>
     </section>
 
-    <aside #controlPanel class="automata-shell__panel" *ngIf="panelOpen && !isImmersive">
+    <aside
+      #controlPanel
+      class="automata-shell__panel"
+      *ngIf="!isMobileLayout && panelOpen && !effectiveImmersive"
+    >
       <div class="panel__header">
         <p class="panel__eyebrow">Control center</p>
       </div>
@@ -128,6 +147,35 @@
         ></app-automata-control>
       </div>
     </aside>
+    <div
+      *ngIf="isMobileLayout"
+      class="automata-shell__mobile-controls-backdrop"
+      [class.automata-shell__mobile-controls-backdrop--open]="mobileControlsOpen"
+      [attr.aria-hidden]="mobileControlsOpen ? 'false' : 'true'"
+      (click)="closeMobileControlsOverlay()"
+    >
+      <div
+        class="automata-shell__mobile-controls-panel"
+        [class.automata-shell__mobile-controls-panel--open]="mobileControlsOpen"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="panel__header">
+          <p class="panel__eyebrow">Control center</p>
+        </div>
+        <div class="panel__body">
+          <app-automata-control
+            [config]="simulationConfig"
+            [status]="uiState.status"
+            [uiState]="uiState"
+            [autoImmersivePreference]="autoImmersivePreference"
+            (configChange)="onConfigChange($event)"
+            (statusChange)="onStatusChange($event)"
+            (uiStateChange)="onUiStateChange($event)"
+            (autoImmersivePreferenceChange)="onAutoImmersivePreferenceChange($event)"
+          ></app-automata-control>
+        </div>
+      </div>
+    </div>
   </main>
 
   <div class="automata-shell__about" *ngIf="isAboutOpen">

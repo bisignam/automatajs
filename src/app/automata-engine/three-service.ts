@@ -257,36 +257,72 @@ export class ThreeService implements OnDestroy {
 
   private configureMouseDrawingEvents(canvas: HTMLCanvasElement) {
     this.mouse = new THREE.Vector2();
-    if (this.drawWithMouse) {
-      canvas.addEventListener('mousedown', (_e) => {
-        this.isDrawing = true;
-      });
-
-      canvas.addEventListener('mousemove', (e) => {
-        e.preventDefault();
-        this.updateMousePositionFromEvent(canvas, e);
-      });
-
-      canvas.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.updateMousePositionFromEvent(canvas, e);
-      });
-
-      canvas.addEventListener('mouseup', () => {
-        this.isDrawing = false;
-      });
-      canvas.addEventListener('mouseenter', (e) => {
-        this.updateMousePositionFromEvent(canvas, e);
-      });
-      canvas.addEventListener('mouseleave', () => {
-        this.isDrawing = false;
-      });
+    if (!this.drawWithMouse) {
+      return;
     }
+    const handlePointerMove = (clientX: number, clientY: number) => {
+      this.updatePointerPosition(canvas, clientX, clientY);
+      if (this.isDrawing) {
+        this.drawSquareIfNecessary();
+      }
+    };
+
+    const handleMouseDown = (event: MouseEvent) => {
+      this.isDrawing = true;
+      handlePointerMove(event.clientX, event.clientY);
+    };
+
+    const handleMouseMove = (event: MouseEvent) => {
+      if (!this.isDrawing) {
+        return;
+      }
+      event.preventDefault();
+      handlePointerMove(event.clientX, event.clientY);
+    };
+
+    const handleMouseUpOrLeave = () => {
+      this.isDrawing = false;
+    };
+
+    canvas.addEventListener('mousedown', handleMouseDown);
+    canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('mouseup', handleMouseUpOrLeave);
+    canvas.addEventListener('mouseleave', handleMouseUpOrLeave);
+
+    const handleTouchStart = (event: TouchEvent) => {
+      if (event.touches.length === 0) {
+        return;
+      }
+      this.isDrawing = true;
+      event.preventDefault();
+      const touch = event.touches[0];
+      handlePointerMove(touch.clientX, touch.clientY);
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      if (!this.isDrawing || event.touches.length === 0) {
+        return;
+      }
+      event.preventDefault();
+      const touch = event.touches[0];
+      handlePointerMove(touch.clientX, touch.clientY);
+    };
+
+    const handleTouchEndOrCancel = () => {
+      this.isDrawing = false;
+    };
+
+    canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    canvas.addEventListener('touchend', handleTouchEndOrCancel);
+    canvas.addEventListener('touchcancel', handleTouchEndOrCancel);
+    canvas.style.touchAction = 'none';
   }
 
-  private updateMousePositionFromEvent(
+  private updatePointerPosition(
     canvas: HTMLCanvasElement,
-    event: MouseEvent
+    clientX: number,
+    clientY: number
   ): void {
     if (!canvas) {
       return;
@@ -294,8 +330,8 @@ export class ThreeService implements OnDestroy {
     const rect = canvas.getBoundingClientRect();
     const domWidth = Math.max(rect.width, 1);
     const domHeight = Math.max(rect.height, 1);
-    const normalizedX = (event.clientX - rect.left) / domWidth;
-    const normalizedY = (event.clientY - rect.top) / domHeight;
+    const normalizedX = (clientX - rect.left) / domWidth;
+    const normalizedY = (clientY - rect.top) / domHeight;
 
     const left = this.camera.left;
     const right = this.camera.right;

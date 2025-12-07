@@ -4,7 +4,7 @@
 >
   <div class="canvas-frame-top">
     <button
-      *ngIf="!isImmersive && !showIdleCountdown"
+      *ngIf="!isMobileLayout && !isImmersive && !showIdleCountdown"
       #enterImmersiveBtn
       type="button"
       class="canvas-mode-handle canvas-mode-handle--enter"
@@ -18,8 +18,40 @@
       <lucide-icon name="eye" class="canvas-mode-handle__icon" size="16"></lucide-icon>
       <span class="canvas-mode-handle__label">Immersive mode</span>
     </button>
+    <div class="canvas-top-center-handle" *ngIf="isMobileLayout">
+      <button
+        *ngIf="!isMobileFullScreen"
+        type="button"
+        class="canvas-top-chip"
+        (click)="openControlsClick()"
+      >
+        Controls
+      </button>
+      <button
+        *ngIf="isMobileFullScreen"
+        type="button"
+        class="canvas-top-chip"
+        (click)="exitMobileFullScreenClick()"
+      >
+        Exit full screen
+      </button>
+    </div>
   </div>
   <div class="canvas-top-controls">
+    <button
+      *ngIf="isMobileLayout && !isMobileFullScreen"
+      type="button"
+      class="canvas-icon-button"
+      aria-label="Enter full screen"
+      (click)="enterMobileFullScreen()"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <polyline points="7,3 7,7 3,7"></polyline>
+        <polyline points="17,3 17,7 21,7"></polyline>
+        <polyline points="7,21 7,17 3,17"></polyline>
+        <polyline points="17,21 17,17 21,17"></polyline>
+      </svg>
+    </button>
     <button
       #screenshotButton
       type="button"
@@ -34,6 +66,7 @@
       <lucide-icon name="camera" size="16"></lucide-icon>
     </button>
     <button
+      *ngIf="!isMobileLayout"
       type="button"
       class="canvas-icon-button"
       [class.canvas-icon-button--active]="lensEnabled"
@@ -56,11 +89,11 @@
     #automataCanvasContainer
     id="automataCanvasContainer"
     class="automata-canvas"
-    (mousedown)="onCanvasMouseDown($event)"
-    (mouseup)="onCanvasMouseUp($event)"
-    (mouseleave)="onCanvasMouseLeave($event)"
-    (mouseenter)="onCanvasMouseEnter()"
-    (mousemove)="onCanvasMouseMove($event)"
+    (pointerdown)="onCanvasPointerDown($event)"
+    (pointerup)="onCanvasPointerUp($event)"
+    (pointerleave)="onCanvasPointerLeave($event)"
+    (pointerenter)="onCanvasPointerEnter($event)"
+    (pointermove)="onCanvasPointerMove($event)"
     (wheel)="onCanvasWheel($event)"
   ></canvas>
 

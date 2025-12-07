@@ -41,10 +41,15 @@ export class AutomataCanvasComponent implements AfterViewInit, OnChanges {
   isPainting = false;
   isCursorOverCanvas = false;
   @Input() isImmersive = false;
+  @Input() isMobileLayout = false;
+  @Input() isMobileFullScreen = false;
   @Input() showIdleCountdown = false;
   @Input() ruleName = '';
   @Input() ruleDescription = '';
   @Output() enterImmersiveMode = new EventEmitter<void>();
+  @Output() requestMobileFullScreen = new EventEmitter<void>();
+  @Output() exitMobileFullScreen = new EventEmitter<void>();
+  @Output() requestOpenControls = new EventEmitter<void>();
   lensEnabled = false;
   private readonly lensSize = 180;
   private readonly lensZoomMin = 2;
@@ -129,11 +134,43 @@ export class AutomataCanvasComponent implements AfterViewInit, OnChanges {
     });
   }
 
-  onCanvasMouseDown(_event: MouseEvent): void {
+  onCanvasPointerDown(event: PointerEvent): void {
+    if (event.pointerType === 'touch') {
+      event.preventDefault();
+    }
+    this.onCanvasMouseDown(event);
+  }
+
+  onCanvasPointerUp(event: PointerEvent): void {
+    if (event.pointerType === 'touch') {
+      event.preventDefault();
+    }
+    this.onCanvasMouseUp(event);
+  }
+
+  onCanvasPointerEnter(_event: PointerEvent): void {
+    this.onCanvasMouseEnter();
+  }
+
+  onCanvasPointerMove(event: PointerEvent): void {
+    if (event.pointerType === 'touch') {
+      event.preventDefault();
+    }
+    this.onCanvasMouseMove(event);
+  }
+
+  onCanvasPointerLeave(event: PointerEvent): void {
+    if (event.pointerType === 'touch') {
+      event.preventDefault();
+    }
+    this.onCanvasMouseLeave(event);
+  }
+
+  onCanvasMouseDown(_event: MouseEvent | PointerEvent): void {
     this.isPainting = true;
   }
 
-  onCanvasMouseUp(_event: MouseEvent): void {
+  onCanvasMouseUp(_event: MouseEvent | PointerEvent): void {
     this.isPainting = false;
   }
 
@@ -141,7 +178,7 @@ export class AutomataCanvasComponent implements AfterViewInit, OnChanges {
     this.isCursorOverCanvas = true;
   }
 
-  onCanvasMouseMove(event: MouseEvent): void {
+  onCanvasMouseMove(event: MouseEvent | PointerEvent): void {
     if (!this.isCursorOverCanvas) {
       this.isCursorOverCanvas = true;
     }
@@ -150,7 +187,7 @@ export class AutomataCanvasComponent implements AfterViewInit, OnChanges {
     }
   }
 
-  onCanvasMouseLeave(_event: MouseEvent): void {
+  onCanvasMouseLeave(_event: MouseEvent | PointerEvent): void {
     this.isPainting = false;
     this.isCursorOverCanvas = false;
     this.lastLensDomX = null;
@@ -176,6 +213,27 @@ export class AutomataCanvasComponent implements AfterViewInit, OnChanges {
 
   onEnterImmersiveClick(): void {
     this.enterImmersiveMode.emit();
+  }
+
+  enterMobileFullScreen(): void {
+    if (!this.isMobileLayout || this.isMobileFullScreen) {
+      return;
+    }
+    this.requestMobileFullScreen.emit();
+  }
+
+  exitMobileFullScreenClick(): void {
+    if (!this.isMobileLayout) {
+      return;
+    }
+    this.exitMobileFullScreen.emit();
+  }
+
+  openControlsClick(): void {
+    if (!this.isMobileLayout) {
+      return;
+    }
+    this.requestOpenControls.emit();
   }
 
   onEnterImmersiveHover(entering: boolean, element?: HTMLElement): void {
@@ -251,7 +309,7 @@ export class AutomataCanvasComponent implements AfterViewInit, OnChanges {
     }
   }
 
-  private updateLens(event: MouseEvent): void {
+  private updateLens(event: MouseEvent | PointerEvent): void {
     const main = this.automataCanvasContainer?.nativeElement;
     if (!main) {
       return;

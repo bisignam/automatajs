@@ -152,6 +152,37 @@ button {
   z-index: 6;
 }
 
+.canvas-top-center-handle {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.canvas-top-chip {
+  border-radius: 999px;
+  border: 1px solid rgba(235, 240, 255, 0.18);
+  background: rgba(7, 10, 20, 0.92);
+  color: rgba(235, 240, 255, 0.85);
+  padding: 6px 14px;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 140ms ease-out, background 140ms ease-out, color 140ms ease-out;
+}
+
+.canvas-top-chip:hover,
+.canvas-top-chip:focus-visible {
+  border-color: rgba(148, 199, 255, 0.8);
+  background: rgba(15, 22, 40, 0.96);
+  color: #fff;
+}
+
 .canvas-mode-handle {
   pointer-events: auto;
   display: inline-flex;

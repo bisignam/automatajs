@@ -101,10 +101,15 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   private readonly shellPadding = { top: 12, right: 20, bottom: 20, left: 20 };
   private readonly shellGap = 16;
   private readonly canvasRadius = 18;
+  isMobileLayout = false;
+  isMobileFullScreen = false;
+  mobileControlsOpen = false;
+  private readonly updateIsMobileLayoutBound = () => this.updateIsMobileLayout();
 
   ngOnInit(): void {
     this.loadAutoImmersivePreference();
-    this.updateResponsiveState(window.innerWidth);
+    this.updateIsMobileLayout();
+    window.addEventListener('resize', this.updateIsMobileLayoutBound);
     this.updateAutoImmersiveState();
   }
 
@@ -120,10 +125,15 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.clearTransportAutoHide();
     this.clearAutoImmersiveOptInDismissTimer();
     this.clearAutoImmersiveIdleTimer();
+    window.removeEventListener('resize', this.updateIsMobileLayoutBound);
   }
 
   get isImmersive(): boolean {
     return this.uiState.isImmersive;
+  }
+
+  get effectiveImmersive(): boolean {
+    return this.isMobileLayout ? true : this.isImmersive;
   }
 
   get panelOpen(): boolean {
@@ -204,12 +214,6 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     });
     this.playImmersiveSceneTransition(false);
     this.scheduleAutoImmersive();
-  }
-
-  @HostListener('window:resize', ['$event'])
-  onWindowResize(event: UIEvent): void {
-    const target = event.target as Window;
-    this.updateResponsiveState(target.innerWidth);
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -310,6 +314,26 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.isAboutOpen = false;
   }
 
+  openMobileControlsOverlay(): void {
+    this.mobileControlsOpen = true;
+  }
+
+  closeMobileControlsOverlay(): void {
+    this.mobileControlsOpen = false;
+  }
+
+  onRequestMobileFullScreen(): void {
+    if (!this.isMobileLayout) {
+      return;
+    }
+    this.isMobileFullScreen = true;
+    this.mobileControlsOpen = false;
+  }
+
+  onExitMobileFullScreen(): void {
+    this.isMobileFullScreen = false;
+  }
+
   showTransport(): void {
     this.setTransportVisibility(true, { animate: true });
     this.resetTransportAutoHideTimer();
@@ -359,6 +383,17 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       isControlPanelOpen: !isMobile || this.uiState.isControlPanelOpen,
     });
     this.updateAutoImmersiveState();
+  }
+
+  private updateIsMobileLayout(): void {
+    const width = window.innerWidth;
+    const nextIsMobileLayout = width <= 960;
+    this.isMobileLayout = nextIsMobileLayout;
+    if (!nextIsMobileLayout) {
+      this.isMobileFullScreen = false;
+      this.mobileControlsOpen = false;
+    }
+    this.updateResponsiveState(width);
   }
 
   private handleIdleActivity(): void {
