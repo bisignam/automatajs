@@ -67,6 +67,11 @@
   border-color: rgba(61, 135, 200, 0.6);
 }
 
+.primary-actions__cta:hover {
+  background: linear-gradient(110deg, rgba(45, 89, 140, 0.85), rgba(61, 135, 200, 1));
+  border-color: rgba(61, 135, 200, 0.85);
+}
+
 .primary-actions__ghost {
   background: var(--control-bg);
 }
