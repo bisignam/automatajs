@@ -24,6 +24,26 @@
   --accent-play: #f19c5d;
   --accent-play-soft: rgba(241, 156, 93, 0.2);
 
+  /* Running state colors (electric blue) */
+  --run-active: #68A7FF;
+  --run-active-soft: rgba(104, 167, 255, 0.18);
+  --run-active-strong: rgba(104, 167, 255, 0.32);
+
+  /* Ableton-inspired neutral surfaces */
+  --ui-bg: #111319;
+  --ui-surface: #171a22;
+  --ui-surface-alt: #1c2029;
+  --ui-border: rgba(255, 255, 255, 0.06);
+  --ui-border-strong: rgba(255, 255, 255, 0.14);
+  --ui-accent: #4f8ad8;
+  --ui-accent-soft: rgba(79, 138, 216, 0.15);
+  --ui-text-main: #f5f7ff;
+  --ui-text-muted: #a1a8c3;
+
+  /* Neutral status colors */
+  --run-neutral-bg: rgba(255, 255, 255, 0.04);
+  --run-neutral-text: var(--text-muted);
+
   /* Text */
   --text-main: #f4f7ff;
   --text-muted: #a3acc6;

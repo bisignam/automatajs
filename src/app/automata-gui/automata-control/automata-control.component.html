@@ -1,7 +1,7 @@
 <div class="control-shell">
-  <div class="status-pill" [class.status-pill--running]="isRunning">
-    <span class="status-pill__dot"></span>
-    <span>{{ status | titlecase }}</span>
+  <div class="cc-status" [class.cc-status--running]="isRunning" [class.cc-status--idle]="!isRunning">
+    <span class="cc-status__led" aria-hidden="true"></span>
+    <span class="cc-status__label">{{ status | titlecase }}</span>
   </div>
 
   <div class="primary-actions">

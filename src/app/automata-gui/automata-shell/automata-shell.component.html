@@ -35,14 +35,31 @@
       </div>
 
       <button
-        #sideHandle
-        *ngIf="isImmersive"
-        class="immersive-handle immersive-handle--right"
+        class="reveal-rail reveal-rail--left"
         type="button"
-        aria-label="Show controls"
-        (click)="exitImmersive()"
+        aria-label="Toggle control panel"
+        [attr.aria-pressed]="panelOpen ? 'true' : 'false'"
+        (click)="toggleControls()"
+        (mouseenter)="onRevealRailHover($event)"
+        (mouseleave)="onRevealRailLeave($event)"
+        (focusin)="onRevealRailHover($event)"
+        (focusout)="onRevealRailLeave($event)"
       >
-        <span class="handle-arrow handle-arrow--left"></span>
+        <span class="reveal-rail__led" aria-hidden="true"></span>
+      </button>
+
+      <button
+        class="reveal-rail reveal-rail--right"
+        type="button"
+        aria-label="Toggle control panel"
+        [attr.aria-pressed]="panelOpen ? 'true' : 'false'"
+        (click)="toggleControls()"
+        (mouseenter)="onRevealRailHover($event)"
+        (mouseleave)="onRevealRailLeave($event)"
+        (focusin)="onRevealRailHover($event)"
+        (focusout)="onRevealRailLeave($event)"
+      >
+        <span class="reveal-rail__led" aria-hidden="true"></span>
       </button>
 
       <button
