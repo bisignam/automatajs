@@ -35,31 +35,20 @@
       </div>
 
       <button
-        class="reveal-rail reveal-rail--left"
+        *ngIf="isImmersive"
+        class="immersive-handle immersive-handle--right"
         type="button"
-        aria-label="Toggle control panel"
+        aria-label="Show control panel"
         [attr.aria-pressed]="panelOpen ? 'true' : 'false'"
         (click)="toggleControls()"
-        (mouseenter)="onRevealRailHover($event)"
-        (mouseleave)="onRevealRailLeave($event)"
-        (focusin)="onRevealRailHover($event)"
-        (focusout)="onRevealRailLeave($event)"
+        (mouseenter)="onImmersiveHandleHover($event, true, 'control')"
+        (mouseleave)="onImmersiveHandleHover($event, false, 'control')"
+        (focusin)="onImmersiveHandleHover($event, true, 'control')"
+        (focusout)="onImmersiveHandleHover($event, false, 'control')"
       >
-        <span class="reveal-rail__led" aria-hidden="true"></span>
-      </button>
-
-      <button
-        class="reveal-rail reveal-rail--right"
-        type="button"
-        aria-label="Toggle control panel"
-        [attr.aria-pressed]="panelOpen ? 'true' : 'false'"
-        (click)="toggleControls()"
-        (mouseenter)="onRevealRailHover($event)"
-        (mouseleave)="onRevealRailLeave($event)"
-        (focusin)="onRevealRailHover($event)"
-        (focusout)="onRevealRailLeave($event)"
-      >
-        <span class="reveal-rail__led" aria-hidden="true"></span>
+        <span class="immersive-handle__icon-stack" aria-hidden="true">
+          <lucide-icon name="settings" size="16"></lucide-icon>
+        </span>
       </button>
 
       <button
@@ -67,10 +56,16 @@
         *ngIf="isImmersive && !transportVisible"
         class="immersive-handle immersive-handle--bottom"
         type="button"
-        aria-label="Show transport"
+        aria-label="Show transport controls"
         (click)="showTransport()"
+        (mouseenter)="onImmersiveHandleHover($event, true, 'transport')"
+        (mouseleave)="onImmersiveHandleHover($event, false, 'transport')"
+        (focusin)="onImmersiveHandleHover($event, true, 'transport')"
+        (focusout)="onImmersiveHandleHover($event, false, 'transport')"
       >
-        <span class="handle-arrow handle-arrow--up"></span>
+        <span class="immersive-handle__icon-row" aria-hidden="true">
+          <lucide-icon name="play" size="16"></lucide-icon>
+        </span>
       </button>
     </section>
 

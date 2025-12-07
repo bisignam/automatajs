@@ -66,8 +66,8 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   private pendingPanelEnterAnimation = false;
   private panelAnimation?: ReturnType<typeof animate>;
   private transportAnimation?: ReturnType<typeof animate>;
-  private revealRailAnimations = new WeakMap<HTMLElement, ReturnType<typeof animate>>();
-  private revealRailLedAnimations = new WeakMap<HTMLElement, ReturnType<typeof animate>>();
+  private immersiveHandleAnimations = new WeakMap<HTMLElement, ReturnType<typeof animate>>();
+  private immersiveHandleIconAnimations = new WeakMap<HTMLElement, ReturnType<typeof animate>>();
   private idleCountdownIntervalId?: number;
   private idleDelayTimeoutId?: number;
   private transportAutoHideTimeoutId?: number;
@@ -110,12 +110,16 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.patchUiState({ isControlPanelOpen: !this.panelOpen, lastUserInteractionAt: Date.now() });
   }
 
-  onRevealRailHover(event: MouseEvent | FocusEvent): void {
-    this.animateRevealRail(event.currentTarget, true);
-  }
-
-  onRevealRailLeave(event: MouseEvent | FocusEvent): void {
-    this.animateRevealRail(event.currentTarget, false);
+  onImmersiveHandleHover(event: MouseEvent | FocusEvent, entering: boolean, variant: 'control' | 'transport'): void {
+    if (!(event.currentTarget instanceof HTMLElement)) {
+      return;
+    }
+    const handle = event.currentTarget;
+    this.animateImmersiveHandle(handle, entering, variant);
+    const iconWrapper = handle.querySelector<HTMLElement>('.immersive-handle__icon-stack, .immersive-handle__icon-row');
+    if (iconWrapper) {
+      this.animateImmersiveHandleIcon(iconWrapper, entering);
+    }
   }
 
   enterImmersive(): void {
@@ -453,69 +457,73 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     });
   }
 
-  private animateRevealRail(target: EventTarget | null, entering: boolean): void {
-    if (!(target instanceof HTMLElement)) {
-      return;
-    }
-    const rail = target;
-    this.revealRailAnimations.get(rail)?.cancel();
-    const computed = window.getComputedStyle(rail);
-    const startWidth = computed.width;
+  private animateImmersiveHandle(handle: HTMLElement, entering: boolean, variant: 'control' | 'transport'): void {
+    this.immersiveHandleAnimations.get(handle)?.cancel();
+    const computed = window.getComputedStyle(handle);
     const startOpacity = computed.opacity;
-    const targetWidth = entering ? '14px' : '6px';
-    const targetOpacity = entering ? '0.95' : '0.35';
+    const restingOpacity = '0.75';
+    const transforms = this.getImmersiveHandleTransforms(variant);
     const animation = animate(
-      rail,
-      {
-        width: [startWidth, targetWidth],
-        opacity: [startOpacity, targetOpacity],
-      },
-      { duration: entering ? 0.28 : 0.22, easing: 'ease-out' },
+      handle,
+      entering
+        ? { opacity: [startOpacity, '1'], transform: [transforms.base, transforms.hover] }
+        : { opacity: [startOpacity, restingOpacity], transform: [transforms.hover, transforms.base] },
+      { duration: 0.18, easing: 'ease-out' },
     );
-    this.revealRailAnimations.set(rail, animation);
+    this.immersiveHandleAnimations.set(handle, animation);
     animation.finished.finally(() => {
-      if (this.revealRailAnimations.get(rail) !== animation) {
+      if (this.immersiveHandleAnimations.get(handle) !== animation) {
         return;
       }
       if (entering) {
-        rail.style.width = targetWidth;
-        rail.style.opacity = targetOpacity;
+        handle.style.opacity = '1';
+        handle.style.transform = transforms.hover;
       } else {
-        rail.style.width = '';
-        rail.style.opacity = '';
+        handle.style.opacity = '';
+        handle.style.transform = '';
       }
-      this.revealRailAnimations.delete(rail);
+      this.immersiveHandleAnimations.delete(handle);
     });
-    const led = rail.querySelector<HTMLElement>('.reveal-rail__led');
-    if (led) {
-      this.animateRevealRailLed(led, entering);
-    }
   }
 
-  private animateRevealRailLed(led: HTMLElement, entering: boolean): void {
-    this.revealRailLedAnimations.get(led)?.cancel();
-    const startOpacity = window.getComputedStyle(led).opacity;
-    const targetOpacity = entering ? '0.8' : '0.25';
+  private animateImmersiveHandleIcon(iconWrapper: HTMLElement, entering: boolean): void {
+    this.immersiveHandleIconAnimations.get(iconWrapper)?.cancel();
+    const styles = window.getComputedStyle(iconWrapper);
+    const startColor = styles.color;
+    const mutedColor = styles.getPropertyValue('--handle-icon-muted')?.trim() || startColor;
+    const accentColor = styles.getPropertyValue('--handle-icon-active')?.trim() || startColor;
     const animation = animate(
-      led,
-      entering
-        ? { opacity: [startOpacity, '1', targetOpacity], transform: ['scale(0.9)', 'scale(1.15)', 'scale(1)'] }
-        : { opacity: [startOpacity, targetOpacity], transform: ['scale(1)', 'scale(0.92)', 'scale(1)'] },
-      { duration: entering ? 0.3 : 0.22, easing: 'ease-out' },
+      iconWrapper,
+      { color: [startColor, entering ? accentColor : mutedColor] },
+      { duration: 0.14, easing: 'ease-out' },
     );
-    this.revealRailLedAnimations.set(led, animation);
+    this.immersiveHandleIconAnimations.set(iconWrapper, animation);
     animation.finished.finally(() => {
-      if (this.revealRailLedAnimations.get(led) !== animation) {
+      if (this.immersiveHandleIconAnimations.get(iconWrapper) !== animation) {
         return;
       }
       if (entering) {
-        led.style.opacity = targetOpacity;
+        iconWrapper.style.color = accentColor;
       } else {
-        led.style.opacity = '';
+        iconWrapper.style.color = '';
       }
-      led.style.transform = '';
-      this.revealRailLedAnimations.delete(led);
+      this.immersiveHandleIconAnimations.delete(iconWrapper);
     });
+  }
+
+  private getImmersiveHandleTransforms(
+    variant: 'control' | 'transport',
+  ): { base: string; hover: string } {
+    if (variant === 'control') {
+      return {
+        base: 'translateY(-50%) scaleX(1)',
+        hover: 'translateY(-50%) scaleX(1.2)',
+      };
+    }
+    return {
+      base: 'translateX(-50%) scale(1)',
+      hover: 'translateX(-50%) scale(1.12)',
+    };
   }
 
   private animateHandleEnter(handle: HTMLElement): void {

@@ -39,6 +39,15 @@
   --ui-accent-soft: rgba(79, 138, 216, 0.15);
   --ui-text-main: #f5f7ff;
   --ui-text-muted: #a1a8c3;
+  --frame-handle-bg: var(--ui-surface-alt);
+  --frame-handle-icon-muted: var(--ui-text-muted);
+  --frame-handle-icon-active: var(--ui-accent);
+  --frame-handle-border-highlight: rgba(255, 255, 255, 0.22);
+  --frame-handle-border-shadow: rgba(8, 10, 18, 0.85);
+  --control-handle-width: 16px;
+  --control-handle-height: 104px;
+  --transport-handle-width: 68px;
+  --transport-handle-height: 22px;
 
   /* Neutral status colors */
   --run-neutral-bg: rgba(255, 255, 255, 0.04);
@@ -65,6 +74,15 @@
   /* Transitions */
   --transition-fast: 120ms ease-out;
   --transition-med: 180ms ease-out;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --control-handle-width: 20px;
+    --control-handle-height: 136px;
+    --transport-handle-width: 92px;
+    --transport-handle-height: 28px;
+  }
 }
 
 html,
