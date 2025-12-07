@@ -1,123 +1,223 @@
-<div class="control-shell">
-  <div class="cc-status" [class.cc-status--running]="isRunning" [class.cc-status--idle]="!isRunning">
-    <span class="cc-status__led" aria-hidden="true"></span>
-    <span class="cc-status__label">{{ status | titlecase }}</span>
-  </div>
+<div class="control-shell" [class.control-shell--quick]="isQuickVariant">
+  <ng-container *ngIf="!isQuickVariant; else quickVariant">
+    <div class="cc-status" [class.cc-status--running]="isRunning" [class.cc-status--idle]="!isRunning">
+      <span class="cc-status__led" aria-hidden="true"></span>
+      <span class="cc-status__label">{{ status | titlecase }}</span>
+    </div>
 
-  <div class="primary-actions">
-    <button type="button" class="primary-actions__cta" (click)="togglePlay()">
-      <mat-icon [ngClass]="playIconClass">{{ isRunning ? 'pause_circle' : 'play_circle' }}</mat-icon>
-      <div>
-        <p>{{ isRunning ? 'Pause' : 'Play' }} simulation</p>
-        <small>Apply current rule and color palette</small>
-      </div>
-    </button>
-    <button type="button" class="primary-actions__ghost" (click)="handleResetRequest()">
-      <mat-icon>restart_alt</mat-icon>
-      <div>
-        <p>Reset</p>
-        <small>Clear grid &amp; reseed rule</small>
-      </div>
-    </button>
-    <label class="auto-immersive-toggle">
-      <div class="auto-immersive-toggle__switch">
-        <input
-          type="checkbox"
-          [checked]="autoImmersivePreference === 'enabled'"
-          (change)="onAutoImmersiveToggle($event)"
-        />
-        <span class="auto-immersive-toggle__thumb"></span>
-      </div>
-      <div class="auto-immersive-toggle__content">
-        <div class="auto-immersive-toggle__label">Auto immersive mode</div>
-        <div class="auto-immersive-toggle__sublabel">Enter immersive view automatically when idle</div>
-      </div>
-    </label>
-  </div>
-
-  <nav class="control-tabs" aria-label="Control sections">
-    <button
-      type="button"
-      *ngFor="let tab of tabs"
-      (click)="setActiveTab(tab.id)"
-      [class.is-active]="activeTab === tab.id"
-    >
-      {{ tab.label }}
-    </button>
-  </nav>
-
-  <section class="control-section" *ngIf="activeTab === 'presets'">
-    <div class="rule-carousel" aria-label="Automata rules">
-      <button type="button" class="rule-carousel__nav rule-carousel__nav--prev" (click)="scrollCarousel(-1)">
-        <mat-icon>chevron_left</mat-icon>
+    <div class="primary-actions">
+      <button type="button" class="primary-actions__cta" (click)="togglePlay()">
+        <mat-icon [ngClass]="playIconClass">{{ isRunning ? 'pause_circle' : 'play_circle' }}</mat-icon>
+        <div>
+          <p>{{ isRunning ? 'Pause' : 'Play' }} simulation</p>
+          <small>Apply current rule and color palette</small>
+        </div>
       </button>
-      <div class="rule-carousel__viewport" #ruleCarousel>
-        <div class="rule-carousel__track">
-          <button
-            type="button"
-            class="rule-pill"
-            *ngFor="let preset of rulePresets"
-            [class.rule-pill--active]="preset.id === selectedPreset.id"
-            (click)="selectPreset(preset)"
-          >
-            <div class="rule-pill__title">{{ preset.label }}</div>
-          </button>
+      <button type="button" class="primary-actions__ghost" (click)="handleResetRequest()">
+        <mat-icon>restart_alt</mat-icon>
+        <div>
+          <p>Reset</p>
+          <small>Clear grid &amp; reseed rule</small>
+        </div>
+      </button>
+      <label class="auto-immersive-toggle" *ngIf="shouldShowAutoImmersiveToggle">
+        <div class="auto-immersive-toggle__switch">
+          <input
+            type="checkbox"
+            [checked]="autoImmersivePreference === 'enabled'"
+            (change)="onAutoImmersiveToggle($event)"
+          />
+          <span class="auto-immersive-toggle__thumb"></span>
+        </div>
+        <div class="auto-immersive-toggle__content">
+          <div class="auto-immersive-toggle__label">Auto immersive mode</div>
+          <div class="auto-immersive-toggle__sublabel">Enter immersive view automatically when idle</div>
+        </div>
+      </label>
+    </div>
+
+    <nav class="control-tabs" aria-label="Control sections">
+      <button
+        type="button"
+        *ngFor="let tab of tabs"
+        (click)="setActiveTab(tab.id)"
+        [class.is-active]="activeTab === tab.id"
+      >
+        {{ tab.label }}
+      </button>
+    </nav>
+
+    <section class="control-section" *ngIf="activeTab === 'presets'">
+      <div class="rule-carousel" aria-label="Automata rules">
+        <button type="button" class="rule-carousel__nav rule-carousel__nav--prev" (click)="scrollCarousel(-1)">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <div class="rule-carousel__viewport" #ruleCarousel>
+          <div class="rule-carousel__track">
+            <button
+              type="button"
+              class="rule-pill"
+              *ngFor="let preset of rulePresets"
+              [class.rule-pill--active]="preset.id === selectedPreset.id"
+              (click)="selectPreset(preset)"
+            >
+              <div class="rule-pill__title">{{ preset.label }}</div>
+            </button>
+          </div>
+        </div>
+        <button type="button" class="rule-carousel__nav rule-carousel__nav--next" (click)="scrollCarousel(1)">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+
+      <div class="rule-details">
+        <div>
+          <p class="rule-details__eyebrow">Selected rule</p>
+          <h4>{{ selectedPreset.label }}</h4>
+        </div>
+        <p class="rule-details__summary">
+          {{ selectedPreset.summary }}
+        </p>
+      </div>
+    </section>
+
+    <section class="control-section" *ngIf="activeTab === 'rule'">
+      <div class="rule-panel">
+        <h4>Active rule</h4>
+        <p class="rule-panel__name">{{ selectedPreset.label }}</p>
+        <p class="rule-panel__summary">{{ selectedPreset.summary }}</p>
+        <div class="slider-field">
+          <label>
+            <span>Speed</span>
+            <small>{{ config.speed }} fps</small>
+          </label>
+          <input
+            type="range"
+            min="10"
+            max="120"
+            step="5"
+            [value]="config.speed"
+            (input)="onSpeedChange($event)"
+          />
         </div>
       </div>
-      <button type="button" class="rule-carousel__nav rule-carousel__nav--next" (click)="scrollCarousel(1)">
-        <mat-icon>chevron_right</mat-icon>
-      </button>
-    </div>
+    </section>
 
-    <div class="rule-details">
-      <div>
-        <p class="rule-details__eyebrow">Selected rule</p>
-        <h4>{{ selectedPreset.label }}</h4>
+    <section class="control-section" *ngIf="activeTab === 'visual'">
+      <div class="color-grid">
+        <div class="color-row">
+          <div>
+            <p>Background</p>
+            <small>Dead cells &amp; canvas clear color</small>
+          </div>
+          <app-color-picker
+            [color]="backgroundColor.getHexString()"
+            (chosenColor)="onBackgroundColorChosen($event)"
+          ></app-color-picker>
+        </div>
+        <div class="color-row">
+          <div>
+            <p>Active</p>
+            <small>Living cells highlight</small>
+          </div>
+          <app-color-picker
+            [color]="activationColor.getHexString()"
+            (chosenColor)="onActivationColorChosen($event)"
+          ></app-color-picker>
+        </div>
+        <ng-container *ngFor="let extra of additionalColors">
+          <div class="color-row">
+            <div>
+              <p>{{ extra.displayName }}</p>
+              <small>Rule-specific accent</small>
+            </div>
+            <app-color-picker
+              [color]="extra.color.getHexString()"
+              (chosenColor)="onAdditionalColorChosen(extra.displayName, $event)"
+            ></app-color-picker>
+          </div>
+        </ng-container>
       </div>
-      <p class="rule-details__summary">
-        {{ selectedPreset.summary }}
-      </p>
-    </div>
-  </section>
+    </section>
 
-  <section class="control-section" *ngIf="activeTab === 'rule'">
-    <div class="rule-panel">
-      <h4>Active rule</h4>
-      <p class="rule-panel__name">{{ selectedPreset.label }}</p>
-      <p class="rule-panel__summary">{{ selectedPreset.summary }}</p>
+    <section class="control-section" *ngIf="activeTab === 'grid'">
       <div class="slider-field">
         <label>
-          <span>Speed</span>
-          <small>{{ config.speed }} fps</small>
+          <span>Cell size</span>
+          <small>{{ config.cellSize }} px</small>
         </label>
         <input
           type="range"
-          min="10"
-          max="120"
-          step="5"
-          [value]="config.speed"
-          (input)="onSpeedChange($event)"
+          min="1"
+          max="40"
+          step="1"
+          [value]="config.cellSize"
+          (input)="onCellSizeChange($event)"
         />
       </div>
-    </div>
-  </section>
+      <div class="grid-actions">
+        <button type="button" (click)="handleStepRequest()" [disabled]="status === 'running'">
+          <mat-icon>skip_next</mat-icon>
+          Step once
+        </button>
+        <button type="button" (click)="clearGrid()">
+          <mat-icon>grid_off</mat-icon>
+          Clear grid
+        </button>
+      </div>
+    </section>
+  </ng-container>
+</div>
 
-  <section class="control-section" *ngIf="activeTab === 'visual'">
-    <div class="color-grid">
-      <div class="color-row">
-        <div>
-          <p>Background</p>
-          <small>Dead cells &amp; canvas clear color</small>
+<ng-template #quickVariant>
+  <div class="control-quick">
+    <div class="control-quick__header">
+      <p class="control-quick__eyebrow">Rule &amp; look</p>
+      <div class="control-quick__active">
+        <span class="control-quick__rule-name">{{ selectedPreset.label }}</span>
+        <small class="control-quick__rule-summary">{{ selectedPreset.summary }}</small>
+      </div>
+    </div>
+
+    <div class="control-quick__section">
+      <div class="rule-carousel control-quick__carousel" aria-label="Automata rules">
+        <button type="button" class="rule-carousel__nav rule-carousel__nav--prev" (click)="scrollCarousel(-1)">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <div class="rule-carousel__viewport" #ruleCarousel>
+          <div class="rule-carousel__track">
+            <button
+              type="button"
+              class="rule-pill"
+              *ngFor="let preset of rulePresets"
+              [class.rule-pill--active]="preset.id === selectedPreset.id"
+              (click)="selectPreset(preset)"
+            >
+              <div class="rule-pill__title">{{ preset.label }}</div>
+            </button>
+          </div>
+        </div>
+        <button type="button" class="rule-carousel__nav rule-carousel__nav--next" (click)="scrollCarousel(1)">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="control-quick__section control-quick__colors">
+      <div class="quick-color-row">
+        <div class="quick-color-row__meta">
+          <p>Dead cells</p>
+          <small>Background</small>
         </div>
         <app-color-picker
           [color]="backgroundColor.getHexString()"
           (chosenColor)="onBackgroundColorChosen($event)"
         ></app-color-picker>
       </div>
-      <div class="color-row">
-        <div>
-          <p>Active</p>
-          <small>Living cells highlight</small>
+      <div class="quick-color-row">
+        <div class="quick-color-row__meta">
+          <p>Alive cells</p>
+          <small>Activation</small>
         </div>
         <app-color-picker
           [color]="activationColor.getHexString()"
@@ -125,10 +225,10 @@
         ></app-color-picker>
       </div>
       <ng-container *ngFor="let extra of additionalColors">
-        <div class="color-row">
-          <div>
+        <div class="quick-color-row">
+          <div class="quick-color-row__meta">
             <p>{{ extra.displayName }}</p>
-            <small>Rule-specific accent</small>
+            <small>Accent</small>
           </div>
           <app-color-picker
             [color]="extra.color.getHexString()"
@@ -137,32 +237,15 @@
         </div>
       </ng-container>
     </div>
-  </section>
 
-  <section class="control-section" *ngIf="activeTab === 'grid'">
-    <div class="slider-field">
-      <label>
-        <span>Cell size</span>
-        <small>{{ config.cellSize }} px</small>
-      </label>
-      <input
-        type="range"
-        min="1"
-        max="40"
-        step="1"
-        [value]="config.cellSize"
-        (input)="onCellSizeChange($event)"
-      />
+    <div class="control-quick__section">
+      <div class="quick-slider">
+        <div class="quick-slider__label">
+          <span>Cell size</span>
+          <small>{{ config.cellSize }} px</small>
+        </div>
+        <app-automata-cell-size-slider class="quick-slider__input"></app-automata-cell-size-slider>
+      </div>
     </div>
-    <div class="grid-actions">
-      <button type="button" (click)="handleStepRequest()" [disabled]="status === 'running'">
-        <mat-icon>skip_next</mat-icon>
-        Step once
-      </button>
-      <button type="button" (click)="clearGrid()">
-        <mat-icon>grid_off</mat-icon>
-        Clear grid
-      </button>
-    </div>
-  </section>
-</div>
+  </div>
+</ng-template>

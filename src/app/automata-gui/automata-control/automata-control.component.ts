@@ -4,12 +4,14 @@ import {
   EventEmitter,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   Output,
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import * as THREE from 'three';
+import { Subscription } from 'rxjs';
 import { AdditionalColorType, CellularAutomaton } from 'src/app/automata-engine/cellularautomaton';
 import { DefaultSettings } from 'src/app/automata-engine/defaultSettings';
 import { ThreeService } from 'src/app/automata-engine/three-service';
@@ -35,7 +37,7 @@ interface RulePreset {
   styleUrls: ['./automata-control.component.scss'],
   standalone: false,
 })
-export class AutomataControlComponent implements OnChanges, OnInit {
+export class AutomataControlComponent implements OnChanges, OnInit, OnDestroy {
   @ViewChild('ruleCarousel') private ruleCarousel?: ElementRef<HTMLDivElement>;
   private ruleCarouselIndex = 0;
   @Input() config: SimulationConfig = {
@@ -51,6 +53,7 @@ export class AutomataControlComponent implements OnChanges, OnInit {
 
   @Input() uiState?: UiState;
   @Output() uiStateChange = new EventEmitter<Partial<UiState>>();
+  @Input() variant: 'panel' | 'quick-rule' = 'panel';
 
   readonly tabs: { id: UiTab; label: string }[] = [
     { id: 'presets', label: 'Presets' },
@@ -107,6 +110,7 @@ export class AutomataControlComponent implements OnChanges, OnInit {
   selectedPreset: RulePreset = this.rulePresets[0];
   backgroundColor: THREE.Color = DefaultSettings.backgroundColor.clone();
   activationColor: THREE.Color = DefaultSettings.activationColor.clone();
+  private automataSizeSub?: Subscription;
 
   constructor(private readonly three: ThreeService) {}
 
@@ -114,12 +118,23 @@ export class AutomataControlComponent implements OnChanges, OnInit {
     this.syncConfigToEngine();
     this.initializePresetFromEngine();
     this.syncColorsWithEngine();
+    this.automataSizeSub = this.three.getAutomataSizeObservable().subscribe((size) => {
+      if (this.config.cellSize === size) {
+        return;
+      }
+      this.config = { ...this.config, cellSize: size };
+      this.configChange.emit(this.config);
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['config'] && !changes['config'].firstChange) {
       this.syncConfigToEngine();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.automataSizeSub?.unsubscribe();
   }
 
   get activeTab(): UiTab {
@@ -146,6 +161,14 @@ export class AutomataControlComponent implements OnChanges, OnInit {
       return this.three.cellularAutomaton.additionalColorsArray;
     }
     return [];
+  }
+
+  get isQuickVariant(): boolean {
+    return this.variant === 'quick-rule';
+  }
+
+  get shouldShowAutoImmersiveToggle(): boolean {
+    return !this.isQuickVariant && this.uiState?.isMobile !== true;
   }
 
   handlePlayRequest(): void {

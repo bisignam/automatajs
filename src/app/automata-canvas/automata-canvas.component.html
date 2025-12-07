@@ -18,39 +18,16 @@
       <lucide-icon name="eye" class="canvas-mode-handle__icon" size="16"></lucide-icon>
       <span class="canvas-mode-handle__label">Immersive mode</span>
     </button>
-    <div class="canvas-top-center-handle" *ngIf="isMobileLayout">
-      <button
-        *ngIf="!isMobileFullScreen"
-        type="button"
-        class="canvas-top-chip"
-        (click)="openControlsClick()"
-      >
-        Controls
-      </button>
-      <button
-        *ngIf="isMobileFullScreen"
-        type="button"
-        class="canvas-top-chip"
-        (click)="exitMobileFullScreenClick()"
-      >
-        Exit full screen
-      </button>
-    </div>
   </div>
   <div class="canvas-top-controls">
     <button
-      *ngIf="isMobileLayout && !isMobileFullScreen"
+      *ngIf="isMobileLayout"
       type="button"
       class="canvas-icon-button"
-      aria-label="Enter full screen"
-      (click)="enterMobileFullScreen()"
+      [attr.aria-label]="isMobileFullScreen ? 'Exit full screen' : 'Enter full screen'"
+      (click)="isMobileFullScreen ? exitMobileFullScreenClick() : enterMobileFullScreen()"
     >
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <polyline points="7,3 7,7 3,7"></polyline>
-        <polyline points="17,3 17,7 21,7"></polyline>
-        <polyline points="7,21 7,17 3,17"></polyline>
-        <polyline points="17,21 17,17 21,17"></polyline>
-      </svg>
+      <lucide-icon [name]="isMobileFullScreen ? 'minimize-2' : 'maximize-2'" size="16"></lucide-icon>
     </button>
     <button
       #screenshotButton
@@ -97,40 +74,4 @@
     (wheel)="onCanvasWheel($event)"
   ></canvas>
 
-  <button
-    *ngIf="isImmersive && ruleName"
-    type="button"
-    class="rule-badge"
-    (click)="openRuleOverlay()"
-  >
-    {{ ruleName }}
-  </button>
-
-  <div
-    *ngIf="ruleOverlayOpen"
-    class="rule-overlay-backdrop"
-    (click)="closeRuleOverlay()"
-  >
-    <div class="rule-overlay-panel" (click)="$event.stopPropagation()">
-      <div class="rule-overlay-header">
-        <span class="rule-overlay-title">{{ ruleName }}</span>
-        <button
-          type="button"
-          class="rule-overlay-close"
-          aria-label="Close rule details"
-          (click)="closeRuleOverlay()"
-        >
-          ×
-        </button>
-      </div>
-      <div class="rule-overlay-body">
-        <p *ngIf="ruleDescription; else noDescription">
-          {{ ruleDescription }}
-        </p>
-        <ng-template #noDescription>
-          <p class="rule-overlay-description-muted">No description available for this rule yet.</p>
-        </ng-template>
-      </div>
-    </div>
-  </div>
 </div>

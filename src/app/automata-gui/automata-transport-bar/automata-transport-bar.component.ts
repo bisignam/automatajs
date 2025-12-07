@@ -15,12 +15,16 @@ import { SimulationStatus } from '../ui-state';
 export class AutomataTransportBarComponent {
   @Input() status: SimulationStatus = 'idle';
   @Input() speed: number = DefaultSettings.fpsCap;
+  @Input() isMobileLayout = false;
+  @Input() mobileCollapsed = false;
 
   @Output() play = new EventEmitter<void>();
   @Output() pause = new EventEmitter<void>();
   @Output() step = new EventEmitter<void>();
   @Output() reset = new EventEmitter<void>();
   @Output() speedChange = new EventEmitter<number>();
+  @Output() settingsToggle = new EventEmitter<void>();
+  @Output() collapseToggle = new EventEmitter<void>();
 
   get isRunning(): boolean {
     return this.status === 'running';

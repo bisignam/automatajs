@@ -1,14 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  OnChanges,
-  Output,
-  SimpleChanges,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { animate } from '@motionone/dom';
 import { ThreeService } from '../automata-engine/three-service';
 
@@ -18,7 +8,7 @@ import { ThreeService } from '../automata-engine/three-service';
   styleUrls: ['./automata-canvas.component.scss'],
   standalone: false,
 })
-export class AutomataCanvasComponent implements AfterViewInit, OnChanges {
+export class AutomataCanvasComponent implements AfterViewInit {
   @ViewChild('automataCanvasContainer')
   automataCanvasContainer?: ElementRef<HTMLCanvasElement>;
   @ViewChild('lensCanvas')
@@ -44,12 +34,9 @@ export class AutomataCanvasComponent implements AfterViewInit, OnChanges {
   @Input() isMobileLayout = false;
   @Input() isMobileFullScreen = false;
   @Input() showIdleCountdown = false;
-  @Input() ruleName = '';
-  @Input() ruleDescription = '';
   @Output() enterImmersiveMode = new EventEmitter<void>();
   @Output() requestMobileFullScreen = new EventEmitter<void>();
   @Output() exitMobileFullScreen = new EventEmitter<void>();
-  @Output() requestOpenControls = new EventEmitter<void>();
   lensEnabled = false;
   private readonly lensSize = 180;
   private readonly lensZoomMin = 2;
@@ -59,7 +46,6 @@ export class AutomataCanvasComponent implements AfterViewInit, OnChanges {
   private lastLensDomX: number | null = null;
   private lastLensDomY: number | null = null;
   private lensAnimationFrameId: number | null = null;
-  ruleOverlayOpen = false;
 
   constructor(threeService: ThreeService) {
     this.threeService = threeService;
@@ -68,12 +54,6 @@ export class AutomataCanvasComponent implements AfterViewInit, OnChanges {
   ngAfterViewInit(): void {
     if (this.automataCanvasContainer) {
       this.threeService.setup(this.automataCanvasContainer);
-    }
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if ((changes['isImmersive'] && !changes['isImmersive'].currentValue) || (!this.ruleName)) {
-      this.ruleOverlayOpen = false;
     }
   }
 
@@ -229,13 +209,6 @@ export class AutomataCanvasComponent implements AfterViewInit, OnChanges {
     this.exitMobileFullScreen.emit();
   }
 
-  openControlsClick(): void {
-    if (!this.isMobileLayout) {
-      return;
-    }
-    this.requestOpenControls.emit();
-  }
-
   onEnterImmersiveHover(entering: boolean, element?: HTMLElement): void {
     if (!element) {
       return;
@@ -271,17 +244,6 @@ export class AutomataCanvasComponent implements AfterViewInit, OnChanges {
         }
       }
     }
-  }
-
-  openRuleOverlay(): void {
-    if (!this.ruleName) {
-      return;
-    }
-    this.ruleOverlayOpen = true;
-  }
-
-  closeRuleOverlay(): void {
-    this.ruleOverlayOpen = false;
   }
 
   private startLensLoop(): void {

@@ -1,39 +1,128 @@
-<div class="transport-bar">
-  <div class="transport-bar__controls">
+<ng-container *ngIf="!isMobileLayout; else mobileTransport">
+  <div class="transport-bar">
+    <div class="transport-bar__controls">
+      <button
+        type="button"
+        class="transport-button transport-button--primary"
+        [ngClass]="playButtonClass"
+        (click)="onTogglePlay()"
+      >
+        <mat-icon>{{ isRunning ? 'pause' : 'play_arrow' }}</mat-icon>
+        <span>{{ isRunning ? 'Pause' : 'Play' }}</span>
+      </button>
+      <button type="button" class="transport-button" (click)="step.emit()" [disabled]="status === 'running'">
+        <mat-icon>skip_next</mat-icon>
+        <span>Step</span>
+      </button>
+      <button type="button" class="transport-button" (click)="reset.emit()">
+        <mat-icon>restart_alt</mat-icon>
+        <span>Reset</span>
+      </button>
+    </div>
+
+    <div class="transport-bar__speed">
+      <div class="transport-bar__speed-label">
+        <mat-icon>speed</mat-icon>
+        <div class="transport-bar__speed-meta">
+          <span>Speed</span>
+          <small>{{ speed }} fps</small>
+        </div>
+      </div>
+      <input
+        type="range"
+        min="5"
+        max="120"
+        step="5"
+        [value]="speed"
+        (input)="onSpeedInput($event)"
+      />
+    </div>
+  </div>
+</ng-container>
+
+<ng-template #collapsedMobile>
+  <div class="transport-bar transport-bar--mobile transport-bar--mobile-collapsed">
     <button
       type="button"
-      class="transport-button transport-button--primary"
-      [ngClass]="playButtonClass"
-      (click)="onTogglePlay()"
+      class="transport-icon-button transport-icon-button--primary"
+      aria-label="Expand transport controls"
+      (click)="collapseToggle.emit()"
     >
-      <mat-icon>{{ isRunning ? 'pause' : 'play_arrow' }}</mat-icon>
-      <span>{{ isRunning ? 'Pause' : 'Play' }}</span>
+      <mat-icon>expand_less</mat-icon>
     </button>
-    <button type="button" class="transport-button" (click)="step.emit()" [disabled]="status === 'running'">
-      <mat-icon>skip_next</mat-icon>
-      <span>Step</span>
-    </button>
-    <button type="button" class="transport-button" (click)="reset.emit()">
-      <mat-icon>restart_alt</mat-icon>
-      <span>Reset</span>
+    <button
+      type="button"
+      class="transport-icon-button"
+      aria-label="Open settings drawer"
+      (click)="settingsToggle.emit()"
+    >
+      <mat-icon>settings</mat-icon>
     </button>
   </div>
+</ng-template>
 
-  <div class="transport-bar__speed">
-    <div class="transport-bar__speed-label">
-      <mat-icon>speed</mat-icon>
-      <div class="transport-bar__speed-meta">
-        <span>Speed</span>
-        <small>{{ speed }} fps</small>
+<ng-template #mobileTransport>
+  <ng-container *ngIf="!mobileCollapsed; else collapsedMobile">
+    <div class="transport-bar transport-bar--mobile">
+      <div class="transport-mobile__cluster">
+        <button
+          type="button"
+          class="transport-icon-button transport-icon-button--primary"
+          [ngClass]="playButtonClass"
+          (click)="onTogglePlay()"
+          [attr.aria-label]="isRunning ? 'Pause simulation' : 'Play simulation'"
+        >
+          <mat-icon>{{ isRunning ? 'pause' : 'play_arrow' }}</mat-icon>
+        </button>
+        <button
+          type="button"
+          class="transport-icon-button"
+          (click)="step.emit()"
+          [disabled]="status === 'running'"
+          aria-label="Step once"
+        >
+          <mat-icon>skip_next</mat-icon>
+        </button>
+        <button
+          type="button"
+          class="transport-icon-button"
+          (click)="reset.emit()"
+          aria-label="Reset grid"
+        >
+          <mat-icon>restart_alt</mat-icon>
+        </button>
+      </div>
+      <div class="transport-mobile__speed">
+        <mat-icon>speed</mat-icon>
+        <input
+          type="range"
+          min="5"
+          max="120"
+          step="5"
+          [value]="speed"
+          (input)="onSpeedInput($event)"
+          aria-label="Adjust playback speed"
+        />
+        <span class="transport-mobile__speed-value">{{ speed }} fps</span>
+      </div>
+      <div class="transport-mobile__cluster transport-mobile__cluster--actions">
+        <button
+          type="button"
+          class="transport-icon-button"
+          aria-label="Open settings drawer"
+          (click)="settingsToggle.emit()"
+        >
+          <mat-icon>settings</mat-icon>
+        </button>
+        <button
+          type="button"
+          class="transport-icon-button"
+          aria-label="Collapse controls"
+          (click)="collapseToggle.emit()"
+        >
+          <mat-icon>expand_more</mat-icon>
+        </button>
       </div>
     </div>
-    <input
-      type="range"
-      min="5"
-      max="120"
-      step="5"
-      [value]="speed"
-      (input)="onSpeedInput($event)"
-    />
-  </div>
-</div>
+  </ng-container>
+</ng-template>

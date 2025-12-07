@@ -104,6 +104,8 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   isMobileLayout = false;
   isMobileFullScreen = false;
   mobileControlsOpen = false;
+  mobileSettingsBarCollapsed = false;
+  ruleOverlayOpen = true;
   private readonly updateIsMobileLayoutBound = () => this.updateIsMobileLayout();
 
   ngOnInit(): void {
@@ -140,12 +142,34 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     return this.uiState.isControlPanelOpen;
   }
 
+  get shouldShowRuleOverlayDock(): boolean {
+    return !this.isMobileLayout;
+  }
+
+  get isRuleOverlayExpanded(): boolean {
+    return this.shouldShowRuleOverlayDock && this.ruleOverlayOpen;
+  }
+
   toggleControls(): void {
     if (this.isImmersive) {
       this.exitImmersiveMode();
       return;
     }
     this.patchUiState({ isControlPanelOpen: !this.panelOpen, lastUserInteractionAt: Date.now() });
+  }
+
+  toggleRuleOverlay(): void {
+    if (!this.shouldShowRuleOverlayDock) {
+      return;
+    }
+    this.ruleOverlayOpen = !this.ruleOverlayOpen;
+  }
+
+  closeRuleOverlay(): void {
+    if (!this.shouldShowRuleOverlayDock) {
+      return;
+    }
+    this.ruleOverlayOpen = false;
   }
 
   onImmersiveHandleHover(event: MouseEvent | FocusEvent, entering: boolean, variant: 'control' | 'transport'): void {
@@ -189,6 +213,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.clearIdleDelayTimeout();
     this.cancelIdleCountdown();
     this.clearTransportAutoHide();
+    this.ruleOverlayOpen = false;
     this.setTransportVisibility(false, { animate: true });
     this.patchUiState({
       isImmersive: true,
@@ -207,6 +232,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.setTransportVisibility(true, { animate: true });
     this.clearTransportAutoHide();
     this.pendingPanelEnterAnimation = true;
+    this.ruleOverlayOpen = true;
     this.patchUiState({
       isImmersive: false,
       isControlPanelOpen: true,
@@ -314,11 +340,35 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.isAboutOpen = false;
   }
 
+  onMobileSettingsToggle(): void {
+    if (!this.isMobileLayout) {
+      return;
+    }
+    if (this.mobileControlsOpen) {
+      this.closeMobileControlsOverlay();
+      return;
+    }
+    this.openMobileControlsOverlay();
+  }
+
+  onMobileSettingsCollapseToggle(): void {
+    if (!this.isMobileLayout) {
+      return;
+    }
+    this.mobileSettingsBarCollapsed = !this.mobileSettingsBarCollapsed;
+  }
+
   openMobileControlsOverlay(): void {
+    if (!this.isMobileLayout) {
+      return;
+    }
     this.mobileControlsOpen = true;
   }
 
   closeMobileControlsOverlay(): void {
+    if (!this.isMobileLayout) {
+      return;
+    }
     this.mobileControlsOpen = false;
   }
 
@@ -335,12 +385,15 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   showTransport(): void {
+    if (this.isMobileLayout) {
+      return;
+    }
     this.setTransportVisibility(true, { animate: true });
     this.resetTransportAutoHideTimer();
   }
 
   onImmersiveTransportInteraction(): void {
-    if (!this.isImmersive || !this.transportVisible) {
+    if (this.isMobileLayout || !this.isImmersive || !this.transportVisible) {
       return;
     }
     this.resetTransportAutoHideTimer();
@@ -388,10 +441,20 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   private updateIsMobileLayout(): void {
     const width = window.innerWidth;
     const nextIsMobileLayout = width <= 960;
+    const previousIsMobileLayout = this.isMobileLayout;
     this.isMobileLayout = nextIsMobileLayout;
     if (!nextIsMobileLayout) {
       this.isMobileFullScreen = false;
+    }
+    if (previousIsMobileLayout !== nextIsMobileLayout) {
       this.mobileControlsOpen = false;
+      this.mobileSettingsBarCollapsed = false;
+      if (nextIsMobileLayout) {
+        this.ruleOverlayOpen = false;
+        this.isMobileFullScreen = false;
+      } else if (!this.isImmersive) {
+        this.ruleOverlayOpen = true;
+      }
     }
     this.updateResponsiveState(width);
   }
@@ -458,7 +521,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
 
   private resetTransportAutoHideTimer(): void {
     this.clearTransportAutoHide();
-    if (!this.isImmersive) {
+    if (!this.isImmersive || this.isMobileLayout) {
       return;
     }
     this.transportAutoHideTimeoutId = window.setTimeout(() => {
@@ -805,7 +868,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   private shouldAutoImmersive(): boolean {
-    return !this.isImmersive && this.uiState.status === 'running';
+    return !this.isMobileLayout && !this.isImmersive && this.uiState.status === 'running';
   }
 
   private requestPanelClose(animate: boolean): void {
