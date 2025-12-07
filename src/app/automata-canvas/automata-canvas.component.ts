@@ -13,6 +13,8 @@ export class AutomataCanvasComponent implements AfterViewInit {
   automataCanvasContainer?: ElementRef<HTMLCanvasElement>;
   threeService: ThreeService;
   private screenshotAnimations = new WeakMap<HTMLElement, ReturnType<typeof animate>>();
+  isPainting = false;
+  isCursorOverCanvas = false;
 
   constructor(threeService: ThreeService) {
     this.threeService = threeService;
@@ -79,5 +81,28 @@ export class AutomataCanvasComponent implements AfterViewInit {
         this.screenshotAnimations.delete(element);
       }
     });
+  }
+
+  onCanvasMouseDown(_event: MouseEvent): void {
+    this.isPainting = true;
+  }
+
+  onCanvasMouseUp(_event: MouseEvent): void {
+    this.isPainting = false;
+  }
+
+  onCanvasMouseEnter(): void {
+    this.isCursorOverCanvas = true;
+  }
+
+  onCanvasMouseMove(): void {
+    if (!this.isCursorOverCanvas) {
+      this.isCursorOverCanvas = true;
+    }
+  }
+
+  onCanvasMouseLeave(_event: MouseEvent): void {
+    this.isPainting = false;
+    this.isCursorOverCanvas = false;
   }
 }

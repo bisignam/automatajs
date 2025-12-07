@@ -242,40 +242,42 @@ export class ThreeService implements OnDestroy {
 
       canvas.addEventListener('mousemove', (e) => {
         e.preventDefault();
-        this.mouse.x =
-          Math.floor(
-            (e.offsetX - canvas.clientWidth / 2) / this._automataSize.value
-          ) *
-            this._automataSize.value -
-          this._automataSize.value / 2;
-        this.mouse.y =
-          Math.floor(
-            (canvas.clientHeight / 2 - e.offsetY) / this._automataSize.value
-          ) *
-            this._automataSize.value -
-          this._automataSize.value / 2;
+        this.updateMousePositionFromEvent(canvas, e);
       });
 
       canvas.addEventListener('click', (e) => {
         e.preventDefault();
-        this.mouse.x =
-          Math.floor(
-            (e.offsetX - canvas.clientWidth / 2) / this._automataSize.value
-          ) *
-            this._automataSize.value -
-          this._automataSize.value / 2;
-        this.mouse.y =
-          Math.floor(
-            (canvas.clientHeight / 2 - e.offsetY) / this._automataSize.value
-          ) *
-            this._automataSize.value -
-          this._automataSize.value / 2;
+        this.updateMousePositionFromEvent(canvas, e);
       });
 
       canvas.addEventListener('mouseup', () => {
         this.isDrawing = false;
       });
+      canvas.addEventListener('mouseenter', (e) => {
+        this.updateMousePositionFromEvent(canvas, e);
+      });
+      canvas.addEventListener('mouseleave', () => {
+        this.isDrawing = false;
+      });
     }
+  }
+
+  private updateMousePositionFromEvent(
+    canvas: HTMLCanvasElement,
+    event: MouseEvent
+  ): void {
+    this.mouse.x =
+      Math.floor(
+        (event.offsetX - canvas.clientWidth / 2) / this._automataSize.value
+      ) *
+        this._automataSize.value -
+      this._automataSize.value / 2;
+    this.mouse.y =
+      Math.floor(
+        (canvas.clientHeight / 2 - event.offsetY) / this._automataSize.value
+      ) *
+        this._automataSize.value -
+      this._automataSize.value / 2;
   }
 
   private setupChangeColorShader(

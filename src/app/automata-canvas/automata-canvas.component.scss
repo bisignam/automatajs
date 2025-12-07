@@ -9,10 +9,14 @@
   height: 100%;
 }
 
-#automataCanvasContainer {
+.automata-canvas {
   width: 100% !important;
   height: 100% !important;
   display: block;
+}
+
+.automata-canvas-wrapper--painting .automata-canvas {
+  cursor: crosshair;
 }
 
 .canvas-screenshot-btn {

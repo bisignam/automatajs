@@ -1,4 +1,7 @@
-<div class="automata-canvas-wrapper">
+<div
+  class="automata-canvas-wrapper"
+  [class.automata-canvas-wrapper--painting]="isPainting || isCursorOverCanvas"
+>
   <button
     #screenshotButton
     type="button"
@@ -12,5 +15,14 @@
   >
     <lucide-icon name="camera" size="16"></lucide-icon>
   </button>
-  <canvas #automataCanvasContainer id="automataCanvasContainer"></canvas>
+  <canvas
+    #automataCanvasContainer
+    id="automataCanvasContainer"
+    class="automata-canvas"
+    (mousedown)="onCanvasMouseDown($event)"
+    (mouseup)="onCanvasMouseUp($event)"
+    (mouseleave)="onCanvasMouseLeave($event)"
+    (mouseenter)="onCanvasMouseEnter()"
+    (mousemove)="onCanvasMouseMove()"
+  ></canvas>
 </div>
