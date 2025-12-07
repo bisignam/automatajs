@@ -38,6 +38,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   transportVisible = true;
   idleCountdownVisible = false;
   idleCountdownRemaining = 0;
+  exitPillVisible = false;
 
   @ViewChild('appHeader') private headerRef?: ElementRef<HTMLElement>;
   @ViewChild('shellMain') private shellRef?: ElementRef<HTMLElement>;
@@ -60,6 +61,12 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       this.animateHandleEnter(ref.nativeElement);
     }
   }
+  @ViewChild('exitPillButton') set exitPillButtonRef(ref: ElementRef<HTMLButtonElement> | undefined) {
+    this.exitPillEl = ref?.nativeElement;
+    if (this.exitPillEl) {
+      this.animateExitPillEnter(this.exitPillEl);
+    }
+  }
 
   private controlPanelEl?: HTMLElement;
   private transportBarEl?: HTMLElement;
@@ -68,6 +75,8 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   private transportAnimation?: ReturnType<typeof animate>;
   private immersiveHandleAnimations = new WeakMap<HTMLElement, ReturnType<typeof animate>>();
   private immersiveHandleIconAnimations = new WeakMap<HTMLElement, ReturnType<typeof animate>>();
+  private exitPillHoverAnimations = new WeakMap<HTMLElement, ReturnType<typeof animate>>();
+  private exitPillEl?: HTMLElement;
   private idleCountdownIntervalId?: number;
   private idleDelayTimeoutId?: number;
   private transportAutoHideTimeoutId?: number;
@@ -104,7 +113,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
 
   toggleControls(): void {
     if (this.isImmersive) {
-      this.exitImmersive();
+      this.exitImmersiveMode();
       return;
     }
     this.patchUiState({ isControlPanelOpen: !this.panelOpen, lastUserInteractionAt: Date.now() });
@@ -122,6 +131,30 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     }
   }
 
+  onExitPillHover(event: MouseEvent | FocusEvent, entering: boolean): void {
+    if (!(event.currentTarget instanceof HTMLElement)) {
+      return;
+    }
+    const pill = event.currentTarget;
+    this.exitPillHoverAnimations.get(pill)?.cancel();
+    const animation = animate(
+      pill,
+      {
+        transform: entering
+          ? ['translate(-50%, 0) scale(1)', 'translate(-50%, 0) scale(1.05)']
+          : ['translate(-50%, 0) scale(1.05)', 'translate(-50%, 0) scale(1)'],
+      },
+      { duration: 0.16, easing: 'ease-out' },
+    );
+    this.exitPillHoverAnimations.set(pill, animation);
+    animation.finished.finally(() => {
+      if (this.exitPillHoverAnimations.get(pill) === animation && !entering) {
+        pill.style.transform = '';
+        this.exitPillHoverAnimations.delete(pill);
+      }
+    });
+  }
+
   enterImmersive(): void {
     if (this.isImmersive) {
       return;
@@ -135,13 +168,15 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       isControlPanelOpen: false,
       lastUserInteractionAt: Date.now(),
     });
+    this.exitPillVisible = true;
     this.playImmersiveSceneTransition(true);
   }
 
-  exitImmersive(): void {
+  exitImmersiveMode(): void {
     if (!this.isImmersive) {
       return;
     }
+    this.animateExitPillExit();
     this.setTransportVisibility(true, { animate: true });
     this.clearTransportAutoHide();
     this.pendingPanelEnterAnimation = true;
@@ -163,7 +198,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
     if (this.isImmersive && event.key === this.escapeKey) {
-      this.exitImmersive();
+      this.exitImmersiveMode();
     }
   }
 
@@ -191,7 +226,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.patchUiState({ status });
     this.updateAutoImmersiveState();
     if (status !== 'running') {
-      this.exitImmersive();
+      this.exitImmersiveMode();
     }
     this.markInteraction(false);
   }
@@ -212,7 +247,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.controlComponent?.handlePauseRequest();
     this.patchUiState({ status: 'paused' });
     this.updateAutoImmersiveState();
-    this.exitImmersive();
+    this.exitImmersiveMode();
     this.markInteraction(true);
   }
 
@@ -220,7 +255,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.controlComponent?.handleStepRequest();
     this.patchUiState({ status: 'paused' });
     this.updateAutoImmersiveState();
-    this.exitImmersive();
+    this.exitImmersiveMode();
     this.markInteraction(true);
   }
 
@@ -228,7 +263,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.controlComponent?.handleResetRequest();
     this.patchUiState({ status: 'idle' });
     this.updateAutoImmersiveState();
-    this.exitImmersive();
+    this.exitImmersiveMode();
     this.markInteraction(true);
   }
 
@@ -531,6 +566,44 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       animate(handle, { opacity: [0, 1] }, { duration: 0.18, easing: 'ease-out' }).finished.finally(() => {
         handle.style.opacity = '';
       });
+    });
+  }
+
+  private animateExitPillEnter(pill: HTMLElement): void {
+    animate(
+      pill,
+      {
+        opacity: [0, 1],
+        transform: ['translate(-50%, -8px) scale(0.96)', 'translate(-50%, 0) scale(1)'],
+      },
+      { duration: 0.22, easing: 'ease-out' },
+    ).finished.finally(() => {
+      pill.style.opacity = '';
+      pill.style.transform = '';
+    });
+  }
+
+  private animateExitPillExit(): void {
+    if (!this.exitPillVisible) {
+      return;
+    }
+    const pill = this.exitPillEl;
+    if (!pill) {
+      this.exitPillVisible = false;
+      return;
+    }
+    this.exitPillHoverAnimations.get(pill)?.cancel();
+    this.exitPillHoverAnimations.delete(pill);
+    animate(
+      pill,
+      {
+        opacity: [1, 0],
+        transform: ['translate(-50%, 0) scale(1)', 'translate(-50%, -6px) scale(0.96)'],
+      },
+      { duration: 0.18, easing: 'ease-in' },
+    ).finished.finally(() => {
+      this.exitPillVisible = false;
+      this.exitPillEl = undefined;
     });
   }
 

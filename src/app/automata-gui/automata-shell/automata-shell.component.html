@@ -35,6 +35,21 @@
       </div>
 
       <button
+        *ngIf="exitPillVisible"
+        #exitPillButton
+        class="immersive-exit-pill"
+        type="button"
+        aria-label="Exit immersive mode"
+        (click)="exitImmersiveMode()"
+        (mouseenter)="onExitPillHover($event, true)"
+        (mouseleave)="onExitPillHover($event, false)"
+        (focusin)="onExitPillHover($event, true)"
+        (focusout)="onExitPillHover($event, false)"
+      >
+        Exit immersive mode
+      </button>
+
+      <button
         *ngIf="isImmersive"
         class="immersive-handle immersive-handle--right"
         type="button"

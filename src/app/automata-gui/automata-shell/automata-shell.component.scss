@@ -193,6 +193,35 @@
   stroke-width: 1.8;
 }
 
+.immersive-exit-pill {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translate(-50%, 0);
+  padding: 4px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--frame-handle-bg);
+  color: var(--frame-handle-icon-muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  cursor: pointer;
+  transition: border-color 140ms ease-out, color 140ms ease-out, opacity 140ms ease-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 6;
+}
+
+.immersive-exit-pill:hover,
+.immersive-exit-pill:focus-visible {
+  opacity: 1;
+  border-color: var(--ui-accent);
+  color: var(--frame-handle-icon-active);
+}
+
 .automata-shell__panel {
   width: 340px;
   max-width: 360px;
