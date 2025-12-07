@@ -46,3 +46,7 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# Dump files
+/automata_dump_*.txt
+
