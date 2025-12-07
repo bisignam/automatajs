@@ -28,14 +28,14 @@
 }
 
 .status-pill--running {
-  background: var(--accent-warm-soft);
-  border-color: rgba(255, 179, 91, 0.4);
-  color: var(--accent-warm);
+  background: var(--accent-play-soft);
+  border-color: rgba(241, 156, 93, 0.35);
+  color: var(--accent-play);
 }
 
 .status-pill--running .status-pill__dot {
-  background: var(--accent-warm);
-  box-shadow: 0 0 0 4px rgba(255, 179, 91, 0.15);
+  background: var(--accent-play);
+  box-shadow: 0 0 0 4px rgba(241, 156, 93, 0.14);
 }
 
 .primary-actions {
@@ -89,7 +89,7 @@
 }
 
 .primary-actions__cta .play-icon--running {
-  color: var(--accent-warm);
+  color: var(--accent-play);
 }
 
 .primary-actions__cta .play-icon--paused {

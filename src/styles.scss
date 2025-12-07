@@ -21,6 +21,8 @@
   /* Warm accent (for highlights) */
   --accent-warm: #ffb35b;
   --accent-warm-soft: rgba(255, 179, 91, 0.2);
+  --accent-play: #f19c5d;
+  --accent-play-soft: rgba(241, 156, 93, 0.2);
 
   /* Text */
   --text-main: #f4f7ff;
@@ -47,15 +49,16 @@
 
 html,
 body {
+  margin: 0;
+  padding: 0;
   height: 100%;
+  overflow: hidden;
 }
 
 body {
   font-family: 'Inter', 'Roboto', Arial, sans-serif;
-  margin: 0;
   background: var(--bg-page);
   color: var(--text-main);
-  overflow: hidden;
   line-height: 1.4;
   letter-spacing: 0.01em;
 }
@@ -65,8 +68,9 @@ body {
 }
 
 app-root {
-  display: block;
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
 .basic-container {

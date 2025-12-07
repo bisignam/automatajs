@@ -68,13 +68,13 @@
 }
 
 .transport-button--primary.play-btn--running {
-  border-color: rgba(255, 179, 91, 0.9);
-  background: rgba(109, 70, 30, 0.6);
-  box-shadow: 0 0 12px rgba(255, 179, 91, 0.3);
+  border-color: rgba(241, 156, 93, 0.9);
+  background: rgba(90, 57, 30, 0.55);
+  box-shadow: 0 0 12px rgba(241, 156, 93, 0.28);
 }
 
 .transport-button--primary.play-btn--running mat-icon {
-  color: var(--accent-warm);
+  color: var(--accent-play);
 }
 
 .transport-button--primary.play-btn--idle {
