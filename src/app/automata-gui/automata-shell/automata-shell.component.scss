@@ -728,7 +728,7 @@
 
 .immersive-handle--bottom {
   left: 50%;
-  bottom: 28px;
+  bottom: 20px;
   transform: translateX(-50%);
 }
 
@@ -736,7 +736,7 @@
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 28px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
   z-index: 40;
   box-shadow: 0 12px 30px rgba(2, 6, 23, 0.55);
 }
