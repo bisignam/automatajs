@@ -1,5 +1,5 @@
 <ng-container *ngIf="!isMobileLayout; else mobileTransport">
-  <div class="transport-bar">
+  <div class="transport-bar transport-bar--desktop">
     <div class="transport-bar__controls">
       <button
         type="button"
@@ -36,6 +36,7 @@
         [value]="speed"
         (input)="onSpeedInput($event)"
       />
+      <span class="transport-bar__fps-pill">{{ speed }} FPS</span>
     </div>
   </div>
 </ng-container>

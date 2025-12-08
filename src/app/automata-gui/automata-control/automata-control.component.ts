@@ -10,6 +10,7 @@ import {
   Output,
   SimpleChanges,
   ViewChild,
+  ChangeDetectorRef,
 } from '@angular/core';
 import * as THREE from 'three';
 import { Subscription } from 'rxjs';
@@ -53,6 +54,7 @@ export class AutomataControlComponent implements OnChanges, OnInit, OnDestroy, A
   ];
 
   readonly rulePresets: RulePreset[] = RULE_PRESETS;
+  ruleSearchTerm = '';
 
   selectedPreset: RulePreset = this.rulePresets[0];
   backgroundColor: THREE.Color = DefaultSettings.backgroundColor.clone();
@@ -61,7 +63,7 @@ export class AutomataControlComponent implements OnChanges, OnInit, OnDestroy, A
   private automataSizeSub?: Subscription;
   private quickPresetNudgePlayed = false;
 
-  constructor(private readonly three: ThreeService) {}
+  constructor(private readonly three: ThreeService, private readonly cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.syncConfigToEngine();
@@ -77,6 +79,7 @@ export class AutomataControlComponent implements OnChanges, OnInit, OnDestroy, A
   }
   ngAfterViewInit(): void {
     this.playQuickPresetNudge();
+    this.realignCarouselIndex();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -117,6 +120,14 @@ export class AutomataControlComponent implements OnChanges, OnInit, OnDestroy, A
 
   get isQuickVariant(): boolean {
     return this.variant === 'quick-rule';
+  }
+
+  get filteredRulePresets(): RulePreset[] {
+    const term = this.ruleSearchTerm.trim().toLowerCase();
+    if (!term) {
+      return this.rulePresets;
+    }
+    return this.rulePresets.filter((preset) => preset.label.toLowerCase().includes(term));
   }
 
   get shouldShowAutoImmersiveToggle(): boolean {
@@ -169,7 +180,8 @@ export class AutomataControlComponent implements OnChanges, OnInit, OnDestroy, A
 
   selectPreset(preset: RulePreset): void {
     this.applyPreset(preset, true, { preserveRunningState: true });
-    const presetIndex = this.rulePresets.findIndex((rule) => rule.id === preset.id);
+    const source = this.isQuickVariant ? this.filteredRulePresets : this.rulePresets;
+    const presetIndex = source.findIndex((rule) => rule.id === preset.id);
     if (presetIndex >= 0) {
       this.ruleCarouselIndex = presetIndex;
       this.scrollToCarouselIndex(presetIndex);
@@ -189,6 +201,28 @@ export class AutomataControlComponent implements OnChanges, OnInit, OnDestroy, A
     this.scrollToCarouselIndex(this.ruleCarouselIndex);
   }
 
+  onRuleCarouselWheel(event: WheelEvent): void {
+    const delta = Math.abs(event.deltaY) > Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
+    if (!delta) {
+      return;
+    }
+    event.preventDefault();
+    this.scrollCarousel(delta > 0 ? 1 : -1);
+  }
+
+  onRuleSearchChange(term: string): void {
+    this.ruleSearchTerm = term;
+    this.realignCarouselIndex();
+  }
+
+  clearRuleSearch(): void {
+    if (!this.ruleSearchTerm) {
+      return;
+    }
+    this.ruleSearchTerm = '';
+    this.realignCarouselIndex();
+  }
+
   private scrollToCarouselIndex(index: number, behavior: ScrollBehavior = 'smooth'): void {
     const viewport = this.ruleCarousel?.nativeElement;
     if (!viewport) {
@@ -200,6 +234,17 @@ export class AutomataControlComponent implements OnChanges, OnInit, OnDestroy, A
       return;
     }
     pill.scrollIntoView({ behavior, inline: 'start', block: 'nearest' });
+  }
+
+  private realignCarouselIndex(): void {
+    const list = this.filteredRulePresets;
+    if (!list.length) {
+      this.ruleCarouselIndex = 0;
+      return;
+    }
+    const selectedIndex = list.findIndex((preset) => preset.id === this.selectedPreset.id);
+    this.ruleCarouselIndex = selectedIndex >= 0 ? selectedIndex : Math.min(this.ruleCarouselIndex, list.length - 1);
+    queueMicrotask(() => this.scrollToCarouselIndex(this.ruleCarouselIndex, 'auto'));
   }
 
   onSpeedChange(event: Event): void {
@@ -229,19 +274,25 @@ export class AutomataControlComponent implements OnChanges, OnInit, OnDestroy, A
   }
 
   onBackgroundColorChosen(color: THREE.Color): void {
-    this.backgroundColor = color.clone();
-    this.three.deadColor = color;
+    this.deferColorUpdate(() => {
+      this.backgroundColor = color.clone();
+      this.three.deadColor = color;
+    });
   }
 
   onActivationColorChosen(color: THREE.Color): void {
-    this.activationColor = color.clone();
-    this.three.activeColor = color;
+    this.deferColorUpdate(() => {
+      this.activationColor = color.clone();
+      this.three.activeColor = color;
+    });
   }
 
   onAdditionalColorChosen(label: string, color: THREE.Color): void {
-    if (this.three.cellularAutomaton) {
-      this.three.changeColor(label, color);
-    }
+    this.deferColorUpdate(() => {
+      if (this.three.cellularAutomaton) {
+        this.three.changeColor(label, color);
+      }
+    });
   }
 
   toggleQuickColorPopover(target: string): void {
@@ -338,5 +389,12 @@ export class AutomataControlComponent implements OnChanges, OnInit, OnDestroy, A
       { transform: ['translateX(0)', 'translateX(-4px)', 'translateX(0)'] },
       { duration: 0.4, easing: 'ease-in-out' },
     );
+  }
+
+  private deferColorUpdate(updater: () => void): void {
+    queueMicrotask(() => {
+      updater();
+      this.cdr.markForCheck();
+    });
   }
 }

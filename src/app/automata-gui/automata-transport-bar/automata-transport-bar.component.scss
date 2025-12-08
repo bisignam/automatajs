@@ -1,13 +1,20 @@
 .transport-bar {
+  width: 100%;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  padding: 0.5rem 0.85rem;
-  border-radius: 6px;
-  border: 1px solid var(--ui-border);
-  background: var(--ui-surface);
-  box-shadow: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(5, 8, 20, 0.92);
   color: var(--ui-text-main);
+  box-shadow: 0 14px 30px rgba(3, 8, 20, 0.45);
+  backdrop-filter: blur(14px);
+}
+
+.transport-bar--desktop {
+  flex-wrap: nowrap;
 }
 
 .transport-bar--mobile {
@@ -28,62 +35,43 @@
 
 .transport-bar__controls {
   display: inline-flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.35rem;
 }
 
 .transport-button {
-  min-width: 64px;
-  padding: 0.4rem 0.75rem;
-  border-radius: 4px;
-  border: 1px solid transparent;
-  background: transparent;
+  min-width: 48px;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.55);
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.3rem;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  font-size: 0.68rem;
-  color: var(--ui-text-muted);
-  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
-  position: relative;
+  letter-spacing: 0.08em;
+  font-size: 0.62rem;
+  color: var(--ui-text-main);
+  transition: border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
 }
 
 .transport-button:not(:disabled):hover,
 .transport-button:not(:disabled):focus-visible {
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--ui-text-main);
-  border-color: var(--ui-border);
+  border-color: rgba(79, 138, 216, 0.85);
+  background: rgba(22, 33, 60, 0.7);
 }
 
 .transport-button--primary {
-  color: var(--ui-text-main);
-  border: 1px solid var(--ui-border);
-  background: rgba(255, 255, 255, 0.02);
-  transition: border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
-}
-
-.transport-button--primary::before {
-  content: '';
-  position: absolute;
-  left: 1px;
-  right: 1px;
-  top: 1px;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.18);
-  opacity: 0;
-  transition: opacity var(--transition-fast);
-  pointer-events: none;
+  border-color: rgba(79, 138, 216, 0.65);
+  background: rgba(79, 138, 216, 0.2);
 }
 
 .transport-button:disabled {
-  opacity: 0.35;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 .transport-button lucide-icon {
-  font-size: 18px;
   width: 18px;
   height: 18px;
   color: currentColor;
@@ -98,13 +86,8 @@
 }
 
 .transport-button--primary.play-btn--running {
-  background: var(--ui-surface-alt);
-  border-color: var(--ui-accent);
+  background: rgba(79, 138, 216, 0.35);
   animation: transport-activate 140ms ease-out;
-}
-
-.transport-button--primary.play-btn--running::before {
-  opacity: 1;
 }
 
 .transport-button--primary.play-btn--running lucide-icon {
@@ -114,45 +97,29 @@
 .transport-bar__speed {
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-left: auto;
-  flex-wrap: wrap;
-}
-
-.transport-bar__speed-label {
-  display: inline-flex;
-  align-items: center;
   gap: 0.4rem;
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ui-text-muted);
+  margin-left: auto;
+  min-width: 0;
 }
 
-.transport-bar__speed-label > lucide-icon {
-  width: 20px;
-  height: 20px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-
+.transport-bar__speed-label,
 .transport-bar__speed-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  line-height: 1.1;
-  color: var(--ui-text-muted);
-}
-
-.transport-bar__speed-meta span,
-.transport-bar__speed-meta small {
-  line-height: 1.1;
+  display: none;
 }
 
 .transport-bar__speed input[type='range'] {
-  width: clamp(140px, 28vw, 220px);
+  width: clamp(140px, 26vw, 220px);
+}
+
+.transport-bar__fps-pill {
+  display: inline-flex;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  padding: 0.2rem 0.65rem;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ui-text-muted);
 }
 
 .transport-mobile__cluster {
@@ -231,5 +198,41 @@
   100% {
     transform: scale(1);
     opacity: 1;
+  }
+}
+
+@media (max-width: 1280px) {
+  .transport-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .transport-bar__controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .transport-button span {
+    display: none;
+  }
+
+  .transport-bar__speed {
+    width: 100%;
+    margin-left: 0;
+    gap: 0.5rem;
+  }
+
+  .transport-bar__speed-label {
+    display: none;
+  }
+
+  .transport-bar__speed input[type='range'] {
+    width: 100%;
+  }
+
+  .transport-bar__fps-pill {
+    display: inline-flex;
   }
 }

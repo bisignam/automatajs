@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { animate as ngAnimate, state, style, transition, trigger } from '@angular/animations';
 import { DefaultSettings } from '../../automata-engine/defaultSettings';
 import { AutomataControlComponent } from '../automata-control/automata-control.component';
 import { SimulationConfig, SimulationStatus, UiState } from '../ui-state';
@@ -18,6 +19,94 @@ interface MobilePaletteSwatch {
   selector: 'app-automata-shell',
   templateUrl: './automata-shell.component.html',
   styleUrls: ['./automata-shell.component.scss'],
+  animations: [
+    trigger('overlayDissolve', [
+      transition(':enter', [
+        style({ opacity: 0, filter: 'blur(6px)' }),
+        ngAnimate('90ms cubic-bezier(0.4, 0, 0.2, 1)', style({ opacity: 1, filter: 'blur(0px)' })),
+      ]),
+      transition(':leave', [
+        style({ opacity: 1, filter: 'blur(0px)' }),
+        ngAnimate('50ms cubic-bezier(0.55, 0.06, 0.68, 0.19)', style({ opacity: 0, filter: 'blur(6px)' })),
+      ]),
+    ]),
+    trigger('rulePanelDissolve', [
+      state('closed',
+        style({
+          opacity: 0,
+          filter: 'blur(6px)',
+          pointerEvents: 'none',
+          visibility: 'hidden',
+          maxHeight: '0px',
+        }),
+      ),
+      state('open',
+        style({
+          opacity: 1,
+          filter: 'blur(0px)',
+          pointerEvents: 'auto',
+          visibility: 'visible',
+          maxHeight: '640px',
+        }),
+      ),
+      transition('closed => open', [
+        style({ opacity: 0, filter: 'blur(6px)' }),
+        ngAnimate('100ms cubic-bezier(0.4, 0, 0.2, 1)', style({ opacity: 1, filter: 'blur(0px)' })),
+      ]),
+      transition('open => closed', [
+        style({ opacity: 1, filter: 'blur(0px)' }),
+        ngAnimate('85ms cubic-bezier(0.55, 0.06, 0.68, 0.19)', style({ opacity: 0, filter: 'blur(6px)' })),
+      ]),
+    ]),
+    trigger('dockDissolve', [
+      state('visible',
+        style({
+          opacity: 1,
+          pointerEvents: 'auto',
+          visibility: 'visible',
+        }),
+      ),
+      state('hidden',
+        style({
+          opacity: 0,
+          pointerEvents: 'none',
+          visibility: 'hidden',
+        }),
+      ),
+      transition('hidden => visible', [
+        style({ opacity: 0 }),
+        ngAnimate('130ms cubic-bezier(0.33, 1, 0.5, 1)', style({ opacity: 1 })),
+      ]),
+      transition('visible => hidden', [
+        style({ opacity: 1 }),
+        ngAnimate('110ms cubic-bezier(0.65, 0, 0.35, 1)', style({ opacity: 0 })),
+      ]),
+    ]),
+    trigger('speedStripDissolve', [
+      state('visible',
+        style({
+          opacity: 1,
+          pointerEvents: 'auto',
+          visibility: 'visible',
+        }),
+      ),
+      state('hidden',
+        style({
+          opacity: 0,
+          pointerEvents: 'none',
+          visibility: 'hidden',
+        }),
+      ),
+      transition('hidden => visible', [
+        style({ opacity: 0 }),
+        ngAnimate('130ms cubic-bezier(0.33, 1, 0.5, 1)', style({ opacity: 1 })),
+      ]),
+      transition('visible => hidden', [
+        style({ opacity: 1 }),
+        ngAnimate('110ms cubic-bezier(0.65, 0, 0.35, 1)', style({ opacity: 0 })),
+      ]),
+    ]),
+  ],
   standalone: false,
 })
 export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit {
@@ -101,18 +190,10 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       this.animateAutoImmersiveBannerEnter(this.autoImmersiveBannerEl);
     }
   }
-  @ViewChild('mobileDock') set mobileDockRef(ref: ElementRef<HTMLElement> | undefined) {
-    this.mobileDockEl = ref?.nativeElement;
-    if (this.pendingMobileDockEnter && this.mobileDockEl) {
-      this.pendingMobileDockEnter = false;
-      requestAnimationFrame(() => this.animateMobileDock(false));
-    }
-  }
-  @ViewChild('mobileTransport') set mobileTransportRef(ref: ElementRef<HTMLElement> | undefined) {
-    this.mobileTransportEl = ref?.nativeElement;
-    if (this.pendingMobileTransportEnter && this.mobileTransportEl) {
-      this.pendingMobileTransportEnter = false;
-      requestAnimationFrame(() => this.animateMobileTransport(false));
+  @ViewChild('mobileHexColorPicker') set mobileHexColorPickerRef(ref: ElementRef<HTMLElement> | undefined) {
+    this.mobileHexColorPickerEl = ref?.nativeElement;
+    if (this.mobileHexColorPickerEl) {
+      this.pushActiveColorToMobilePicker();
     }
   }
 
@@ -121,18 +202,13 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   private pendingPanelEnterAnimation = false;
   private panelAnimation?: ReturnType<typeof animate>;
   private transportAnimation?: ReturnType<typeof animate>;
-  private mobileTransportEl?: HTMLElement;
-  private mobileTransportAnimation?: ReturnType<typeof animate>;
-  private pendingMobileTransportEnter = false;
   private immersiveHandleAnimations = new WeakMap<HTMLElement, ReturnType<typeof animate>>();
   private immersiveHandleIconAnimations = new WeakMap<HTMLElement, ReturnType<typeof animate>>();
   private exitPillHoverAnimations = new WeakMap<HTMLElement, ReturnType<typeof animate>>();
   private exitPillEl?: HTMLElement;
   private autoImmersiveBannerEl?: HTMLElement;
-  private mobileDockEl?: HTMLElement;
-  private mobileDockAnimation?: ReturnType<typeof animate>;
-  private pendingMobileDockEnter = false;
   private suppressNextMobileColorEvent = false;
+  private mobileHexColorPickerEl?: HTMLElement;
   private autoImmersiveOptInDismissTimerId?: number;
   private autoImmersiveIdleTimerId?: number;
   private idleCountdownIntervalId?: number;
@@ -148,7 +224,6 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   isMobileLayout = false;
   isMobileFullScreen = false;
   mobileDockCollapsed = false;
-  mobileDockAnimating = false;
   isMobileRulePickerOpen = false;
   rulePickerIndex = 0;
   mobilePaletteSwatches: MobilePaletteSwatch[] = [];
@@ -156,11 +231,11 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   activeColorSwatchId: string | null = null;
   activeColorLabel: string | null = null;
   activeColorValue = '#ffffff';
+  mobileRuleSearchTerm = '';
   isMobileCellSizeOverlayOpen = false;
   ruleOverlayDockOpen = true;
   ruleOverlayImmersiveOpen = false;
   mobileTransportCollapsed = false;
-  mobileTransportAnimating = false;
   private readonly updateIsMobileLayoutBound = () => this.updateIsMobileLayout();
 
   ngOnInit(): void {
@@ -200,8 +275,17 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     return this.isMobileRulePickerOpen || this.isMobileColorPickerOpen || this.isMobileCellSizeOverlayOpen;
   }
 
+  get filteredMobileRulePresets(): RulePreset[] {
+    return this.computeFilteredRulePresets();
+  }
+
+  get pendingMobileRulePreset(): RulePreset | null {
+    const presets = this.computeFilteredRulePresets();
+    return presets[this.rulePickerIndex] ?? null;
+  }
+
   get panelOpen(): boolean {
-    return this.uiState.isControlPanelOpen;
+    return false;
   }
 
   get hasActiveRule(): boolean {
@@ -222,9 +306,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   toggleControls(): void {
     if (this.isImmersive) {
       this.exitImmersiveMode();
-      return;
     }
-    this.patchUiState({ isControlPanelOpen: !this.panelOpen, lastUserInteractionAt: Date.now() });
   }
 
   toggleDesktopRuleOverlay(): void {
@@ -426,114 +508,29 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     if (!this.isMobileLayout) {
       return;
     }
-    const nextCollapsed = !this.mobileDockCollapsed;
-    this.mobileDockAnimating = true;
-    if (nextCollapsed) {
-      this.mobileDockCollapsed = true;
-      this.pendingMobileDockEnter = false;
-      if (this.mobileDockEl) {
-        this.animateMobileDock(true);
-      } else {
-        this.mobileDockAnimating = false;
-      }
-      return;
-    }
-    this.mobileDockCollapsed = false;
-    if (!this.mobileDockEl) {
-      this.pendingMobileDockEnter = true;
-      return;
-    }
-    this.pendingMobileDockEnter = false;
-    this.animateMobileDock(false);
+    this.mobileDockCollapsed = !this.mobileDockCollapsed;
   }
 
   toggleMobileTransportCollapsed(): void {
     if (!this.isMobileLayout) {
       return;
     }
-    const nextCollapsed = !this.mobileTransportCollapsed;
-    this.mobileTransportAnimating = true;
-    if (nextCollapsed) {
-      this.mobileTransportCollapsed = true;
-      this.pendingMobileTransportEnter = false;
-      if (this.mobileTransportEl) {
-        this.animateMobileTransport(true);
-      } else {
-        this.mobileTransportAnimating = false;
-      }
-      return;
-    }
-    this.mobileTransportCollapsed = false;
-    if (!this.mobileTransportEl) {
-      this.pendingMobileTransportEnter = true;
-      return;
-    }
-    this.pendingMobileTransportEnter = false;
-    this.animateMobileTransport(false);
-  }
-
-  private animateMobileDock(collapsing: boolean): void {
-    const dock = this.mobileDockEl;
-    if (!dock) {
-      this.mobileDockAnimating = false;
-      return;
-    }
-    this.mobileDockAnimation?.cancel();
-    const animation = animate(
-      dock,
-      collapsing
-        ? { transform: ['translateX(0)', 'translateX(28px)'], opacity: [1, 0] }
-        : { transform: ['translateX(28px)', 'translateX(0)'], opacity: [0, 1] },
-      { duration: 0.24, easing: this.immersiveEase },
-    );
-    this.mobileDockAnimation = animation;
-    animation.finished.finally(() => {
-      if (this.mobileDockAnimation !== animation) {
-        return;
-      }
-      dock.style.transform = '';
-      dock.style.opacity = '';
-      this.mobileDockAnimation = undefined;
-      this.mobileDockAnimating = false;
-    });
-  }
-
-  private animateMobileTransport(collapsing: boolean): void {
-    const strip = this.mobileTransportEl;
-    if (!strip) {
-      this.mobileTransportAnimating = false;
-      return;
-    }
-    this.mobileTransportAnimation?.cancel();
-    const animation = animate(
-      strip,
-      collapsing
-        ? { transform: ['translateY(0)', 'translateY(40px)'], opacity: [1, 0] }
-        : { transform: ['translateY(40px)', 'translateY(0)'], opacity: [0, 1] },
-      { duration: 0.24, easing: this.immersiveEase },
-    );
-    this.mobileTransportAnimation = animation;
-    animation.finished.finally(() => {
-      if (this.mobileTransportAnimation !== animation) {
-        return;
-      }
-      strip.style.transform = '';
-      strip.style.opacity = '';
-      this.mobileTransportAnimation = undefined;
-      this.mobileTransportAnimating = false;
-    });
+    this.mobileTransportCollapsed = !this.mobileTransportCollapsed;
   }
 
   openMobileRulePicker(): void {
     if (!this.isMobileLayout) {
       return;
     }
-    this.rulePickerIndex = this.getRuleIndexByName(this.uiState.ruleName);
+    this.mobileRuleSearchTerm = '';
+    this.rulePickerIndex = this.getRuleIndexByName(this.uiState.ruleName, this.computeFilteredRulePresets());
     this.isMobileRulePickerOpen = true;
   }
 
   closeMobileRulePicker(): void {
     this.isMobileRulePickerOpen = false;
+    this.mobileRuleSearchTerm = '';
+    this.syncRulePickerToCurrentRule();
   }
 
   onRulePickerTouchStart(event: TouchEvent | PointerEvent): void {
@@ -561,22 +558,38 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.rulePickerSwipeStartY = null;
   }
 
-  cycleMobileRulePicker(direction: 1 | -1): void {
-    if (!this.isMobileRulePickerOpen || !this.rulePresets.length) {
+  onRulePickerWheel(event: WheelEvent): void {
+    if (!this.isMobileRulePickerOpen) {
       return;
     }
-    const length = this.rulePresets.length;
+    const delta = Math.abs(event.deltaY) > Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
+    if (!delta) {
+      return;
+    }
+    event.preventDefault();
+    this.cycleMobileRulePicker(delta > 0 ? 1 : -1);
+  }
+
+  cycleMobileRulePicker(direction: 1 | -1): void {
+    if (!this.isMobileRulePickerOpen) {
+      return;
+    }
+    const presets = this.computeFilteredRulePresets();
+    const length = presets.length;
+    if (!length) {
+      return;
+    }
     this.rulePickerIndex = (this.rulePickerIndex + direction + length) % length;
-    this.applyRulePickerSelection();
   }
 
   getRulePreview(offset: number): RulePreset | null {
-    if (!this.rulePresets.length) {
+    const presets = this.computeFilteredRulePresets();
+    const length = presets.length;
+    if (!length) {
       return null;
     }
-    const length = this.rulePresets.length;
     const index = (this.rulePickerIndex + offset + length) % length;
-    return this.rulePresets[index] ?? null;
+    return presets[index] ?? null;
   }
 
   openMobileColorPicker(swatch: MobilePaletteSwatch): void {
@@ -588,6 +601,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.activeColorValue = this.normalizeHexColor(swatch.color);
     this.suppressNextMobileColorEvent = true;
     this.isMobileColorPickerOpen = true;
+    this.pushActiveColorToMobilePicker();
   }
 
   closeMobileColorPicker(): void {
@@ -596,17 +610,32 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.activeColorLabel = null;
   }
 
-  onMobileColorHexInput(event: Event): void {
-    const detail = (event as CustomEvent<{ value: string }>).detail;
-    const nextHex = this.normalizeHexColor(detail?.value);
-    if (!nextHex) {
+  onMobileRuleApply(): void {
+    const preset = this.pendingMobileRulePreset;
+    if (!preset) {
+      this.closeMobileRulePicker();
       return;
     }
-    if (this.suppressNextMobileColorEvent && nextHex === this.activeColorValue) {
+    if (preset.label !== this.uiState.ruleName) {
+      this.applyRulePickerSelection();
+    }
+    this.closeMobileRulePicker();
+  }
+
+  onMobileColorHexInput(event: Event): void {
+    const detail = (event as CustomEvent<{ value: string }>).detail;
+    const nextValue = detail?.value;
+    if (!nextValue) {
+      return;
+    }
+    const nextHex = this.normalizeHexColor(nextValue);
+    if (this.suppressNextMobileColorEvent) {
       this.suppressNextMobileColorEvent = false;
       return;
     }
-    this.suppressNextMobileColorEvent = false;
+    if (nextHex === this.activeColorValue) {
+      return;
+    }
     this.activeColorValue = nextHex;
     this.applyActiveColor(new THREE.Color(nextHex));
   }
@@ -668,7 +697,8 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   private applyRulePickerSelection(): void {
-    const preset = this.rulePresets[this.rulePickerIndex];
+    const presets = this.computeFilteredRulePresets();
+    const preset = presets[this.rulePickerIndex];
     if (!preset || !this.controlComponent) {
       return;
     }
@@ -683,16 +713,24 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     return (event as PointerEvent).clientY ?? null;
   }
 
-  private getRuleIndexByName(name?: string): number {
+  private getRuleIndexByName(name?: string, list: RulePreset[] = this.rulePresets): number {
+    if (!list.length) {
+      return 0;
+    }
     if (!name) {
       return 0;
     }
-    const index = this.rulePresets.findIndex((preset) => preset.label === name);
+    const index = list.findIndex((preset) => preset.label === name);
     return index >= 0 ? index : 0;
   }
 
   private syncRulePickerToCurrentRule(): void {
-    this.rulePickerIndex = this.getRuleIndexByName(this.uiState.ruleName);
+    const presets = this.computeFilteredRulePresets();
+    if (!presets.length) {
+      this.rulePickerIndex = 0;
+      return;
+    }
+    this.rulePickerIndex = this.getRuleIndexByName(this.uiState.ruleName, presets);
   }
 
   private updateMobilePaletteSwatches(): void {
@@ -726,6 +764,18 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     this.mobilePaletteSwatches = swatches.slice(0, 3);
   }
 
+  onMobileRuleSearchChange(value: string): void {
+    this.mobileRuleSearchTerm = value;
+    const presets = this.computeFilteredRulePresets();
+    if (!presets.length) {
+      this.rulePickerIndex = 0;
+      return;
+    }
+    if (this.rulePickerIndex >= presets.length) {
+      this.rulePickerIndex = presets.length - 1;
+    }
+  }
+
   private updateAutoImmersiveState(): void {
     if (this.shouldAutoImmersive()) {
       this.scheduleAutoImmersive();
@@ -757,7 +807,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   private updateResponsiveState(width: number): void {
-    const isMobile = width <= 900;
+    const isMobile = width <= 1500;
     this.patchUiState({
       isMobile,
       isControlPanelOpen: !isMobile || this.uiState.isControlPanelOpen,
@@ -767,7 +817,7 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
 
   private updateIsMobileLayout(): void {
     const width = window.innerWidth;
-    const nextIsMobileLayout = width <= 960;
+    const nextIsMobileLayout = width <= 1500;
     const previousIsMobileLayout = this.isMobileLayout;
     this.isMobileLayout = nextIsMobileLayout;
     if (!nextIsMobileLayout) {
@@ -776,20 +826,27 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
     if (previousIsMobileLayout !== nextIsMobileLayout) {
       if (nextIsMobileLayout) {
         this.isMobileFullScreen = false;
+        this.teardownDesktopImmersiveArtifacts();
       } else {
         this.ruleOverlayDockOpen = true;
       }
       this.mobileDockCollapsed = false;
-      this.mobileDockAnimating = false;
-      this.pendingMobileDockEnter = false;
-      this.mobileDockAnimation?.cancel();
-      this.mobileDockAnimation = undefined;
       this.isMobileRulePickerOpen = false;
       this.isMobileColorPickerOpen = false;
       this.isMobileCellSizeOverlayOpen = false;
       this.mobileTransportCollapsed = false;
     }
     this.updateResponsiveState(width);
+  }
+
+  private teardownDesktopImmersiveArtifacts(): void {
+    if (this.isImmersive) {
+      this.patchUiState({ isImmersive: false, isControlPanelOpen: false });
+      this.transportVisible = false;
+      this.applyTransportVisibility(false, true);
+    }
+    this.exitPillVisible = false;
+    this.exitPillEl = undefined;
   }
 
   private handleIdleActivity(): void {
@@ -897,6 +954,32 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
       return fallback;
     }
     return trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
+  }
+
+  private computeFilteredRulePresets(): RulePreset[] {
+    const term = this.mobileRuleSearchTerm.trim().toLowerCase();
+    if (!term) {
+      return this.rulePresets;
+    }
+    return this.rulePresets.filter((preset) => preset.label.toLowerCase().includes(term));
+  }
+
+  private pushActiveColorToMobilePicker(): void {
+    queueMicrotask(() => {
+      const picker = this.mobileHexColorPickerEl as unknown as { color?: string } | undefined;
+      if (picker && this.activeColorValue && picker.color !== this.activeColorValue) {
+        picker.color = this.activeColorValue;
+        return;
+      }
+      if (this.isMobileColorPickerOpen) {
+        requestAnimationFrame(() => {
+          const nextPicker = this.mobileHexColorPickerEl as unknown as { color?: string } | undefined;
+          if (nextPicker && this.activeColorValue && nextPicker.color !== this.activeColorValue) {
+            nextPicker.color = this.activeColorValue;
+          }
+        });
+      }
+    });
   }
 
   private playImmersiveSceneTransition(entering: boolean): void {
@@ -1041,13 +1124,13 @@ export class AutomataShellComponent implements OnInit, OnDestroy, AfterViewInit 
   ): { base: string; hover: string } {
     if (variant === 'control') {
       return {
-        base: 'translateY(-50%) scaleX(1)',
-        hover: 'translateY(-50%) scaleX(1.2)',
+        base: 'translateY(-50%) scale(1)',
+        hover: 'translateY(-50%) scale(1.05)',
       };
     }
     return {
       base: 'translateX(-50%) scale(1)',
-      hover: 'translateX(-50%) scale(1.12)',
+      hover: 'translateX(-50%) scale(1.08)',
     };
   }
 

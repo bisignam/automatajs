@@ -5,8 +5,8 @@
   </div>
   <div class="auto-color-picker__body">
     <hex-color-picker
+      #hexPicker
       class="auto-color-picker__widget"
-      [attr.color]="color"
       [color]="color"
       (color-changed)="onColorChanged($event)"
     ></hex-color-picker>

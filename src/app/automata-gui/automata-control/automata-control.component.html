@@ -56,12 +56,12 @@
         <button type="button" class="rule-carousel__nav rule-carousel__nav--prev" (click)="scrollCarousel(-1)">
           <lucide-icon name="chevron-left"></lucide-icon>
         </button>
-        <div class="rule-carousel__viewport" #ruleCarousel>
+        <div class="rule-carousel__viewport" #ruleCarousel (wheel)="onRuleCarouselWheel($event)">
           <div class="rule-carousel__track">
             <button
               type="button"
               class="rule-pill"
-              *ngFor="let preset of rulePresets"
+              *ngFor="let preset of filteredRulePresets"
               [class.rule-pill--active]="preset.id === selectedPreset.id"
               (click)="selectPreset(preset)"
             >
@@ -176,16 +176,52 @@
 <ng-template #quickVariant>
   <div class="control-quick">
     <p class="control-quick__eyebrow">Rule &amp; look</p>
-    <div class="quick-presets" #quickPresetRow aria-label="Rule presets">
-      <button
-        type="button"
-        class="quick-presets__pill"
-        *ngFor="let preset of rulePresets"
-        [class.quick-presets__pill--active]="preset.id === selectedPreset.id"
-        (click)="selectPreset(preset)"
-      >
-        {{ preset.label }}
-      </button>
+    <div class="control-quick__section control-quick__presets">
+      <div class="quick-rule-search">
+        <lucide-icon name="search" size="14"></lucide-icon>
+        <input
+          type="search"
+          placeholder="Search rules"
+          [value]="ruleSearchTerm"
+          (input)="onRuleSearchChange($any($event.target).value)"
+          aria-label="Search rules"
+        />
+        <button
+          type="button"
+          class="quick-rule-search__clear"
+          *ngIf="ruleSearchTerm"
+          (click)="clearRuleSearch()"
+          aria-label="Clear search"
+        >
+          <lucide-icon name="x" size="12"></lucide-icon>
+        </button>
+      </div>
+      <ng-container *ngIf="filteredRulePresets.length; else quickRuleEmpty">
+        <div class="rule-carousel rule-carousel--compact">
+          <button type="button" class="rule-carousel__nav rule-carousel__nav--prev" (click)="scrollCarousel(-1)">
+            <lucide-icon name="chevron-left"></lucide-icon>
+          </button>
+          <div class="rule-carousel__viewport" #ruleCarousel (wheel)="onRuleCarouselWheel($event)">
+            <div class="rule-carousel__track" #quickPresetRow>
+              <button
+                type="button"
+                class="rule-pill"
+                *ngFor="let preset of filteredRulePresets"
+                [class.rule-pill--active]="preset.id === selectedPreset.id"
+                (click)="selectPreset(preset)"
+              >
+                <div class="rule-pill__title">{{ preset.label }}</div>
+              </button>
+            </div>
+          </div>
+          <button type="button" class="rule-carousel__nav rule-carousel__nav--next" (click)="scrollCarousel(1)">
+            <lucide-icon name="chevron-right"></lucide-icon>
+          </button>
+        </div>
+      </ng-container>
+      <ng-template #quickRuleEmpty>
+        <p class="quick-rule-empty">No matching rules</p>
+      </ng-template>
     </div>
 
     <div class="control-quick__section control-quick__colors">
@@ -202,7 +238,6 @@
           aria-label="Adjust background color"
         >
           <span class="quick-color-chip__swatch" [style.background]="colorToHex(backgroundColor)"></span>
-          <span class="quick-color-chip__value">{{ colorToHex(backgroundColor) | uppercase }}</span>
           <lucide-icon
             name="chevron-down"
             class="quick-color-chip__chevron"
@@ -232,7 +267,6 @@
           aria-label="Adjust activation color"
         >
           <span class="quick-color-chip__swatch" [style.background]="colorToHex(activationColor)"></span>
-          <span class="quick-color-chip__value">{{ colorToHex(activationColor) | uppercase }}</span>
           <lucide-icon
             name="chevron-down"
             class="quick-color-chip__chevron"
@@ -263,7 +297,6 @@
             [attr.aria-label]="'Adjust ' + extra.displayName + ' color'"
           >
             <span class="quick-color-chip__swatch" [style.background]="colorToHex(extra.color)"></span>
-            <span class="quick-color-chip__value">{{ colorToHex(extra.color) | uppercase }}</span>
             <lucide-icon
               name="chevron-down"
               class="quick-color-chip__chevron"

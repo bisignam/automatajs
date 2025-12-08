@@ -68,7 +68,7 @@
             [class.rule-badge--expanded]="isDesktopRuleOverlayExpanded"
             [class.rule-badge--collapsed]="!isDesktopRuleOverlayExpanded"
           >
-            <span class="rule-badge__name">{{ uiState.ruleName }}</span>
+            <span class="rule-badge__name">{{ isDesktopRuleOverlayExpanded ? uiState.ruleName : 'Rule' }}</span>
             <lucide-icon
               name="chevron-down"
               class="rule-badge__chevron"
@@ -76,7 +76,12 @@
               size="16"
             ></lucide-icon>
           </button>
-          <div class="rule-dock__panel" *ngIf="isDesktopRuleOverlayExpanded">
+          <div
+            class="rule-dock__panel"
+            [class.rule-dock__panel--open]="isDesktopRuleOverlayExpanded"
+            [attr.aria-hidden]="isDesktopRuleOverlayExpanded ? null : 'true'"
+            [@rulePanelDissolve]="isDesktopRuleOverlayExpanded ? 'open' : 'closed'"
+          >
             <div class="rule-dock__panel-body">
               <app-automata-control
                 variant="quick-rule"
@@ -94,12 +99,10 @@
         </div>
       </ng-container>
 
-      <div class="mobile-dock-shell" *ngIf="isMobileLayout && !mobileLiveControlActive">
+      <div class="mobile-dock-shell" *ngIf="isMobileLayout && !mobileLiveControlActive" [@overlayDissolve]="''">
         <div
-          #mobileDock
-          *ngIf="!mobileDockCollapsed || mobileDockAnimating"
           class="mobile-dock"
-          [class.mobile-dock--collapsed]="mobileDockCollapsed"
+          [@dockDissolve]="mobileDockCollapsed ? 'hidden' : 'visible'"
         >
           <div class="mobile-dock__content">
             <button
@@ -202,23 +205,6 @@
       </div>
 
       <button
-        *ngIf="isImmersive"
-        class="immersive-handle immersive-handle--right"
-        type="button"
-        aria-label="Show control panel"
-        [attr.aria-pressed]="panelOpen ? 'true' : 'false'"
-        (click)="toggleControls()"
-        (mouseenter)="onImmersiveHandleHover($event, true, 'control')"
-        (mouseleave)="onImmersiveHandleHover($event, false, 'control')"
-        (focusin)="onImmersiveHandleHover($event, true, 'control')"
-        (focusout)="onImmersiveHandleHover($event, false, 'control')"
-      >
-        <span class="immersive-handle__icon-stack" aria-hidden="true">
-          <lucide-icon name="settings" size="16"></lucide-icon>
-        </span>
-      </button>
-
-      <button
         #bottomHandle
         *ngIf="isImmersive && !transportVisible"
         class="immersive-handle immersive-handle--bottom"
@@ -236,9 +222,10 @@
       </button>
 
       <div
-        #mobileTransport
         class="mobile-speed-strip"
-        *ngIf="isMobileLayout && !mobileLiveControlActive && (!mobileTransportCollapsed || mobileTransportAnimating)"
+        *ngIf="isMobileLayout && !mobileLiveControlActive"
+        [@speedStripDissolve]="mobileTransportCollapsed ? 'hidden' : 'visible'"
+        [@overlayDissolve]="''"
       >
         <button
           type="button"
@@ -270,11 +257,12 @@
         </button>
       </div>
       <button
-        *ngIf="isMobileLayout && mobileTransportCollapsed && !mobileLiveControlActive && !mobileTransportAnimating"
+        *ngIf="isMobileLayout && mobileTransportCollapsed && !mobileLiveControlActive"
         type="button"
         class="immersive-handle immersive-handle--bottom mobile-transport-handle"
         (click)="toggleMobileTransportCollapsed()"
         aria-label="Expand transport controls"
+        [@overlayDissolve]="''"
       >
         <span class="immersive-handle__icon-row" aria-hidden="true">
           <lucide-icon name="chevron-up" size="16"></lucide-icon>
@@ -282,7 +270,7 @@
       </button>
     </section>
 
-    <ng-container *ngIf="!isMobileLayout && panelOpen && !effectiveImmersive; else controlBridgeFallback">
+    <ng-container *ngIf="false; else controlBridgeFallback">
       <aside #controlPanel class="automata-shell__panel">
         <div class="panel__header">
           <p class="panel__eyebrow">Control center</p>
@@ -324,6 +312,7 @@
     class="mobile-live-overlay mobile-live-overlay--rule"
     *ngIf="isMobileLayout && isMobileRulePickerOpen"
     (click)="closeMobileRulePicker()"
+    [@overlayDissolve]="''"
   >
     <div class="mobile-live-overlay__panel mobile-live-overlay__panel--rule" (click)="$event.stopPropagation()">
       <div class="mobile-live-overlay__header">
@@ -337,40 +326,62 @@
           <lucide-icon name="x" size="16"></lucide-icon>
         </button>
       </div>
-      <div class="rule-picker__rail">
-        <button
-          type="button"
-          class="rule-picker__nav"
-          aria-label="Previous rule"
-          (click)="cycleMobileRulePicker(-1)"
-        >
-          <lucide-icon name="chevron-up"></lucide-icon>
-        </button>
-        <div
-          class="rule-picker__stack"
-          (touchstart)="onRulePickerTouchStart($event)"
-          (touchend)="onRulePickerTouchEnd($event)"
-          (pointerdown)="onRulePickerTouchStart($event)"
-          (pointerup)="onRulePickerTouchEnd($event)"
-          (pointercancel)="onRulePickerTouchCancel()"
-        >
-          <div
-            class="rule-picker__item"
-            *ngFor="let offset of rulePickerOffsets"
-            [class.rule-picker__item--active]="offset === 0"
-          >
-            {{ getRulePreview(offset)?.label }}
-          </div>
-        </div>
-        <button
-          type="button"
-          class="rule-picker__nav"
-          aria-label="Next rule"
-          (click)="cycleMobileRulePicker(1)"
-        >
-          <lucide-icon name="chevron-down"></lucide-icon>
-        </button>
+      <div class="mobile-rule-search">
+        <lucide-icon name="search" size="14"></lucide-icon>
+        <input
+          type="search"
+          placeholder="Search rules"
+          [value]="mobileRuleSearchTerm"
+          (input)="onMobileRuleSearchChange($any($event.target).value)"
+        />
       </div>
+      <ng-container *ngIf="filteredMobileRulePresets.length; else mobileRuleEmpty">
+        <div class="rule-picker__rail">
+          <button
+            type="button"
+            class="rule-picker__nav"
+            aria-label="Previous rule"
+            (click)="cycleMobileRulePicker(-1)"
+            [disabled]="filteredMobileRulePresets.length < 2"
+          >
+            <lucide-icon name="chevron-up"></lucide-icon>
+          </button>
+          <div
+            class="rule-picker__stack"
+            (touchstart)="onRulePickerTouchStart($event)"
+            (touchend)="onRulePickerTouchEnd($event)"
+            (pointerdown)="onRulePickerTouchStart($event)"
+            (pointerup)="onRulePickerTouchEnd($event)"
+            (pointercancel)="onRulePickerTouchCancel()"
+            (wheel)="onRulePickerWheel($event)"
+          >
+            <div
+              class="rule-picker__item"
+              *ngFor="let offset of rulePickerOffsets"
+              [class.rule-picker__item--active]="offset === 0"
+            >
+              {{ getRulePreview(offset)?.label || '—' }}
+            </div>
+          </div>
+          <button
+            type="button"
+            class="rule-picker__nav"
+            aria-label="Next rule"
+            (click)="cycleMobileRulePicker(1)"
+            [disabled]="filteredMobileRulePresets.length < 2"
+          >
+            <lucide-icon name="chevron-down"></lucide-icon>
+          </button>
+        </div>
+        <div class="mobile-live-overlay__actions">
+          <button type="button" class="mobile-live-overlay__apply" (click)="onMobileRuleApply()">
+            Apply
+          </button>
+        </div>
+      </ng-container>
+      <ng-template #mobileRuleEmpty>
+        <div class="rule-picker__empty">No matching rules</div>
+      </ng-template>
     </div>
   </div>
 
@@ -378,6 +389,7 @@
     class="mobile-live-overlay mobile-live-overlay--color"
     *ngIf="isMobileLayout && isMobileColorPickerOpen"
     (click)="closeMobileColorPicker()"
+    [@overlayDissolve]="''"
   >
     <div class="mobile-live-overlay__panel" (click)="$event.stopPropagation()">
       <div class="mobile-live-overlay__header">
@@ -393,8 +405,8 @@
       </div>
       <div class="mobile-color-picker">
         <hex-color-picker
+          #mobileHexColorPicker
           class="mobile-color-picker__wheel"
-          [attr.color]="activeColorValue"
           [color]="activeColorValue"
           (color-changed)="onMobileColorHexInput($event)"
         ></hex-color-picker>
@@ -410,6 +422,7 @@
     class="mobile-live-overlay mobile-live-overlay--cell"
     *ngIf="isMobileLayout && isMobileCellSizeOverlayOpen"
     (click)="closeMobileCellSizeOverlay()"
+    [@overlayDissolve]="''"
   >
     <div class="mobile-live-overlay__panel" (click)="$event.stopPropagation()">
       <div class="mobile-live-overlay__header">
