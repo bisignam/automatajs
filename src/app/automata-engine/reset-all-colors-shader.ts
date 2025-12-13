@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { Shader } from 'three';
 
 export class ResetAllColorsShader implements Shader {
+  //language=GLSL
   fragmentShader = `
         uniform sampler2D u_texture;
         uniform vec2 u_resolution;

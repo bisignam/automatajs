@@ -5,10 +5,12 @@ import { DefaultSettings } from './defaultSettings';
 import { OnDestroy } from '@angular/core';
 import * as THREE from 'three';
 import { DisplayPassShader } from './display-pass-shader';
-import { Shader, Texture } from 'three';
+import { Shader, WebGLRenderTarget } from 'three';
 import { GameOfLife } from '../automata-rules/gameoflife';
 import { ChangeColorShader } from './change-color-shader';
 import { ResetAllColorsShader } from './reset-all-colors-shader';
+import { ResizeShader } from './resize-shader';
+import { FullscreenShaderPass } from './full-screen-shader-pass';
 
 @Injectable({
   providedIn: 'root', //means singleton service
@@ -17,6 +19,7 @@ export class ThreeService implements OnDestroy {
   private currentStep = 1;
   private maxStep = 1;
   private canvas: HTMLCanvasElement;
+  private shaderPass = new FullscreenShaderPass(); // Utility for running a pass on a texture
   private _cellularAutomaton: CellularAutomaton = new GameOfLife(); //TODO allow to initialize externally
   private automatonMaterial: THREE.ShaderMaterial;
   private renderer: THREE.WebGLRenderer;
@@ -31,15 +34,16 @@ export class ThreeService implements OnDestroy {
   private drawWithMouse = true; //NOTE: not exposed externally, just for debugging
   private isDrawing = false;
   private mouse: THREE.Vector2; //The mouse position
-  private raycaster: THREE.Raycaster; //For managing mouse interesection with objects
+  private raycaster: THREE.Raycaster; //For managing mouse intersection with objects
   private _automataSize = new BehaviorSubject<number>(
-    DefaultSettings.pixelSize
+    DefaultSettings.pixelSize,
   );
   private simulationWidth = 0;
   private simulationHeight = 0;
   private initialized = false;
   private nextStateIndex = 0;
   private displayPassShader = new DisplayPassShader();
+  private resizeMaterial = this.shaderPass.createMaterial(new ResizeShader());
   private changeColorShader = new ChangeColorShader();
   private resetAllColorsShader = new ResetAllColorsShader();
   private _activeColor = DefaultSettings.activationColor;
@@ -58,6 +62,116 @@ export class ThreeService implements OnDestroy {
     if (this.frameId != null) {
       cancelAnimationFrame(this.frameId);
     }
+  }
+
+  private resizeSimulationGrid(newWidth: number, newHeight: number) {
+    this.clearSquares();
+
+    const oldWidth = this.simulationWidth;
+    const oldHeight = this.simulationHeight;
+
+    this.simulationWidth = newWidth;
+    this.simulationHeight = newHeight;
+
+    const resizeRenderTarget = new WebGLRenderTarget(newWidth, newHeight);
+    this.shaderPass.render(
+      this.renderer,
+      resizeRenderTarget,
+      this.resizeMaterial,
+      () => {
+        this.resizeMaterial.uniforms.u_old_texture.value =
+          this.buffers[this.computePreviousStateIndex()].texture;
+        this.resizeMaterial.uniforms.u_resolution_old.value.set(
+          oldWidth,
+          oldHeight,
+        );
+        this.resizeMaterial.uniforms.u_resolution_new.value.set(
+          newWidth,
+          newHeight,
+        );
+        this.resizeMaterial.uniforms.u_background_color.value.set(
+          this._deadColor.r,
+          this._deadColor.g,
+          this._deadColor.b,
+          1.0,
+        );
+      },
+    );
+
+    this.camera.clear();
+
+    //We make the camera take the whole screen with his frustum
+    this.camera = new THREE.OrthographicCamera(
+      -(this.simulationWidth / 2), // left
+      this.simulationWidth / 2, // right
+      this.simulationHeight / 2, // top
+      -(this.simulationHeight / 2), // bottom
+      -1, // near,
+      1, // far
+    );
+
+    //NOTE: this must be called before configuring the mesh
+    // because the vector uniforms must be initialized
+    this.setupAutomataParameters(this._cellularAutomaton);
+
+    this.stepperScene.clear();
+    this.stepperScene = new THREE.Scene();
+    this.automatonPlane.dispose();
+    this.automatonPlane = new THREE.PlaneGeometry(
+      this.simulationWidth,
+      this.simulationHeight,
+    );
+    this.automatonMaterial.dispose();
+    this.automatonMaterial = this.createShaderMaterial(this.cellularAutomaton);
+    this.automatonMesh.clear();
+    this.automatonMesh = new THREE.Mesh(
+      this.automatonPlane,
+      this.automatonMaterial,
+    );
+    this.stepperScene.add(this.automatonMesh);
+    this.displayScene.clear();
+    this.displayScene = new THREE.Scene();
+    const plane2 = new THREE.PlaneGeometry(
+      this.simulationWidth,
+      this.simulationHeight,
+    );
+    const displayMaterial = this.createShaderMaterial(this.displayPassShader);
+    displayMaterial.uniforms.u_texture.value = resizeRenderTarget.texture;
+    this.displayScene.add(new THREE.Mesh(plane2, displayMaterial));
+    this.changeColorScene.clear();
+    this.changeColorScene = new THREE.Scene();
+    const plane3 = new THREE.PlaneGeometry(
+      this.simulationWidth,
+      this.simulationHeight,
+    );
+    this.changeColorScene.add(
+      new THREE.Mesh(plane3, this.createShaderMaterial(this.changeColorShader)),
+    );
+    this.resetAllColorsScene.clear();
+    this.resetAllColorsScene = new THREE.Scene();
+    const plane4 = new THREE.PlaneGeometry(
+      this.simulationWidth,
+      this.simulationHeight,
+    );
+    this.resetAllColorsScene.add(
+      new THREE.Mesh(
+        plane4,
+        this.createShaderMaterial(this.resetAllColorsShader),
+      ),
+    );
+
+    const afterResize = new THREE.WebGLRenderTarget(
+      this.simulationWidth,
+      this.simulationHeight,
+    );
+
+    this.buffers = [resizeRenderTarget, afterResize];
+    this.nextStateIndex = 1;
+    this.display(resizeRenderTarget);
+
+    this.renderer.setRenderTarget(null);
+    const size = this.renderer.getSize(new THREE.Vector2());
+    this.renderer.setViewport(0, 0, size.x, size.y);
   }
 
   /**
@@ -79,11 +193,17 @@ export class ThreeService implements OnDestroy {
     this.simulationHeight = height;
     this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
 
-    this.resizeRendererToDisplaySize(this.canvas);
+    this.resize(this.canvas);
     this.renderer.autoClearColor = false;
 
-    const step1 = new THREE.WebGLRenderTarget(this.simulationWidth, this.simulationHeight);
-    const step2 = new THREE.WebGLRenderTarget(this.simulationWidth, this.simulationHeight);
+    const step1 = new THREE.WebGLRenderTarget(
+      this.simulationWidth,
+      this.simulationHeight,
+    );
+    const step2 = new THREE.WebGLRenderTarget(
+      this.simulationWidth,
+      this.simulationHeight,
+    );
 
     this.buffers = [step1, step2];
 
@@ -94,7 +214,7 @@ export class ThreeService implements OnDestroy {
       this.simulationHeight / 2, // top
       -(this.simulationHeight / 2), // bottom
       -1, // near,
-      1 // far
+      1, // far
     );
 
     //NOTE: this must be called before configuring the mesh
@@ -105,41 +225,41 @@ export class ThreeService implements OnDestroy {
     //NOTE: cellular automaton IS A SHADER
     this.automatonPlane = new THREE.PlaneGeometry(
       this.simulationWidth,
-      this.simulationHeight
+      this.simulationHeight,
     );
     this.automatonMaterial = this.createShaderMaterial(this.cellularAutomaton);
     this.automatonMesh = new THREE.Mesh(
       this.automatonPlane,
-      this.automatonMaterial
+      this.automatonMaterial,
     );
     this.stepperScene.add(this.automatonMesh);
     this.displayScene = new THREE.Scene();
     const plane2 = new THREE.PlaneGeometry(
       this.simulationWidth,
-      this.simulationHeight
+      this.simulationHeight,
     );
     this.displayScene.add(
-      new THREE.Mesh(plane2, this.createShaderMaterial(this.displayPassShader))
+      new THREE.Mesh(plane2, this.createShaderMaterial(this.displayPassShader)),
     );
 
     this.changeColorScene = new THREE.Scene();
     const plane3 = new THREE.PlaneGeometry(
       this.simulationWidth,
-      this.simulationHeight
+      this.simulationHeight,
     );
     this.changeColorScene.add(
-      new THREE.Mesh(plane3, this.createShaderMaterial(this.changeColorShader))
+      new THREE.Mesh(plane3, this.createShaderMaterial(this.changeColorShader)),
     );
     this.resetAllColorsScene = new THREE.Scene();
     const plane4 = new THREE.PlaneGeometry(
       this.simulationWidth,
-      this.simulationHeight
+      this.simulationHeight,
     );
     this.resetAllColorsScene.add(
       new THREE.Mesh(
         plane4,
-        this.createShaderMaterial(this.resetAllColorsShader)
-      )
+        this.createShaderMaterial(this.resetAllColorsShader),
+      ),
     );
 
     this.configureMouseDrawingEvents(this.canvas);
@@ -152,7 +272,7 @@ export class ThreeService implements OnDestroy {
   private changeAutomaton(
     previousStateIndex: number,
     automaton: CellularAutomaton,
-    preserveState: boolean
+    preserveState: boolean,
   ): Promise<void> {
     if (preserveState) {
       return new Promise((resolve) => {
@@ -169,21 +289,21 @@ export class ThreeService implements OnDestroy {
   private rebuildAutomaton(
     previousStateIndex: number,
     automaton: CellularAutomaton,
-    preservedTexture?: THREE.Texture
+    preservedTexture?: THREE.Texture,
   ): void {
     this.renderer.dispose();
     this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
-    this.resizeRendererToDisplaySize(this.canvas);
+    this.resize(this.canvas);
     this.renderer.autoClearColor = false;
     this.buffers[previousStateIndex].dispose();
     this.buffers[previousStateIndex] = new THREE.WebGLRenderTarget(
       this.simulationWidth,
-      this.simulationHeight
+      this.simulationHeight,
     );
     this.buffers[this.nextStateIndex].dispose();
     this.buffers[this.nextStateIndex] = new THREE.WebGLRenderTarget(
       this.simulationWidth,
-      this.simulationHeight
+      this.simulationHeight,
     );
     if (preservedTexture) {
       preservedTexture.minFilter = THREE.LinearFilter;
@@ -193,7 +313,7 @@ export class ThreeService implements OnDestroy {
     this.automatonPlane.dispose();
     this.automatonPlane = new THREE.PlaneGeometry(
       this.simulationWidth,
-      this.simulationHeight
+      this.simulationHeight,
     );
     this._cellularAutomaton = automaton;
     this.automatonMaterial.dispose();
@@ -201,7 +321,7 @@ export class ThreeService implements OnDestroy {
     this.automatonMesh.clear();
     this.automatonMesh = new THREE.Mesh(
       this.automatonPlane,
-      this.automatonMaterial
+      this.automatonMaterial,
     );
     this.setupAutomataParameters(automaton);
     this.stepperScene.clear();
@@ -213,17 +333,18 @@ export class ThreeService implements OnDestroy {
     this.stepForward(previousStateIndex, true);
     this.display(
       this.buffers[this.nextStateIndex],
-      this.buffers[previousStateIndex]
+      this.buffers[previousStateIndex],
     );
+    // Ping Pong technique
     this.nextStateIndex = previousStateIndex;
   }
 
   public async reset(
     automaton?: CellularAutomaton,
-    options?: { preserveState?: boolean }
+    options?: { preserveState?: boolean },
   ): Promise<void> {
     const preserveState = options?.preserveState !== false;
-    let previousStateIndex = this.computePreviouStateIndex();
+    let previousStateIndex = this.computePreviousStateIndex();
     //If we pass the automaton it means we want to reset the scene with the new one
     if (automaton) {
       await this.changeAutomaton(previousStateIndex, automaton, preserveState);
@@ -240,7 +361,10 @@ export class ThreeService implements OnDestroy {
     });
   }
 
-  private resizeRendererToDisplaySize(canvas: HTMLCanvasElement): boolean {
+  private resize(
+    canvas: HTMLCanvasElement,
+    resizeSimulation: boolean = false,
+  ): boolean {
     if (!canvas) {
       return false;
     }
@@ -249,8 +373,12 @@ export class ThreeService implements OnDestroy {
     const height = Math.max(1, Math.floor(canvas.clientHeight * dpr));
 
     const needResize = canvas.width !== width || canvas.height !== height;
+
     if (needResize) {
       this.renderer.setSize(width, height, false);
+      if (resizeSimulation) {
+        this.resizeSimulationGrid(width, height);
+      }
     }
     return needResize;
   }
@@ -322,7 +450,7 @@ export class ThreeService implements OnDestroy {
   private updatePointerPosition(
     canvas: HTMLCanvasElement,
     clientX: number,
-    clientY: number
+    clientY: number,
   ): void {
     if (!canvas) {
       return;
@@ -357,10 +485,10 @@ export class ThreeService implements OnDestroy {
 
   private setupChangeColorShader(
     oldColor: THREE.Color,
-    newColor: THREE.Color
+    newColor: THREE.Color,
   ): void {
     this.changeColorShader.uniforms.u_texture = {
-      value: this.buffers[this.computePreviouStateIndex()].texture,
+      value: this.buffers[this.computePreviousStateIndex()].texture,
     };
     this.changeColorShader.uniforms.u_resolution = {
       value: new THREE.Vector2(this.simulationWidth, this.simulationHeight),
@@ -375,7 +503,7 @@ export class ThreeService implements OnDestroy {
 
   private setupResetAllColorsShader(newColor: THREE.Color): void {
     this.resetAllColorsShader.uniforms.u_texture = {
-      value: this.buffers[this.computePreviouStateIndex()].texture,
+      value: this.buffers[this.computePreviousStateIndex()].texture,
     };
     this.resetAllColorsShader.uniforms.u_resolution = {
       value: new THREE.Vector2(this.simulationWidth, this.simulationHeight),
@@ -394,16 +522,16 @@ export class ThreeService implements OnDestroy {
     automaton.uniforms.u_resolution = {
       value: new THREE.Vector2(this.simulationWidth, this.simulationHeight),
     };
-    (automaton.uniforms.u_automata_size = {
+    ((automaton.uniforms.u_automata_size = {
       value: this._automataSize.value,
     }),
       (automaton.uniforms.u_grid_weigth = {
         value: 1,
-      });
+      }));
     automaton.uniforms.u_grid_color = {
       value: new THREE.Vector4(0, 0, 0, 1),
     };
-    (automaton.uniforms.u_grid_active = {
+    ((automaton.uniforms.u_grid_active = {
       value: false,
     }),
       (automaton.uniforms.u_alive_color = {
@@ -411,7 +539,7 @@ export class ThreeService implements OnDestroy {
           this._activeColor.r,
           this._activeColor.g,
           this._activeColor.b,
-          1
+          1,
         ),
       }),
       (automaton.uniforms.u_dead_color = {
@@ -419,9 +547,9 @@ export class ThreeService implements OnDestroy {
           this._deadColor.r,
           this._deadColor.g,
           this._deadColor.b,
-          1
+          1,
         ),
-      });
+      }));
     automaton.uniforms.u_copy_step = { value: false };
     //Here we set the additional colors which can exist or not depending on the specific shader we are using
     this.setupAdditionalAutomataParameters(automaton);
@@ -439,7 +567,7 @@ export class ThreeService implements OnDestroy {
     //we need a square, basically a plane with z set to zero
     const automata = new THREE.PlaneGeometry(
       this._automataSize.value,
-      this._automataSize.value
+      this._automataSize.value,
     );
     const automataMaterial = new THREE.MeshBasicMaterial({
       color: this._activeColor,
@@ -453,13 +581,20 @@ export class ThreeService implements OnDestroy {
   private clearSquares() {
     for (const square of this.squares) {
       this.stepperScene.remove(square);
+      square.geometry.dispose();
+      if (Array.isArray(square.material)) {
+        square.material.forEach((m) => m.dispose());
+      } else {
+        square.material.dispose();
+      }
     }
+    this.squares.length = 0;
   }
 
   private drawSquareIfNecessary() {
     if (this.isDrawing) {
       const intersects = this.raycaster.intersectObjects(
-        this.stepperScene.children
+        this.stepperScene.children,
       );
       if (intersects.length > 0) {
         this.drawSquare(this.mouse.x, this.mouse.y, this.stepperScene);
@@ -473,23 +608,24 @@ export class ThreeService implements OnDestroy {
         requestAnimationFrame(() => {
           this.animate();
         }),
-      1000 / this._fpsCap
+      1000 / this._fpsCap,
     );
-    this.resizeRendererToDisplaySize(this.canvas);
+    this.resize(this.canvas, true);
     if (this.isDrawing) {
       if (this.drawWithMouse) {
+        this.renderer.clear(); // makes sure we don't have leaks
         this.drawSquareIfNecessary();
-        this.renderer.setRenderTarget(null);
         this.renderer.render(this.stepperScene, this.camera);
         return;
       }
     } else if (this.play || this.currentStep === 1) {
+      this.renderer.clear(); // makes sure we don't have leaks
       this.forwardAndDisplay();
     }
   }
 
   public forwardAndDisplay() {
-    const previousStateIndex = this.computePreviouStateIndex();
+    const previousStateIndex = this.computePreviousStateIndex();
     this.stepForward(previousStateIndex);
     this.displayStep();
     this.clearSquares();
@@ -497,7 +633,7 @@ export class ThreeService implements OnDestroy {
     this.currentStep++;
   }
 
-  computePreviouStateIndex(): number {
+  private computePreviousStateIndex(): number {
     return 1 - this.nextStateIndex;
   }
 
@@ -509,19 +645,19 @@ export class ThreeService implements OnDestroy {
       this.buffers[this.nextStateIndex],
       this.stepperScene,
       this.camera,
-      copyStep
+      copyStep,
     ); // Apply the automata
   }
 
   private display(
     source: THREE.WebGLRenderTarget,
-    target?: THREE.WebGLRenderTarget
+    target?: THREE.WebGLRenderTarget,
   ) {
     if (target) {
-      // Internal blits honor the destination render target dimensions
+      // Internal bits honor the destination render target dimensions
       this.displayPassShader.uniforms.u_resolution.value.set(
         target.width,
-        target.height
+        target.height,
       );
     } else {
       const size = this.renderer.getSize(new THREE.Vector2());
@@ -533,7 +669,7 @@ export class ThreeService implements OnDestroy {
   }
 
   private displayStep(): void {
-    //NOTE:here we simpy take the result of stepper and we paint it to screen
+    //NOTE:here we simply take the result of stepper, and we paint it to screen
     this.display(this.buffers[this.nextStateIndex]);
   }
 
@@ -558,7 +694,7 @@ export class ThreeService implements OnDestroy {
 
   public async setAutomataAndStopCurrent(
     automaton: CellularAutomaton,
-    options?: { preserveState?: boolean }
+    options?: { preserveState?: boolean },
   ): Promise<void> {
     let wasPlaying = false;
     if (this.play) {
@@ -610,10 +746,10 @@ export class ThreeService implements OnDestroy {
         // to act as a copy shader but always on the stepper scene
         // this way we can manage a copy of the previous state without
         // creating a new scene
-        this.stepForward(this.computePreviouStateIndex(), true);
+        this.stepForward(this.computePreviousStateIndex(), true);
         this.display(
           this.buffers[this.nextStateIndex],
-          this.buffers[this.computePreviouStateIndex()]
+          this.buffers[this.computePreviousStateIndex()],
         );
       }
       if (name === 'activeColor') {
@@ -624,7 +760,7 @@ export class ThreeService implements OnDestroy {
             this._activeColor.r,
             this._activeColor.g,
             this._activeColor.b,
-            1
+            1,
           ),
         };
       } else if (name === 'deadColor') {
@@ -635,7 +771,7 @@ export class ThreeService implements OnDestroy {
             this._deadColor.r,
             this._deadColor.g,
             this._deadColor.b,
-            1
+            1,
           ),
         };
       } else {
@@ -648,7 +784,7 @@ export class ThreeService implements OnDestroy {
             additionalColor.color.r,
             additionalColor.color.g,
             additionalColor.color.b,
-            1
+            1,
           ),
         };
       }
@@ -657,7 +793,7 @@ export class ThreeService implements OnDestroy {
       this.renderer.render(this.changeColorScene, this.camera);
       this.displayStep();
       this.clearSquares();
-      this.nextStateIndex = this.computePreviouStateIndex();
+      this.nextStateIndex = this.computePreviousStateIndex();
     }
     if (wasPlaying) {
       this.play = true;
@@ -671,7 +807,7 @@ export class ThreeService implements OnDestroy {
       this.renderer.render(this.resetAllColorsScene, this.camera);
       this.displayStep();
       this.clearSquares();
-      this.nextStateIndex = this.computePreviouStateIndex();
+      this.nextStateIndex = this.computePreviousStateIndex();
     }
   }
 

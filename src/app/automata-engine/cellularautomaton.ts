@@ -21,7 +21,7 @@ export abstract class CellularAutomaton implements Shader {
   constructor(
     automataShader: string,
     additionalColorsList: Array<AdditionalColorType>,
-    additionalFunctions?: string
+    additionalFunctions?: string,
   ) {
     let additionalColorsUniforms = '';
     additionalColorsList.forEach((addC) => {
@@ -31,6 +31,7 @@ export abstract class CellularAutomaton implements Shader {
 
     //NOTE: basically we are creating a template for all automata shaders
     //like importing some common functions
+    //language=GLSL
     this.fragmentShader =
       `
     uniform vec2 u_resolution;
@@ -101,7 +102,7 @@ export abstract class CellularAutomaton implements Shader {
     target: THREE.WebGLRenderTarget,
     scene: THREE.Scene,
     camera: THREE.Camera,
-    copyStep?: Boolean
+    copyStep?: Boolean,
   ): void {
     // Simulation uses render target resolution, not DOM canvas size
     this.uniforms.u_resolution.value.set(target.width, target.height);
@@ -124,7 +125,7 @@ export abstract class CellularAutomaton implements Shader {
     this._additionalColors.forEach(
       (value: AdditionalColorType, key: string) => {
         additionalColorsArray.push(value);
-      }
+      },
     );
     return additionalColorsArray;
   }

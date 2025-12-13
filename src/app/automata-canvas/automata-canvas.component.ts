@@ -1,4 +1,12 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { animate } from '@motionone/dom';
 import { ThreeService } from '../automata-engine/three-service';
 
@@ -6,7 +14,7 @@ import { ThreeService } from '../automata-engine/three-service';
   selector: 'app-automata-canvas',
   templateUrl: './automata-canvas.component.html',
   styleUrls: ['./automata-canvas.component.scss'],
-  standalone: false,
+  standalone: false
 })
 export class AutomataCanvasComponent implements AfterViewInit {
   @ViewChild('automataCanvasContainer')
@@ -22,12 +30,18 @@ export class AutomataCanvasComponent implements AfterViewInit {
     }
   }
   threeService: ThreeService;
-  private screenshotAnimations = new WeakMap<HTMLElement, ReturnType<typeof animate>>();
+  private screenshotAnimations = new WeakMap<
+    HTMLElement,
+    ReturnType<typeof animate>
+  >();
   private immersiveHandleEntranceAnimations = new WeakMap<
     HTMLElement,
     ReturnType<typeof animate>
   >();
-  private immersiveHandleHoverAnimations = new WeakMap<HTMLElement, ReturnType<typeof animate>>();
+  private immersiveHandleHoverAnimations = new WeakMap<
+    HTMLElement,
+    ReturnType<typeof animate>
+  >();
   isPainting = false;
   isCursorOverCanvas = false;
   @Input() isImmersive = false;
@@ -188,7 +202,10 @@ export class AutomataCanvasComponent implements AfterViewInit {
     event.preventDefault();
     const direction = event.deltaY > 0 ? 1 : -1;
     const nextZoom = this.lensZoom + direction * this.lensZoomStep;
-    this.lensZoom = Math.min(this.lensZoomMax, Math.max(this.lensZoomMin, nextZoom));
+    this.lensZoom = Math.min(
+      this.lensZoomMax,
+      Math.max(this.lensZoomMin, nextZoom),
+    );
   }
 
   onEnterImmersiveClick(): void {
@@ -217,13 +234,18 @@ export class AutomataCanvasComponent implements AfterViewInit {
     const animation = animate(
       element,
       {
-        transform: entering ? ['scale(1)', 'scale(1.04)'] : ['scale(1.04)', 'scale(1)'],
+        transform: entering
+          ? ['scale(1)', 'scale(1.04)']
+          : ['scale(1.04)', 'scale(1)'],
       },
       { duration: 0.18, easing: 'ease-out' },
     );
     this.immersiveHandleHoverAnimations.set(element, animation);
     animation.finished.finally(() => {
-      if (this.immersiveHandleHoverAnimations.get(element) === animation && !entering) {
+      if (
+        this.immersiveHandleHoverAnimations.get(element) === animation &&
+        !entering
+      ) {
         element.style.transform = '';
         this.immersiveHandleHoverAnimations.delete(element);
       }
